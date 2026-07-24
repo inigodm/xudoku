@@ -1,0 +1,148 @@
+package com.inigo.xudoku.ui
+
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.inigo.xudoku.model.Difficulty
+import com.inigo.xudoku.ui.screen.DifficultyScreen
+import com.inigo.xudoku.ui.screen.GameScreen
+import com.inigo.xudoku.ui.screen.ProfileScreen
+import com.inigo.xudoku.ui.screen.SplashScreen
+import com.inigo.xudoku.ui.screen.StatsScreen
+import com.inigo.xudoku.ui.screen.VictoryScreen
+
+/** Destinos de navegación de la app. */
+private object Dest {
+    const val SPLASH     = "splash"
+    const val DIFFICULTY = "difficulty"
+    const val GAME       = "game/{difficultyName}"
+    const val VICTORY    = "victory/{seconds}/{mistakes}/{difficultyName}/{score}"
+    const val STATS      = "stats"
+    const val PROFILE    = "profile"
+
+    fun game(difficulty: Difficulty)                             = "game/${difficulty.name}"
+    fun victory(seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int) =
+        "victory/$seconds/$mistakes/${difficulty.name}/$score"
+}
+
+/**
+ * Grafo de navegación principal de xudoku.
+ * Se instancia una sola vez en [MainActivity].
+ */
+@Composable
+fun XudokuNavGraph() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController    = navController,
+        startDestination = Dest.SPLASH
+    ) {
+
+        // ── Splash ──────────────────────────────────────────────────────────
+        composable(Dest.SPLASH) {
+            SplashScreen(
+                onSplashComplete = {
+                    navController.navigate(Dest.DIFFICULTY) {
+                        popUpTo(Dest.SPLASH) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // ── Selección de dificultad ──────────────────────────────────────────
+        composable(Dest.DIFFICULTY) {
+            DifficultyScreen(
+                onDifficultySelected = { difficulty ->
+                    navController.navigate(Dest.game(difficulty))
+                },
+                onNavigateToStats    = { navController.navigate(Dest.STATS) },
+                onNavigateToProfile  = { navController.navigate(Dest.PROFILE) }
+            )
+        }
+
+        // ── Tablero de juego ─────────────────────────────────────────────────
+        composable(
+            route     = Dest.GAME,
+            arguments = listOf(navArgument("difficultyName") { type = NavType.StringType })
+        ) { entry ->
+            val difficultyName = entry.arguments?.getString("difficultyName") ?: Difficulty.VERY_EASY.name
+            val difficulty     = runCatching { Difficulty.valueOf(difficultyName) }.getOrDefault(Difficulty.VERY_EASY)
+            val gameViewModel: GameViewModel = viewModel()
+
+            GameScreen(
+                difficulty       = difficulty,
+                viewModel        = gameViewModel,
+                onGameCompleted  = { seconds, mistakes, diff, score ->
+                    navController.navigate(Dest.victory(seconds, mistakes, diff, score)) {
+                        popUpTo(Dest.DIFFICULTY) // limpiar back stack del juego
+                    }
+                },
+                onNavigateBack   = {
+                    navController.popBackStack(Dest.DIFFICULTY, inclusive = false)
+                }
+            )
+        }
+
+        // ── Victoria ─────────────────────────────────────────────────────────
+        composable(
+            route     = Dest.VICTORY,
+            arguments = listOf(
+                navArgument("seconds")        { type = NavType.IntType    },
+                navArgument("mistakes")       { type = NavType.IntType    },
+                navArgument("difficultyName") { type = NavType.StringType },
+                navArgument("score")          { type = NavType.IntType    }
+            )
+        ) { entry ->
+            val args       = entry.arguments!!
+            val difficulty = runCatching {
+                Difficulty.valueOf(args.getString("difficultyName") ?: "")
+            }.getOrDefault(Difficulty.VERY_EASY)
+
+            VictoryScreen(
+                elapsedSeconds = args.getInt("seconds"),
+                mistakes       = args.getInt("mistakes"),
+                difficulty     = difficulty,
+                score          = args.getInt("score"),
+                onNextLevel    = {
+                    // Nueva partida con la misma dificultad
+                    navController.navigate(Dest.game(difficulty)) {
+                        popUpTo(Dest.DIFFICULTY)
+                    }
+                },
+                onMainMenu     = {
+                    navController.navigate(Dest.DIFFICULTY) {
+                        popUpTo(Dest.DIFFICULTY) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // ── Estadísticas ─────────────────────────────────────────────────────
+        composable(Dest.STATS) {
+            StatsScreen(
+                onNavigateToPlay    = {
+                    navController.navigate(Dest.DIFFICULTY) {
+                        popUpTo(Dest.DIFFICULTY) { inclusive = true }
+                    }
+                },
+                onNavigateToProfile = { navController.navigate(Dest.PROFILE) }
+            )
+        }
+
+        // ── Perfil ───────────────────────────────────────────────────────────
+        composable(Dest.PROFILE) {
+            ProfileScreen(
+                onNavigateToPlay  = {
+                    navController.navigate(Dest.DIFFICULTY) {
+                        popUpTo(Dest.DIFFICULTY) { inclusive = true }
+                    }
+                },
+                onNavigateToStats = { navController.navigate(Dest.STATS) }
+            )
+        }
+    }
+}

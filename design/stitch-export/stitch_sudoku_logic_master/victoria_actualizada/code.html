@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;family=Quicksand:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-3d-primary {
+            position: relative;
+            transition: all 0.1s ease;
+            transform: translateY(-4px);
+        }
+        .btn-3d-primary:active {
+            transform: translateY(0px);
+        }
+        .btn-3d-primary-shadow {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            transform: translateY(4px);
+            z-index: -1;
+        }
+        @keyframes celebrate {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-celebrate {
+            animation: celebrate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        canvas#confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#c0c1ff",
+                        "on-secondary-container": "#d6a9ff",
+                        "on-secondary": "#490080",
+                        "inverse-on-surface": "#283044",
+                        "primary-container": "#8083ff",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060e20",
+                        "outline": "#908fa0",
+                        "on-error-container": "#ffdad6",
+                        "surface": "#0b1326",
+                        "on-tertiary-fixed": "#001f26",
+                        "on-primary": "#1000a9",
+                        "surface-container-low": "#131b2e",
+                        "surface-tint": "#c0c1ff",
+                        "surface-container-high": "#222a3d",
+                        "tertiary-fixed": "#acedff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-surface-variant": "#c7c4d7",
+                        "tertiary-container": "#009eb9",
+                        "tertiary": "#4cd7f6",
+                        "secondary-container": "#6f00be",
+                        "on-tertiary-container": "#002f38",
+                        "secondary": "#ddb7ff",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed": "#2c0051",
+                        "error": "#ffb4ab",
+                        "on-error": "#690005",
+                        "on-background": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#004e5c",
+                        "secondary-fixed": "#f0dbff",
+                        "on-primary-container": "#0d0096",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "surface-variant": "#2d3449",
+                        "surface-dim": "#0b1326",
+                        "on-primary-fixed": "#07006c",
+                        "on-tertiary": "#003640",
+                        "tertiary-fixed-dim": "#4cd7f6",
+                        "inverse-surface": "#dae2fd",
+                        "on-surface": "#dae2fd",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "inverse-primary": "#494bd6",
+                        "surface-container": "#171f33",
+                        "outline-variant": "#464554",
+                        "primary-fixed": "#e1e0ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "2rem",
+                        "container-padding": "1.5rem",
+                        "stack-md": "1rem",
+                        "stack-sm": "0.5rem",
+                        "grid-gap": "2px",
+                        "block-gap": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Montserrat"],
+                        "body-lg": ["Montserrat"],
+                        "headline-lg": ["Quicksand"],
+                        "grid-number": ["Quicksand"],
+                        "body-md": ["Montserrat"],
+                        "headline-lg-mobile": ["Quicksand"],
+                        "display-lg": ["Quicksand"],
+                        "label-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "grid-number": ["28px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky bg-background/80 backdrop-blur-xl flex justify-between items-center px-container-padding py-stack-md w-full z-40">
+<button class="active:translate-y-1 transition-transform hover:opacity-80">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-display-lg text-headline-lg-mobile tracking-tighter text-primary">SUDOKU</h1>
+<button class="active:translate-y-1 transition-transform hover:opacity-80">
+<span class="material-symbols-outlined text-primary">settings</span>
+</button>
+</header>
+<canvas id="confetti"></canvas>
+<main class="flex-grow flex flex-col items-center justify-center px-container-padding py-stack-lg relative">
+<!-- Victory Section -->
+<div class="text-center animate-celebrate mb-stack-lg">
+<div class="mb-stack-sm flex justify-center">
+<div class="bg-secondary-container text-on-secondary-container px-4 py-1 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+<span class="font-label-lg text-label-lg uppercase tracking-widest">Nueva Marca</span>
+</div>
+</div>
+<h2 class="font-display-lg text-display-lg text-primary drop-shadow-[0_0_15px_rgba(192,193,255,0.4)]">¡VICTORIA!</h2>
+<p class="font-body-lg text-body-lg text-tertiary mt-2">Nivel Completado con éxito</p>
+</div>
+<!-- Stats Bento Grid -->
+<div class="w-full max-w-md mb-stack-md glass-panel rounded-2xl p-6 flex flex-col items-center justify-center border-primary/20 bg-gradient-to-br from-secondary-container/20 to-tertiary-container/20 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-secondary/10 via-tertiary/10 to-primary/10 opacity-50 blur-xl group-hover:opacity-75 transition-opacity"></div>
+<span class="material-symbols-outlined text-secondary text-3xl mb-2 relative z-10">stars</span>
+<span class="font-label-lg text-label-lg text-outline uppercase tracking-[0.2em] relative z-10">Puntuación Final</span>
+<span class="font-display-lg text-5xl text-on-background drop-shadow-[0_0_12px_rgba(221,183,255,0.4)] relative z-10 mt-1">24,580</span>
+</div><div class="grid grid-cols-2 gap-stack-md w-full max-w-md">
+<!-- Time Card -->
+<div class="glass-panel rounded-xl p-stack-md flex flex-col items-center justify-center col-span-1 shadow-lg border-primary/10">
+<span class="material-symbols-outlined text-tertiary mb-1">timer</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Tiempo</span>
+<span class="font-headline-lg text-headline-lg text-on-background">08:45</span>
+</div>
+<!-- Mistakes Card -->
+<div class="glass-panel rounded-xl p-stack-md flex flex-col items-center justify-center col-span-1 shadow-lg border-primary/10">
+<span class="material-symbols-outlined text-error mb-1">cancel</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Errores</span>
+<span class="font-headline-lg text-headline-lg text-on-background">0/3</span>
+</div>
+<!-- Difficulty Card -->
+<div class="glass-panel rounded-xl p-stack-md flex items-center justify-between col-span-2 shadow-lg border-primary/10">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/30 flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline block">DIFICULTAD</span>
+<span class="font-headline-lg text-headline-lg text-on-background leading-none">Difícil</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-outline/30"></div>
+</div>
+</div>
+</div>
+<!-- Progress/Experience Section -->
+<div class="w-full max-w-md mt-stack-lg">
+<div class="flex justify-between items-end mb-2">
+<span class="font-label-lg text-label-lg text-primary">NIVEL 14</span>
+<span class="font-label-sm text-label-sm text-outline">850 / 1000 XP</span>
+</div>
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden p-[2px]">
+<div class="h-full rounded-full bg-gradient-to-r from-tertiary to-primary-container shadow-[0_0_10px_rgba(76,215,246,0.5)]" style="width: 85%"></div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full max-w-md flex flex-col gap-stack-md mt-stack-lg">
+<button class="w-full h-16 relative active:scale-95 transition-transform duration-150">
+<div class="btn-3d-primary-shadow bg-primary-container/40"></div>
+<div class="btn-3d-primary w-full h-full bg-primary-container rounded-xl flex items-center justify-center gap-2 text-on-primary-container font-headline-lg-mobile text-headline-lg-mobile uppercase tracking-widest">
+<span class="material-symbols-outlined">home</span>
+<span>Menú Principal</span>
+</div>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-6 pt-3 bg-surface-container-low/90 rounded-t-xl border-t border-outline-variant/20 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
+<div class="flex flex-col items-center justify-center text-outline w-12 h-12 active:scale-90 duration-150 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline w-12 h-12 active:scale-90 duration-150 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">leaderboard</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full w-12 h-12 active:scale-90 duration-150 shadow-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+</div>
+<div class="flex flex-col items-center justify-center text-outline w-12 h-12 active:scale-90 duration-150 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">person</span>
+</div>
+</nav>
+<script>
+        // Simple confetti particle effect
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const colors = ['#c0c1ff', '#ddb7ff', '#4cd7f6', '#8083ff'];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height - canvas.height;
+                this.size = Math.random() * 8 + 4;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.speedY = Math.random() * 3 + 2;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = (Math.random() - 0.5) * 10;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+                if (this.y > canvas.height) {
+                    this.y = -20;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+</body></html>

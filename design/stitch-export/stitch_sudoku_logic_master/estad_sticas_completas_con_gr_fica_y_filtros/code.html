@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SUDOKU FLOW - Statistics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#060e20",
+                    "secondary": "#ddb7ff",
+                    "on-secondary-fixed": "#2c0051",
+                    "on-surface": "#dae2fd",
+                    "surface-container-low": "#131b2e",
+                    "primary-container": "#8083ff",
+                    "on-primary": "#1000a9",
+                    "secondary-container": "#6f00be",
+                    "surface-variant": "#2d3449",
+                    "on-background": "#dae2fd",
+                    "primary": "#c0c1ff",
+                    "surface-bright": "#31394d",
+                    "on-tertiary-container": "#002f38",
+                    "tertiary": "#4cd7f6",
+                    "surface-container-high": "#222a3d",
+                    "outline-variant": "#464554",
+                    "surface": "#0b1326",
+                    "surface-container": "#171f33",
+                    "secondary-fixed-dim": "#ddb7ff",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#001f26",
+                    "surface-tint": "#c0c1ff",
+                    "on-secondary-fixed-variant": "#6900b3",
+                    "inverse-surface": "#dae2fd",
+                    "on-error": "#690005",
+                    "tertiary-container": "#009eb9",
+                    "error": "#ffb4ab",
+                    "primary-fixed": "#e1e0ff",
+                    "inverse-primary": "#494bd6",
+                    "error-container": "#93000a",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "on-primary-container": "#0d0096",
+                    "tertiary-fixed": "#acedff",
+                    "background": "#0b1326",
+                    "on-tertiary": "#003640",
+                    "on-surface-variant": "#c7c4d7",
+                    "surface-container-highest": "#2d3449",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "tertiary-fixed-dim": "#4cd7f6",
+                    "surface-dim": "#0b1326",
+                    "on-secondary-container": "#d6a9ff",
+                    "secondary-fixed": "#f0dbff",
+                    "on-primary-fixed": "#07006c",
+                    "on-secondary": "#490080",
+                    "inverse-on-surface": "#283044",
+                    "outline": "#908fa0",
+                    "on-tertiary-fixed-variant": "#004e5c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "grid-gap": "2px",
+                    "block-gap": "4px",
+                    "stack-sm": "0.5rem",
+                    "stack-md": "1rem",
+                    "stack-lg": "2rem",
+                    "container-padding": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Quicksand"],
+                    "display-lg": ["Quicksand"],
+                    "body-lg": ["Montserrat"],
+                    "label-lg": ["Montserrat"],
+                    "headline-lg-mobile": ["Quicksand"],
+                    "body-md": ["Montserrat"],
+                    "label-sm": ["Montserrat"],
+                    "grid-number": ["Quicksand"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "grid-number": ["28px", {"lineHeight": "28px", "fontWeight": "500"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow-cyan {
+            filter: drop-shadow(0 0 8px rgba(76, 215, 246, 0.6));
+        }
+        .neon-glow-purple {
+            filter: drop-shadow(0 0 8px rgba(221, 183, 255, 0.6));
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-lg fixed top-0 w-full z-50 flex justify-between items-center px-container-padding h-16">
+<div class="active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary">menu</span>
+</div>
+<h1 class="font-display-lg text-primary drop-shadow-[0_0_8px_rgba(192,193,255,0.6)] text-headline-lg-mobile tracking-wider uppercase">Sudoku Flow</h1>
+<div class="active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary">settings</span>
+</div>
+</header>
+<!-- Tab Switcher -->
+<div class="fixed top-16 w-full z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant/10 px-4 py-3 overflow-x-auto no-scrollbar whitespace-nowrap">
+<div class="flex gap-2 max-w-md mx-auto">
+<button class="px-5 py-2 rounded-full bg-primary text-on-primary text-label-sm font-bold shadow-[0_0_12px_rgba(192,193,255,0.4)] transition-all">Global</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant text-label-sm transition-all">Fácil</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant text-label-sm transition-all">Medio</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant text-label-sm transition-all">Difícil</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant text-label-sm transition-all">Extremo</button>
+</div>
+</div>
+<!-- Main Content -->
+<main class="pb-32 px-container-padding max-w-md mx-auto space-y-stack-lg pt-36">
+<!-- Hero Section: Games Won -->
+<section class="glass-panel rounded-xl p-stack-lg text-center relative overflow-hidden">
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 blur-3xl rounded-full"></div>
+<div class="absolute -bottom-10 -left-10 w-32 h-32 bg-tertiary/10 blur-3xl rounded-full"></div>
+<p class="font-label-lg text-on-surface-variant mb-stack-sm uppercase tracking-widest">Total Achievements</p>
+<div class="flex flex-col items-center justify-center">
+<span class="font-display-lg text-primary neon-glow-purple text-6xl md:text-7xl mb-1">128</span>
+<h2 class="font-headline-lg text-on-surface">Games Won</h2>
+</div>
+<div class="mt-stack-lg grid grid-cols-2 gap-4">
+<div class="bg-surface-container-high/40 rounded-xl p-4 border border-white/5">
+<p class="font-label-sm text-tertiary uppercase mb-1">Win Rate</p>
+<p class="font-headline-lg-mobile text-on-surface">84.5%</p>
+</div>
+<div class="bg-surface-container-high/40 rounded-xl p-4 border border-white/5">
+<p class="font-label-sm text-secondary uppercase mb-1">Streak</p>
+<p class="font-headline-lg-mobile text-on-surface">12</p>
+</div>
+</div>
+</section>
+<!-- Score Evolution Chart -->
+<section class="space-y-stack-md">
+<h3 class="font-headline-lg-mobile text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">show_chart</span>
+                Evolución de Puntos
+            </h3>
+<div class="glass-panel rounded-xl p-stack-md pt-6">
+<div class="relative h-48 w-full flex items-end">
+<!-- Y-Axis Labels -->
+<div class="absolute left-0 h-full flex flex-col justify-between text-[10px] text-on-surface-variant/60 font-label-sm py-2">
+<span>25k</span>
+<span>20k</span>
+<span>15k</span>
+<span>10k</span>
+</div>
+<!-- Chart Area -->
+<div class="ml-8 w-full h-full">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<defs>
+<lineargradient id="chartGradient" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#4cd7f6"></stop>
+<stop offset="100%" stop-color="#ddb7ff"></stop>
+</lineargradient>
+<filter id="glow">
+<fegaussianblur result="blur" stddeviation="1.5"></fegaussianblur>
+<fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+</filter>
+</defs>
+<!-- Grid Lines -->
+<line stroke="white" stroke-opacity="0.05" stroke-width="0.5" x1="0" x2="100" y1="0" y2="0"></line>
+<line stroke="white" stroke-opacity="0.05" stroke-width="0.5" x1="0" x2="100" y1="33" y2="33"></line>
+<line stroke="white" stroke-opacity="0.05" stroke-width="0.5" x1="0" x2="100" y1="66" y2="66"></line>
+<line stroke="white" stroke-opacity="0.05" stroke-width="0.5" x1="0" x2="100" y1="100" y2="100"></line>
+<!-- Area under path -->
+<path d="M0,80 L10,65 L20,70 L30,45 L40,55 L50,30 L60,40 L70,25 L80,35 L90,15 L100,20 L100,100 L0,100 Z" fill="url(#chartGradient)" fill-opacity="0.05"></path>
+<!-- Line Path -->
+<path d="M0,80 L10,65 L20,70 L30,45 L40,55 L50,30 L60,40 L70,25 L80,35 L90,15 L100,20" fill="none" filter="url(#glow)" stroke="url(#chartGradient)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<!-- Points -->
+<circle cx="0" cy="80" fill="#4cd7f6" r="1.5"></circle>
+<circle cx="10" cy="65" fill="#4cd7f6" r="1.5"></circle>
+<circle cx="20" cy="70" fill="#4cd7f6" r="1.5"></circle>
+<circle cx="30" cy="45" fill="#4cd7f6" r="1.5"></circle>
+<circle cx="40" cy="55" fill="#75cff8" r="1.5"></circle>
+<circle cx="50" cy="30" fill="#9de8fa" r="1.5"></circle>
+<circle cx="60" cy="40" fill="#acedff" r="1.5"></circle>
+<circle cx="70" cy="25" fill="#c0c1ff" r="1.5"></circle>
+<circle cx="80" cy="35" fill="#c0c1ff" r="1.5"></circle>
+<circle cx="90" cy="15" fill="#ddb7ff" r="1.5"></circle>
+<circle cx="100" cy="20" fill="#ddb7ff" r="1.5"></circle>
+</svg>
+</div>
+</div>
+<!-- X-Axis Labels -->
+<div class="ml-8 mt-2 flex justify-between text-[9px] text-on-surface-variant/60 font-label-sm">
+<span>G1</span><span>G2</span><span>G3</span><span>G4</span><span>G5</span><span>G6</span><span>G7</span><span>G8</span><span>G9</span><span>G10</span>
+</div>
+</div>
+</section>
+<!-- Difficulty Distribution -->
+<section class="space-y-stack-md">
+<h3 class="font-headline-lg-mobile text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">donut_small</span>
+                Difficulty Split
+            </h3>
+<div class="glass-panel rounded-xl p-stack-md space-y-4">
+<!-- Easy -->
+<div class="space-y-1">
+<div class="flex justify-between font-label-sm text-on-surface-variant">
+<span>Easy</span>
+<span class="text-on-surface font-medium">42 games</span>
+</div>
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary neon-glow-cyan w-[33%] rounded-full transition-all duration-1000"></div>
+</div>
+</div>
+<!-- Medium -->
+<div class="space-y-1">
+<div class="flex justify-between font-label-sm text-on-surface-variant">
+<span>Medium</span>
+<span class="text-on-surface font-medium">56 games</span>
+</div>
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary neon-glow-purple w-[44%] rounded-full transition-all duration-1000"></div>
+</div>
+</div>
+<!-- Hard -->
+<div class="space-y-1">
+<div class="flex justify-between font-label-sm text-on-surface-variant">
+<span>Hard</span>
+<span class="text-on-surface font-medium">25 games</span>
+</div>
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[20%] rounded-full transition-all duration-1000"></div>
+</div>
+</div>
+<!-- Expert -->
+<div class="space-y-1">
+<div class="flex justify-between font-label-sm text-on-surface-variant">
+<span>Expert</span>
+<span class="text-on-surface font-medium">5 games</span>
+</div>
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container w-[5%] rounded-full transition-all duration-1000"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Performance Metrics -->
+<section class="grid grid-cols-1 gap-4">
+<div class="glass-panel rounded-xl p-4 flex items-center gap-4 active:scale-95 transition-transform">
+<div class="w-12 h-12 rounded-xl bg-tertiary/10 flex items-center justify-center border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface-variant">Best Time</p>
+<p class="font-headline-lg-mobile text-on-surface">03:42 <span class="text-label-sm font-normal text-tertiary ml-1">(Easy)</span></p>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-4 flex items-center gap-4 active:scale-95 transition-transform">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">avg_time</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface-variant">Average Time</p>
+<p class="font-headline-lg-mobile text-on-surface">08:15</p>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-4 flex items-center gap-4 active:scale-95 transition-transform">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center border border-secondary/20">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface-variant">Longest Streak</p>
+<p class="font-headline-lg-mobile text-on-surface">24 Days</p>
+</div>
+</div>
+</section>
+<!-- Recent Flow History -->
+<section class="space-y-stack-md">
+<div class="flex justify-between items-end">
+<h3 class="font-headline-lg-mobile text-on-surface">Recent Flow</h3>
+<button class="text-primary font-label-sm hover:underline active:opacity-70 transition-opacity">View All</button>
+</div>
+<div class="space-y-3">
+<!-- Game 1 -->
+<div class="glass-panel rounded-xl p-4 flex items-center justify-between group active:scale-[0.98] transition-transform">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border border-primary/30 flex items-center justify-center bg-primary/5">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="font-label-lg text-on-surface">Hard #402</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Yesterday, 9:20 PM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-lg-mobile text-primary leading-none">12:45</p>
+<p class="text-label-sm text-tertiary mt-1">+150 XP</p>
+</div>
+</div>
+<!-- Game 2 -->
+<div class="glass-panel rounded-xl p-4 flex items-center justify-between group active:scale-[0.98] transition-transform">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border border-tertiary/30 flex items-center justify-center bg-tertiary/5">
+<span class="material-symbols-outlined text-tertiary text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="font-label-lg text-on-surface">Medium #891</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Nov 12, 11:45 AM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-lg-mobile text-primary leading-none">07:22</p>
+<p class="text-label-sm text-tertiary mt-1">+85 XP</p>
+</div>
+</div>
+<!-- Game 3 -->
+<div class="glass-panel rounded-xl p-4 flex items-center justify-between group active:scale-[0.98] transition-transform opacity-60">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-xl">cancel</span>
+</div>
+<div>
+<p class="font-label-lg text-on-surface">Expert #12</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Nov 11, 4:30 PM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-lg-mobile text-on-surface-variant leading-none">--:--</p>
+<p class="text-label-sm text-error mt-1">DNF</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-2xl bg-surface-container/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-8px_32px_rgba(0,0,0,0.5)] flex justify-around items-center h-20 pb-safe px-4">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">grid_view</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Play</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary relative transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Stats</span>
+<div class="absolute -bottom-2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_#c0c1ff]"></div>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">emoji_events</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Badges</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">person</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+</a>
+</nav>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Interactive states for tabs
+            const tabs = document.querySelectorAll('.fixed.top-16 button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => {
+                        t.classList.remove('bg-primary', 'text-on-primary', 'shadow-[0_0_12px_rgba(192,193,255,0.4)]');
+                        t.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                    });
+                    tab.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                    tab.classList.add('bg-primary', 'text-on-primary', 'shadow-[0_0_12px_rgba(192,193,255,0.4)]');
+                });
+            });
+
+            // Hover effects for metrics
+            const stats = document.querySelectorAll('.font-headline-lg-mobile');
+            stats.forEach(stat => {
+                stat.closest('.glass-panel')?.addEventListener('mouseenter', () => {
+                    stat.style.transform = 'translateY(-2px)';
+                    stat.style.transition = 'transform 0.2s ease-out';
+                });
+                stat.closest('.glass-panel')?.addEventListener('mouseleave', () => {
+                    stat.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body></html>

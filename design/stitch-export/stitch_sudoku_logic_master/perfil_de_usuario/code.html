@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile - SUDOKU FLOW</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&amp;family=Montserrat:wght@300..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-3d-primary {
+            position: relative;
+            background: var(--tw-color-secondary-container);
+            transition: all 0.1s ease-out;
+            top: 0;
+            box-shadow: 0 4px 0 0 #490080;
+        }
+        .btn-3d-primary:active {
+            top: 3px;
+            box-shadow: 0 1px 0 0 #490080;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#060e20",
+                    "secondary": "#ddb7ff",
+                    "on-secondary-fixed": "#2c0051",
+                    "on-surface": "#dae2fd",
+                    "surface-container-low": "#131b2e",
+                    "primary-container": "#8083ff",
+                    "on-primary": "#1000a9",
+                    "secondary-container": "#6f00be",
+                    "surface-variant": "#2d3449",
+                    "on-background": "#dae2fd",
+                    "primary": "#c0c1ff",
+                    "surface-bright": "#31394d",
+                    "on-tertiary-container": "#002f38",
+                    "tertiary": "#4cd7f6",
+                    "surface-container-high": "#222a3d",
+                    "outline-variant": "#464554",
+                    "surface": "#0b1326",
+                    "surface-container": "#171f33",
+                    "secondary-fixed-dim": "#ddb7ff",
+                    "on-error-container": "#ffdad6",
+                    "on-surface-variant": "#c7c4d7",
+                    "surface-tint": "#c0c1ff",
+                    "on-secondary-fixed-variant": "#6900b3",
+                    "inverse-surface": "#dae2fd",
+                    "on-error": "#690005",
+                    "tertiary-container": "#009eb9",
+                    "error": "#ffb4ab",
+                    "primary-fixed": "#e1e0ff",
+                    "inverse-primary": "#494bd6",
+                    "error-container": "#93000a",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "on-primary-container": "#0d0096",
+                    "tertiary-fixed": "#acedff",
+                    "background": "#0b1326",
+                    "on-tertiary": "#003640",
+                    "on-surface-variant": "#c7c4d7",
+                    "surface-container-highest": "#2d3449",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "tertiary-fixed-dim": "#4cd7f6",
+                    "surface-dim": "#0b1326",
+                    "on-secondary-container": "#d6a9ff",
+                    "secondary-fixed": "#f0dbff",
+                    "on-primary-fixed": "#07006c",
+                    "on-secondary": "#490080",
+                    "inverse-on-surface": "#283044",
+                    "outline": "#908fa0",
+                    "on-tertiary-fixed-variant": "#004e5c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "grid-gap": "2px",
+                    "block-gap": "4px",
+                    "stack-sm": "0.5rem",
+                    "stack-md": "1rem",
+                    "stack-lg": "2rem",
+                    "container-padding": "1.5rem"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Quicksand"],
+                    "display-lg": ["Quicksand"],
+                    "body-lg": ["Montserrat"],
+                    "label-lg": ["Montserrat"],
+                    "headline-lg-mobile": ["Quicksand"],
+                    "body-md": ["Montserrat"],
+                    "label-sm": ["Montserrat"],
+                    "grid-number": ["Quicksand"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "grid-number": ["28px", {"lineHeight": "28px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-lg shadow-surface-container-lowest/40 flex justify-between items-center px-container-padding h-16">
+<div class="active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-primary">menu</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile tracking-wider text-primary font-display-lg drop-shadow-[0_0_8px_rgba(192,193,255,0.6)]">SUDOKU FLOW</h1>
+<div class="active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-primary">settings</span>
+</div>
+</header>
+<main class="pt-24 px-container-padding max-w-lg mx-auto">
+<!-- Profile Hero Section -->
+<section class="flex flex-col items-center mb-10">
+<div class="relative mb-6">
+<!-- Circular profile image with neon glow -->
+<div class="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-primary via-tertiary to-secondary shadow-[0_0_20px_rgba(192,193,255,0.4)]">
+<img alt="Alex Gridmaster" class="w-full h-full rounded-full bg-surface-container-high object-cover" data-alt="A stylized digital 3D avatar of a young gamer named Alex Gridmaster, featuring a modern haircut and tech-inspired accessories. The avatar is set against a deep indigo background with floating holographic Sudoku fragments. The lighting is dramatic, with neon cyan and purple rim lights that emphasize the tactile modernism and high-energy digital-first entertainment aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4uHoekKsnfv2udklpR0cbwQsjuaEbR2I0OQ2JIUr67y4XgDA496qsuMi90YqRfExUYi5D3fHsGhD_P6lshhOjSebqlBF8e1rp-0dOh-0zMfeE-YzmyG38LgovAC6t7nv1kzw8vxfazDgouTkRT_A7kHbyCuQ9Ny4dXp2nRYttDb1ga7EhQcfy3en7akJdZV5cN1cVRghpIhl1Zf5FAUdckl7wcl2K_dIHJY7QmvOWJaM1yq423Rn1uC06cHRVuq-I9HZQWzxNgdPg"/>
+</div>
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-tertiary-container text-on-tertiary-container px-4 py-1 rounded-full text-label-sm font-label-sm border border-tertiary shadow-lg">
+                    LEVEL 42
+                </div>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Alex Gridmaster</h2>
+<p class="font-label-lg text-label-lg text-on-surface-variant uppercase tracking-widest">Grandmaster Flow</p>
+</section>
+<!-- Stats Bento Grid -->
+<section class="grid grid-cols-2 gap-4 mb-10">
+<div class="glass-panel rounded-xl p-6 flex flex-col items-center justify-center text-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2">Games Played</span>
+<span class="font-display-lg text-headline-lg text-tertiary">1,284</span>
+</div>
+<div class="glass-panel rounded-xl p-6 flex flex-col items-center justify-center text-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2">Win Rate</span>
+<span class="font-display-lg text-headline-lg text-secondary">94.2%</span>
+</div>
+<div class="glass-panel rounded-xl p-6 col-span-2 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Daily Streak</span>
+<span class="font-headline-lg text-headline-lg text-on-surface">15 Days</span>
+</div>
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+</div>
+</section>
+<!-- Settings Options List -->
+<section class="space-y-4">
+<h3 class="font-label-lg text-label-lg text-on-surface-variant uppercase tracking-widest px-2 mb-2">Account Settings</h3>
+<!-- Edit Profile -->
+<button class="w-full glass-panel rounded-xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">edit_square</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Edit Profile</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<!-- Notifications -->
+<button class="w-full glass-panel rounded-xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Notifications</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<!-- Privacy -->
+<button class="w-full glass-panel rounded-xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">verified_user</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Privacy &amp; Safety</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<!-- Logout -->
+<button class="w-full mt-6 py-4 rounded-xl border border-error/30 text-error font-label-lg hover:bg-error/10 transition-all active:translate-y-1">
+                Log Out
+            </button>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container dark:bg-surface-container-high/90 backdrop-blur-md border-t border-white/10 shadow-[0_-4px_20px_rgba(6,14,32,0.5)] flex justify-around items-center h-20 pb-safe px-4">
+<!-- Play Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-sm text-label-sm">Play</span>
+</a>
+<!-- Stats Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-sm text-label-sm">Stats</span>
+</a>
+<!-- Badges Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined">emoji_events</span>
+<span class="font-label-sm text-label-sm">Badges</span>
+</a>
+<!-- Profile Tab (ACTIVE) -->
+<a class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for stats cards
+        document.querySelectorAll('.glass-panel').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.borderColor = 'rgba(192, 193, 255, 0.3)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            });
+        });
+    </script>
+</body></html>

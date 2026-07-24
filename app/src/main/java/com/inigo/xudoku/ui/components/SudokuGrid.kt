@@ -1,0 +1,206 @@
+package com.inigo.xudoku.ui.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.inigo.xudoku.model.SudokuBoard
+import com.inigo.xudoku.ui.CellState
+import com.inigo.xudoku.ui.theme.ErrorColor
+import com.inigo.xudoku.ui.theme.OnSurface
+import com.inigo.xudoku.ui.theme.OnSurfaceVariant
+import com.inigo.xudoku.ui.theme.Outline
+import com.inigo.xudoku.ui.theme.OutlineVariant
+import com.inigo.xudoku.ui.theme.Primary
+import com.inigo.xudoku.ui.theme.PrimaryContainer
+import com.inigo.xudoku.ui.theme.SurfaceContainerHigh
+import com.inigo.xudoku.ui.theme.SurfaceContainerHighest
+import com.inigo.xudoku.ui.theme.Tertiary
+
+/**
+ * Tablero 9×9 de Sudoku con los estados visuales del design system Vivid Logic.
+ *
+ * @param cells      Estado actual del grid (valor + isGiven + isError por celda).
+ * @param notes      Notas en lápiz por celda: (row, col) → set de dígitos.
+ * @param selectedCell  Coordenada de la celda actualmente seleccionada.
+ * @param onCellClick   Callback al pulsar una celda.
+ */
+@Composable
+fun SudokuGrid(
+    cells: Array<Array<CellState>>,
+    notes: Map<Pair<Int, Int>, Set<Int>>,
+    selectedCell: Pair<Int, Int>?,
+    onCellClick: (row: Int, col: Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val selectedValue = selectedCell
+        ?.let { (r, c) -> cells[r][c].value.takeIf { it != SudokuBoard.EMPTY } }
+
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .border(2.dp, OutlineVariant, RoundedCornerShape(8.dp))
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            for (row in 0 until SudokuBoard.SIZE) {
+                Row(Modifier.weight(1f).fillMaxWidth()) {
+                    for (col in 0 until SudokuBoard.SIZE) {
+                        val cell = cells[row][col]
+                        val isSelected = selectedCell == Pair(row, col)
+                        val isHighlighted = !isSelected &&
+                            selectedValue != null &&
+                            selectedValue != SudokuBoard.EMPTY &&
+                            cell.value == selectedValue
+                        val isSameBox = selectedCell?.let { (sr, sc) ->
+                            (row / 3 == sr / 3) && (col / 3 == sc / 3)
+                        } ?: false
+                        val isSameRowOrCol = selectedCell?.let { (sr, sc) ->
+                            row == sr || col == sc
+                        } ?: false
+
+                        SudokuCell(
+                            cell          = cell,
+                            cellNotes     = notes[Pair(row, col)] ?: emptySet(),
+                            isSelected    = isSelected,
+                            isHighlighted = isHighlighted,
+                            isSameArea    = !isSelected && (isSameBox || isSameRowOrCol),
+                            row           = row,
+                            col           = col,
+                            onClick       = { onCellClick(row, col) },
+                            modifier      = Modifier.weight(1f).fillMaxHeight()
+                        )
+                    }
+                }
+            }
+        }
+
+        // Separadores de cajas 3×3 superpuestos con Canvas
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            val boxW = w / 3f
+            val boxH = h / 3f
+            val strokePx = 2.dp.toPx()
+
+            listOf(1f, 2f).forEach { i ->
+                drawLine(
+                    color       = OutlineVariant,
+                    start       = Offset(boxW * i, 0f),
+                    end         = Offset(boxW * i, h),
+                    strokeWidth = strokePx
+                )
+                drawLine(
+                    color       = OutlineVariant,
+                    start       = Offset(0f, boxH * i),
+                    end         = Offset(w, boxH * i),
+                    strokeWidth = strokePx
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SudokuCell(
+    cell: CellState,
+    cellNotes: Set<Int>,
+    isSelected: Boolean,
+    isHighlighted: Boolean,
+    isSameArea: Boolean,
+    row: Int,
+    col: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val bgColor = when {
+        isSelected  -> PrimaryContainer.copy(alpha = 0.35f)
+        isHighlighted -> Tertiary.copy(alpha = 0.15f)
+        isSameArea  -> SurfaceContainerHigh.copy(alpha = 0.6f)
+        else        -> Color.Transparent
+    }
+
+    val borderMod = if (isSelected) {
+        Modifier.border(2.dp, Primary)
+    } else {
+        Modifier.border(0.5.dp, Outline.copy(alpha = 0.25f))
+    }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .background(bgColor)
+            .then(borderMod)
+            .clickable(onClick = onClick)
+    ) {
+        when {
+            cell.value != SudokuBoard.EMPTY -> {
+                val textColor = when {
+                    cell.isError -> ErrorColor
+                    cell.isGiven -> OnSurface
+                    else         -> Tertiary
+                }
+                Text(
+                    text      = cell.value.toString(),
+                    color     = textColor,
+                    style     = MaterialTheme.typography.titleLarge,
+                    fontWeight = if (cell.isGiven) FontWeight.Bold else FontWeight.Medium,
+                    textAlign = TextAlign.Center
+                )
+            }
+            cellNotes.isNotEmpty() -> {
+                NoteGrid(notes = cellNotes)
+            }
+        }
+    }
+}
+
+/** Mini-grid 3×3 para mostrar las notas en lápiz de una celda. */
+@Composable
+private fun NoteGrid(notes: Set<Int>) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(1.dp)
+    ) {
+        for (noteRow in 0 until 3) {
+            Row(Modifier.weight(1f)) {
+                for (noteCol in 0 until 3) {
+                    val digit = noteRow * 3 + noteCol + 1
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.weight(1f).fillMaxHeight()
+                    ) {
+                        if (digit in notes) {
+                            Text(
+                                text      = digit.toString(),
+                                color     = OnSurfaceVariant,
+                                fontSize  = 8.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
