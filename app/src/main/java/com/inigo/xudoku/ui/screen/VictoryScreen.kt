@@ -28,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -245,7 +244,7 @@ fun VictoryScreen(
                 onClick  = onMainMenu,
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape    = RoundedCornerShape(14.dp),
-                colors   = OutlinedButtonDefaults.outlinedButtonColors(contentColor = OnSurface),
+                colors   = ButtonDefaults.outlinedButtonColors(contentColor = OnSurface),
                 border   = androidx.compose.foundation.BorderStroke(1.dp, OnSurfaceVariant.copy(alpha = 0.4f))
             ) {
                 Icon(Icons.Outlined.Home, null, modifier = Modifier.size(18.dp))

@@ -1,26 +1,3 @@
-# Skill: ui-tema
-
-## Cuándo usar esta skill
-
-Actívala cuando la petición del usuario implique:
-- Cambiar los colores de la app
-- Añadir o cambiar tipografía
-- Activar/desactivar dynamic color (Material You)
-- Forzar modo oscuro o modo claro
-- Crear la UI de la pantalla principal del juego
-- Añadir nuevos Composables o pantallas
-- Configurar navegación entre pantallas
-- Crear un ViewModel para el estado del juego
-
-## Archivos relevantes
-
-| Archivo | Rol |
-|---|---|
-| `app/src/main/java/com/inigo/xudoku/ui/theme/Color.kt` | Paleta de colores del tema Material3 |
-| `app/src/main/java/com/inigo/xudoku/ui/theme/Theme.kt` | `XudokuTheme` — envuelve toda la app con el ColorScheme y Typography |
-| `app/src/main/java/com/inigo/xudoku/ui/theme/Type.kt` | Escala tipográfica Material3 |
-| `app/src/main/java/com/inigo/xudoku/MainActivity.kt` | Entry point — aquí se llama a `XudokuTheme { ... }` y se monta la primera pantalla |
-
 ## Estado actual de la UI
 
 ```

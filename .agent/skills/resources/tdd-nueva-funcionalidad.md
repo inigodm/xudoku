@@ -1,29 +1,3 @@
-# Skill: tdd-nueva-funcionalidad
-
-## Cuándo usar esta skill
-
-Actívala cuando el usuario pida **crear una funcionalidad nueva**, por ejemplo:
-- "quiero que el jugador pueda pedir una pista"
-- "añade un temporizador al juego"
-- "implementa el modo de selección de dificultad"
-- "quiero que se detecten los errores del jugador en tiempo real"
-
-**No la actives para bugfixes ni refactors** — solo para funcionalidad nueva que aún no existe.
-
----
-
-## El ciclo TDD: Red → Green → Refactor
-
-```
-1. RED    → Escribir el test que describe el comportamiento deseado (falla porque no existe código)
-2. GREEN  → Escribir el mínimo código necesario para que el test pase
-3. REFACTOR → Limpiar el código sin romper los tests
-```
-
-**Regla de oro: nunca escribas código de producción sin un test en rojo primero.**
-
----
-
 ## Protocolo paso a paso
 
 ### Paso 1 — Entender la funcionalidad

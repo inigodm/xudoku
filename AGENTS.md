@@ -95,3 +95,12 @@ com.inigo.xudoku
 | UI del juego (`ui/screen/`) | ❌ No existe — solo placeholder "Hello Android" |
 | ViewModel / estado | ❌ No existe |
 | Navegación | ❌ No existe |
+
+## Compose/Material3
+- Versión de Material3 usada: [pon la tuya, ej: 1.2.1]
+- Antes de usar un ícono de Icons.Outlined/Filled o un objeto tipo XxxDefaults,
+  verifica que existe en esta versión — no asumas nombres "lógicos".
+
+## Fuentes (Google Fonts downloadable)
+- Requiere app/src/main/res/values/font_certs.xml (certificados AOSP estándar) — YA EXISTE, no lo borres ni regeneres.
+- Si se usa GoogleFont.Provider, siempre referenciar R.array.com_google_android_gms_fonts_certs

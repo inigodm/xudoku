@@ -1,16 +1,3 @@
-# Skill: tablero-core
-
-## Cuándo usar esta skill
-
-Actívala cuando la petición del usuario implique:
-- Modificar o extender la clase `SudokuBoard`
-- Cambiar la lógica de validación de constraints (fila, columna, caja 3×3)
-- Cambiar el solver por backtracking (`solve`, `solveFrom`)
-- Cambiar el contador de soluciones (`countSolutions`, `countFrom`)
-- Cambiar el generador de tablero completo (`generateComplete`, `fillRandomised`)
-- Añadir un nuevo operador o método de acceso al tablero
-- Depurar un puzzle que no parece resolverse correctamente
-
 ## Archivos relevantes
 
 | Archivo | Rol |

@@ -16,7 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Backspace
 import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.icons.outlined.LightbulbOutline
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Undo
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -247,7 +247,7 @@ fun GameScreen(
                     )
                 }
                 ActionButton(
-                    icon    = Icons.Outlined.LightbulbOutline,
+                    icon    = Icons.Outlined.Lightbulb,
                     label   = "Pista",
                     onClick = { viewModel.requestHint() }
                 )
