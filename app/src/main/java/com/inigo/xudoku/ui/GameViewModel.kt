@@ -6,6 +6,7 @@ import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.model.SudokuBoard
 import com.inigo.xudoku.model.SudokuGame
 import com.inigo.xudoku.model.SudokuGenerator
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,7 +34,9 @@ private data class GameMove(
 )
 
 /** ViewModel que gestiona el estado mutable de una partida de Sudoku. */
-class GameViewModel : ViewModel() {
+class GameViewModel(
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
+) : ViewModel() {
 
     private lateinit var game: SudokuGame
 
@@ -96,7 +99,7 @@ class GameViewModel : ViewModel() {
         _isLoading.value     = true
 
         viewModelScope.launch {
-            val generatedGame = withContext(Dispatchers.Default) {
+            val generatedGame = withContext(ioDispatcher) {
                 SudokuGenerator.generateGame(difficulty)
             }
             game = generatedGame

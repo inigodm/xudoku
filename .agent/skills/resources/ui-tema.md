@@ -1,109 +1,210 @@
+# Skill: ui-tema
+
+## Cuándo usar esta skill
+
+Cambiar colores; añadir/cambiar tipografía; activar/desactivar dynamic color (Material You);
+forzar modo oscuro/claro; crear UI de la pantalla principal; nuevos Composables o pantallas;
+configurar navegación; crear ViewModel de estado del juego.
+
+---
+
 ## Estado actual de la UI
 
 ```
-MainActivity.kt     → Placeholder "Hello Android". Sin lógica de juego.
-ui/theme/Color.kt   → Boilerplate Android Studio (Purple/Pink). Sin personalizar.
-ui/theme/Theme.kt   → XudokuTheme funcional con dark/light y dynamic color.
-ui/theme/Type.kt    → Solo bodyLarge con FontFamily.Default.
+MainActivity.kt          → enableEdgeToEdge() + XudokuTheme { XudokuNavGraph() }
+ui/theme/Color.kt        → Paleta "Vivid Logic / Deep Galactic" completa (30+ colores)
+ui/theme/Theme.kt        → XudokuTheme con darkColorScheme fijo (sin dynamic color)
+ui/theme/Type.kt         → Quicksand (headers/grid) + Montserrat (labels/cuerpo), via Google Fonts
 
-NO existen todavía:
-  - ui/screen/       (pantalla del juego)
-  - ui/components/   (componentes del tablero, teclado numérico, etc.)
-  - GameViewModel    (estado mutable del juego)
+ui/XudokuNavGraph.kt     → NavHost con rutas: splash / difficulty / game / victory / stats / profile
+ui/GameViewModel.kt      → Estado de partida: cells, notes, mistakes, timer, historial
+
+ui/screen/
+  SplashScreen.kt        ✅ Con @Preview
+  DifficultyScreen.kt    ✅ Con @Preview
+  GameScreen.kt          ✅ Con @Preview (usa GameViewModel real)
+  VictoryScreen.kt       ✅ Con @Preview (datos muestra: 08:45, 0 errores, Difícil, 24.580 pts)
+  StatsScreen.kt         ⚠️ Sin @Preview — datos placeholder, sin persistencia
+  ProfileScreen.kt       ⚠️ Sin @Preview — datos placeholder, sin autenticación
+
+ui/components/
+  SudokuGrid.kt          ✅ Grid 9×9 con estados de celda, notas, separadores de caja
+  NumberPad.kt           ✅ Teclado 1-9 con efecto 3D táctil
+  DifficultyCard.kt      ✅ Tarjeta con efecto 3D press y colores por dificultad
+  XudokuBottomBar.kt     ✅ Bottom nav 4 tabs (Badges deshabilitado)
 ```
 
-## Cómo cambiar la paleta de colores
+---
 
-Edita `Color.kt` y `Theme.kt`. Usa los slots semánticos de Material3:
-
-```kotlin
-// Color.kt — define tus colores
-val SudokuBlue80 = Color(0xFFAEC6E8)
-val SudokuBlue40 = Color(0xFF1A5C9B)
-
-// Theme.kt — asígnalos a los slots semánticos
-private val DarkColorScheme = darkColorScheme(
-    primary = SudokuBlue80,
-    // ...
-)
-private val LightColorScheme = lightColorScheme(
-    primary = SudokuBlue40,
-    // ...
-)
-```
-
-> Si `dynamicColor = true` (por defecto en Android 12+), los colores de `Color.kt` son ignorados en favor del wallpaper del usuario. Para forzar tu paleta, pon `dynamicColor = false` en `XudokuTheme`.
-
-## Cómo añadir tipografía personalizada (Google Fonts)
-
-1. Añadir dependencia en `app/build.gradle.kts`:
-   ```kotlin
-   implementation(libs.androidx.compose.ui.text.google.fonts)
-   ```
-2. Definir la fuente en `Type.kt`:
-   ```kotlin
-   val provider = GoogleFont.Provider(
-       providerAuthority = "com.google.android.gms.fonts",
-       providerPackage = "com.google.android.gms",
-       certificates = R.array.com_google_android_gms_fonts_certs
-   )
-   val NunitoFont = GoogleFont("Nunito")
-   val NunitoFontFamily = FontFamily(Font(googleFont = NunitoFont, fontProvider = provider))
-   ```
-
-## Cómo estructurar la pantalla del juego (cuando se implemente)
+## Estructura de carpetas (estado real)
 
 ```
 ui/
-├── theme/              ← existente
+├── theme/
+│   ├── Color.kt        ← 30+ constantes "Vivid Logic"
+│   ├── Theme.kt        ← XudokuTheme (dark, sin dynamic color)
+│   └── Type.kt         ← Quicksand + Montserrat via Google Fonts
 ├── screen/
-│   └── GameScreen.kt   ← Composable raíz de la pantalla del juego
+│   ├── SplashScreen.kt
+│   ├── DifficultyScreen.kt
+│   ├── GameScreen.kt
+│   ├── VictoryScreen.kt
+│   ├── StatsScreen.kt
+│   └── ProfileScreen.kt
 ├── components/
-│   ├── SudokuGrid.kt   ← Componente que renderiza el tablero 9×9
-│   ├── NumberPad.kt    ← Teclado numérico 1-9
-│   └── GameTopBar.kt   ← Barra superior (dificultad, temporizador, botón nuevo juego)
-└── viewmodel/
-    └── GameViewModel.kt ← Estado mutable: celda seleccionada, entradas del jugador, errores
+│   ├── SudokuGrid.kt
+│   ├── NumberPad.kt
+│   ├── DifficultyCard.kt
+│   └── XudokuBottomBar.kt
+├── GameViewModel.kt
+└── XudokuNavGraph.kt
 ```
 
-## ViewModel — patrón recomendado
+---
+
+## Cómo cambiar la paleta de colores
+
+Edita `Color.kt` — es la fuente de verdad. **Siempre consulta `design/style-tokens.md` antes**
+para no desviarse del design system "Vivid Logic". Los colores semánticos clave:
 
 ```kotlin
-// GameViewModel.kt — usar lifecycle-viewmodel de AndroidX
-// NO poner lógica de generación aquí; llamar a SudokuGenerator desde un coroutine
+// Colores principales
+val Primary          = Color(0xFF7C4DFF)   // Violeta — acento principal, selección, botones CTA
+val Secondary        = Color(0xFFAA52FF)   // Violeta claro
+val Tertiary         = Color(0xFF00E5FF)   // Cyan — números jugador, progress bars, temporizador
 
-class GameViewModel : ViewModel() {
-    private val _game = MutableStateFlow<SudokuGame?>(null)
-    val game: StateFlow<SudokuGame?> = _game
+// Superficies (de más oscura a más clara)
+val Background           = Color(0xFF0E0E1A)
+val SurfaceContainerLow  = Color(0xFF1A1A2E)
+val SurfaceContainer     = Color(0xFF1F1F35)
+val SurfaceContainerHigh = Color(0xFF2A2A45)
+```
 
-    fun newGame(difficulty: Difficulty) {
-        viewModelScope.launch(Dispatchers.Default) {
-            _game.value = SudokuGenerator.generateGame(difficulty)
-        }
+> `XudokuTheme` usa **dark color scheme fijo** — `dynamicColor` está desactivado intencionalmente.
+
+---
+
+## Cómo añadir tipografía personalizada (Google Fonts)
+
+El sistema ya está configurado. Para añadir una fuente nueva:
+
+```kotlin
+// Type.kt — añadir la fuente
+val NuevaFuente = GoogleFont("Nombre")
+val NuevaFuenteFamily = FontFamily(Font(googleFont = NuevaFuente, fontProvider = provider))
+
+// Asignarla a un estilo tipográfico
+val Typography = Typography(
+    displayLarge = TextStyle(fontFamily = NuevaFuenteFamily, ...)
+)
+```
+
+**Prerequisito**: `R.array.com_google_android_gms_fonts_certs` ya existe en `app/src/main/res/values/font_certs.xml`.
+**No borrar ni regenerar ese archivo.**
+
+---
+
+## Cómo crear una pantalla nueva
+
+1. Crear `ui/screen/NombreScreen.kt` con su función `@Composable`
+2. Añadir la ruta en `XudokuNavGraph.kt` con `composable("ruta") { NombreScreen(...) }`
+3. Conectar callbacks de navegación
+4. Añadir `@Preview` al final del archivo (ver patrón más abajo)
+5. Actualizar `PROJECT_INDEX.md`
+
+---
+
+## Patrón de @Preview obligatorio
+
+Todas las pantallas y componentes reutilizables deben tener un `@Preview`.
+**La función Preview NO puede ser `private`** — el runtime de Compose la invoca por reflexión.
+
+```kotlin
+// ── Preview ──────────────────────────────────────────────────────────────────
+
+@androidx.compose.ui.tooling.preview.Preview(
+    name           = "NombreScreen",
+    showBackground = true,
+    device         = "spec:width=393dp,height=851dp,dpi=420"
+)
+@androidx.compose.runtime.Composable
+fun PreviewNombreScreen() {   // <-- NO private
+    com.inigo.xudoku.ui.theme.XudokuTheme {
+        NombreScreen(
+            // parámetros con datos de muestra representativos
+        )
     }
 }
 ```
 
-Añadir a `app/build.gradle.kts`:
+---
+
+## GameViewModel — API pública actual
+
 ```kotlin
-implementation(libs.androidx.lifecycle.viewmodel.compose)
+class GameViewModel : ViewModel() {
+    // StateFlows observables
+    val cells: StateFlow<Array<Array<CellState>>>
+    val notes: StateFlow<Map<Pair<Int, Int>, Set<Int>>>
+    val selectedCell: StateFlow<Pair<Int, Int>?>
+    val isNotesMode: StateFlow<Boolean>
+    val mistakes: StateFlow<Int>
+    val elapsedSeconds: StateFlow<Int>
+    val isCompleted: StateFlow<Boolean>
+    val isLoading: StateFlow<Boolean>
+
+    // Acciones
+    fun startGame(difficulty: Difficulty)   // lanza generación en Dispatchers.Default
+    fun selectCell(row: Int, col: Int)
+    fun enterNumber(number: Int)            // valida vs solution, cuenta errores
+    fun clearSelectedCell()
+    fun toggleNotesMode()
+    fun undoLastMove()
+    fun requestHint()                       // rellena una celda vacía de la solution
+}
 ```
+
+**No instanciar `SudokuGenerator` directamente en un Composable** — siempre a través del ViewModel.
+
+---
 
 ## Reglas de la capa UI
 
-1. **La UI no accede a `cells` directamente** — siempre usa el operador `board[row, col]`.
-2. **No instanciar `SudokuGenerator` en un Composable** — la generación es costosa (~segundos en HARDEST); hacerlo en un `ViewModel` con `Dispatchers.Default`.
-3. **No mutar `SudokuGame.puzzle` ni `SudokuGame.solution`** — son la fuente de verdad inmutable. El estado del jugador (qué ha escrito en cada celda) va en el ViewModel.
-4. **`XudokuTheme` envuelve toda la app** — no crear sub-temas locales; usar los colores de `MaterialTheme.colorScheme`.
+1. **La UI no accede a `SudokuBoard` directamente** — usa `CellState` del ViewModel.
+2. **No instanciar `SudokuGenerator` en un Composable** — la generación ocurre en `Dispatchers.Default` dentro del ViewModel.
+3. **No mutar `SudokuGame.puzzle` ni `SudokuGame.solution`** — son inmutables. El estado mutable va en el ViewModel.
+4. **`XudokuTheme` envuelve toda la app** — no crear sub-temas locales; usar `MaterialTheme.colorScheme` y `MaterialTheme.typography`.
+5. **Todos los colores vienen de `ui/theme/Color.kt`** — no usar `Color(0xFFxxxxxx)` sueltos en los Composables.
+6. **Funciones `@Preview` nunca son `private`** — el framework las invoca por reflexión.
+7. **`SudokuGame` es un `data class` inmutable** — si necesitas estado de juego mutable, añádelo al ViewModel.
+
+---
+
+## Navegación — rutas actuales
+
+```
+"splash"                                   → SplashScreen
+"difficulty"                               → DifficultyScreen
+"game/{difficultyName}"                    → GameScreen (difficultyName = Difficulty.name)
+"victory/{seconds}/{mistakes}/{difficultyName}/{score}" → VictoryScreen
+"stats"                                    → StatsScreen
+"profile"                                  → ProfileScreen
+```
+
+---
 
 ## Tests a correr después de cambios en UI
 
 ```bash
-# Tests unitarios del ViewModel (cuando exista):
-./gradlew :app:test --tests "com.inigo.xudoku.viewmodel.*"
+# Tests unitarios del ViewModel:
+./gradlew :app:test
 
-# Tests instrumentados de Compose (cuando existan):
+# Compilación (verifica que no hay errores de Compose):
+./gradlew assembleDebug
+
+# Tests instrumentados de Compose (requiere emulador):
 ./gradlew connectedAndroidTest
 ```
 
-Los cambios en `ui/theme/` no tienen tests automáticos actualmente — verificar visualmente en emulador o dispositivo.
+Los cambios en `ui/theme/` y pantallas no tienen tests automáticos actualmente —
+verificar visualmente con el @Preview de Android Studio o en emulador.

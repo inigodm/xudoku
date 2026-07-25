@@ -65,6 +65,17 @@ com.inigo.xudoku
 
 ---
 
+## Protocolo obligatorio antes de cada tarea
+
+Antes de escribir una sola línea de código, el agente DEBE completar estos pasos en orden:
+
+1. **Identificar el scope** — ¿Qué capa toca la petición? (`model/` / `ui/` / ambas)
+2. **Leer `.agent/skills/INDEX.md`** — Identificar los skills aplicables y abrirlos.
+3. **Validar scope con el usuario** — Si la petición es de UI pero parece requerir lógica nueva en `model/`, PARAR y preguntar al usuario antes de implementar nada.
+4. **Nunca hacer más de lo pedido** — Si el usuario pide pantallas, entregar pantallas. No añadir casos de uso, servicios ni lógica no solicitados.
+
+---
+
 ## Reglas para agentes
 
 1. **Antes de tocar cualquier archivo en `model/`**, lee el skill correspondiente en `.agent/skills/`.
@@ -73,6 +84,8 @@ com.inigo.xudoku
 4. **No añadas dependencias Android** (imports de `android.*` o `androidx.*`) en el paquete `model/` — debe seguir siendo lógica pura testeable en JVM.
 5. **`SudokuGame` es un `data class`** — no lo conviertas a clase mutable; si necesitas estado de juego en la UI, crea un `ViewModel` separado.
 6. Los archivos de tema (`ui/theme/`) son boilerplate de Material3; puedes editarlos libremente para cambiar colores o tipografía sin afectar la lógica.
+7. **Regla de scope (UI → model/)**: Si la petición es de UI (`ui/`), no escribas ni modifiques nada en `model/` sin aprobación explícita del usuario en esa misma sesión. Pedir permiso no es opcional.
+8. **Funcionalidad nueva en `model/` → TDD obligatorio**: Cualquier código nuevo en `model/` que no exista aún requiere: (a) leer `tdd-nueva-funcionalidad.md`, (b) proponer el diseño al usuario y esperar aprobación, (c) escribir los tests primero, código después. Sin excepción.
 
 ---
 

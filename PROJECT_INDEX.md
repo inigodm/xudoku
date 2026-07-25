@@ -2,23 +2,64 @@
 
 ## Archivos relevantes
 
+### Capa de modelo (`model/`)
+
 | Archivo | Qué hace | Cuándo tocarlo |
 |---|---|---|
 | `app/src/main/java/com/inigo/xudoku/model/SudokuBoard.kt` | Define el tablero 9×9 (`Array<IntArray>`), operadores `get`/`set`, validación de constraints (fila/col/caja), solver por backtracking (`solve`, `solveFrom`), contador de soluciones (`countSolutions`), generador de tablero completo aleatorio (`generateComplete`) | Nunca sin leer `.agent/skills/tablero-core.md` y pasar los 19 tests |
 | `app/src/main/java/com/inigo/xudoku/model/SudokuGenerator.kt` | Genera puzzles jugables con solución única: rellena tablero completo, elimina celdas una a una verificando que `countSolutions(2) == 1`. Contiene también `SudokuGame(puzzle, solution)` | Nunca sin leer `.agent/skills/generador.md` y pasar los 19 tests |
 | `app/src/main/java/com/inigo/xudoku/model/Difficulty.kt` | Enum con 5 niveles (`VERY_EASY`→40 celdas visibles, …, `HARDEST`→17). Los valores están calibrados; 17 es el mínimo teórico con solución única | Solo si se añade un nuevo nivel de dificultad; no cambiar los existentes |
-| `app/src/main/java/com/inigo/xudoku/MainActivity.kt` | Entry point de Compose. Actualmente solo muestra un placeholder "Hello Android". Aquí irá la raíz del árbol de UI cuando se construya | Al implementar la primera pantalla del juego |
-| `app/src/main/java/com/inigo/xudoku/ui/theme/Color.kt` | Define la paleta de colores del tema Material3 (actualmente boilerplate Purple/Pink de Android Studio) | Al personalizar la paleta visual del juego |
-| `app/src/main/java/com/inigo/xudoku/ui/theme/Theme.kt` | Define `XudokuTheme` con soporte dark/light y dynamic color (Android 12+) | Al cambiar el sistema de temas o desactivar dynamic color |
-| `app/src/main/java/com/inigo/xudoku/ui/theme/Type.kt` | Define la escala tipográfica Material3 (actualmente solo `bodyLarge` con fuente por defecto) | Al añadir tipografía personalizada (e.g. Google Fonts) |
+
+### Capa de UI (`ui/`)
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
+| `app/src/main/java/com/inigo/xudoku/MainActivity.kt` | Entry point: `enableEdgeToEdge()` + `XudokuTheme { XudokuNavGraph() }`. Sin lógica de negocio | Solo si se añaden permisos o se cambia el punto de entrada |
+| `app/src/main/java/com/inigo/xudoku/ui/XudokuNavGraph.kt` | Grafo de navegación con `NavHost`: define rutas `splash`, `difficulty`, `game/{difficultyName}`, `victory/{seconds}/{mistakes}/{difficultyName}/{score}`, `stats`, `profile`. Instancia `GameViewModel` en el destino `game/` | Al añadir nuevas pantallas/rutas o cambiar parámetros de navegación |
+| `app/src/main/java/com/inigo/xudoku/ui/GameViewModel.kt` | ViewModel con toda la lógica de estado mutable de una partida: `cells`, `notes`, `selectedCell`, `isNotesMode`, `mistakes`, `elapsedSeconds`, `isCompleted`, `isLoading`. Acciones: `startGame`, `selectCell`, `enterNumber`, `clearSelectedCell`, `toggleNotesMode`, `undoLastMove`, `requestHint` | Al añadir nuevo estado de juego (ej: power-ups, modos especiales) |
+| `app/src/main/java/com/inigo/xudoku/ui/theme/Color.kt` | Paleta completa "Vivid Logic / Deep Galactic" — 30+ constantes de color (Primary, Secondary, Tertiary, superficies, errores). Fuente de verdad de colores | Al cambiar la paleta; leer `design/style-tokens.md` antes |
+| `app/src/main/java/com/inigo/xudoku/ui/theme/Theme.kt` | `XudokuTheme` con `darkColorScheme` fijo (sin dynamic color). Asigna todos los slots semánticos de Material3 | Al cambiar el sistema de temas |
+| `app/src/main/java/com/inigo/xudoku/ui/theme/Type.kt` | Escala tipográfica Material3 con Quicksand (headers, números del grid) y Montserrat (labels, cuerpo). Usa Google Fonts downloadable con `R.array.com_google_android_gms_fonts_certs` | Al añadir estilos tipográficos o cambiar fuentes |
+
+### Pantallas (`ui/screen/`)
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
+| `app/src/main/java/com/inigo/xudoku/ui/screen/SplashScreen.kt` | Splash animado (~2 s): logo + "SUDOKU" con animación de escala y fade, luego llama `onSplashComplete`. Incluye `@Preview` | Al cambiar la animación de entrada o el logo |
+| `app/src/main/java/com/inigo/xudoku/ui/screen/DifficultyScreen.kt` | Selección de dificultad: TopAppBar (← SUDOKU ⚙), logo con glow, 4 `DifficultyCard` 3D, barra de progreso global con gradient. Incluye `@Preview` | Al añadir dificultades o cambiar la selección |
+| `app/src/main/java/com/inigo/xudoku/ui/screen/GameScreen.kt` | Pantalla de juego activo: TopAppBar centrado con chip de dificultad + timer en segunda fila, HUD de mistakes + level, `SudokuGrid`, toolbar de acciones (Deshacer/Borrar/Notas/Pista), `NumberPad`. Calcula `computeScore` al completar. Incluye `@Preview` | Al cambiar el layout de juego; **conecta con `GameViewModel`** |
+| `app/src/main/java/com/inigo/xudoku/ui/screen/VictoryScreen.kt` | Victoria: TopAppBar, confeti (4 colores brand), badge NUEVA MARCA, puntuación, StatCards con íconos (timer/cancel), card de dificultad con dots, barra XP gradient, botones "Siguiente Nivel" y "Menú Principal". Tab Badges activo en bottom nav. Incluye `@Preview` con datos reales | Al cambiar el layout de victoria |
+| `app/src/main/java/com/inigo/xudoku/ui/screen/StatsScreen.kt` | Estadísticas (placeholder): cabecera, chips de filtro por dificultad, card de logros totales, gráfica de evolución (vacía), difficulty split bars, stat cards individuales, recent flow. Todos los datos son placeholders hasta implementar persistencia | Al implementar persistencia de partidas o conectar datos reales |
+| `app/src/main/java/com/inigo/xudoku/ui/screen/ProfileScreen.kt` | Perfil de usuario (placeholder): avatar con borde Tertiary + badge de nivel, stats (partidas/win rate/streak), account settings con 3 filas, botón de logout. Todos los datos son placeholders hasta implementar auth | Al implementar autenticación o datos de usuario |
+
+### Componentes (`ui/components/`)
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
+| `app/src/main/java/com/inigo/xudoku/ui/components/SudokuGrid.kt` | Grid 9×9 con estados: celda seleccionada (ring Primary), celdas con mismo número (highlight Tertiary), celdas del mismo bloque/fila/col (tinte suave), errores (rojo), notas (`NoteGrid` 3×3). Líneas separadoras de bloque via Canvas | Al cambiar el aspecto visual del tablero |
+| `app/src/main/java/com/inigo/xudoku/ui/components/NumberPad.kt` | Teclado numérico 5+5 (1–5 en fila 1, 6–9+borrar en fila 2) con efecto 3D táctil (`animateDpAsState`). El número activo se resalta en Tertiary. `DeleteKey` usa SecondaryContainer | Al cambiar el layout o aspecto del teclado |
+| `app/src/main/java/com/inigo/xudoku/ui/components/DifficultyCard.kt` | Tarjeta de dificultad con efecto 3D press (`offset(y = offsetY)` animado). Datos visuales en `DifficultyVisuals` (colores, label, icono). Helper `difficultyVisuals()` mapea `Difficulty` → colores correctos | Al cambiar colores o layout de las tarjetas de dificultad |
+| `app/src/main/java/com/inigo/xudoku/ui/components/XudokuBottomBar.kt` | Bottom nav con 4 tabs (Play/Stats/Badges/Profile). Tab activo: círculo `SecondaryContainer`. Badges deshabilitado (sin pantalla). Tab seleccionado recibe pill circular | Al añadir tabs o cambiar iconos |
+
+### Tests
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
 | `app/src/test/java/com/inigo/xudoku/model/SudokuBoardTest.kt` | 8 tests unitarios JVM: `isValid` (3 casos), `solve` (2 casos), `generateComplete` (3 casos), `copy` | Al cambiar la API pública de `SudokuBoard`; los tests deben seguir en verde |
 | `app/src/test/java/com/inigo/xudoku/model/SudokuGeneratorTest.kt` | 11 tests unitarios JVM: unicidad de solución, constraints del tablero solución, recuento de celdas visibles por dificultad, independencia puzzle/solution | Al cambiar `SudokuGenerator` o `SudokuGame`; los tests deben seguir en verde |
 | `app/src/test/java/com/inigo/xudoku/ExampleUnitTest.kt` | Placeholder de Android Studio (`assertEquals(4, 2+2)`). Sin valor real | Puede eliminarse en cualquier momento |
 | `app/src/androidTest/java/com/inigo/xudoku/ExampleInstrumentedTest.kt` | Placeholder de test instrumentado. Sin valor real | Puede eliminarse o reemplazarse con tests de UI Compose cuando existan |
-| `app/build.gradle.kts` | Dependencias del módulo: Compose BOM, Material3, Activity Compose, JUnit. `compileSdk 36`, `minSdk 24` | Al añadir nuevas dependencias (ViewModel, Navigation, etc.) |
+
+### Build y configuración
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
+| `app/build.gradle.kts` | Dependencias del módulo: Compose BOM, Material3, Activity Compose, Navigation Compose, ViewModel Compose, Google Fonts, JUnit. `compileSdk 36`, `minSdk 24` | Al añadir nuevas dependencias |
 | `app/src/main/AndroidManifest.xml` | Declara `MainActivity` como launcher. App de actividad única | Al añadir permisos, deep links o actividades adicionales |
 | `build.gradle.kts` (raíz) | Solo declara los plugins AGP y Kotlin Compose a nivel de proyecto | Raramente; solo si se actualiza la versión de AGP o Kotlin |
 | `settings.gradle.kts` | Define el nombre del proyecto (`xudoku`) y los repositorios Maven. Incluye el módulo `:app` | Al añadir nuevos módulos Gradle |
+| `design/style-tokens.md` | Documento canónico de todos los tokens visuales del design system "Vivid Logic": colores, tipografía, espaciados, radios, efectos glass, sombras, animaciones, iconos, mapeo Compose↔Stitch | Consultar antes de crear/modificar cualquier composable |
+| `design/NAVIGATION_FLOW.md` | Diagrama de flujo de pantallas, transiciones animadas y datos que cada pantalla necesita del modelo | Consultar antes de modificar la navegación |
 
 ---
 
@@ -28,18 +69,33 @@
 Difficulty (enum)
       │  visibleCells: Int
       ▼
-SudokuGenerator.generateGame(difficulty, random)
-      │  1. SudokuBoard.generateComplete(random)  → tablero 9×9 completamente relleno
-      │  2. removeCells(puzzle, targetVisible)    → elimina celdas verificando countSolutions(2)==1
+SudokuGenerator.generateGame(difficulty)   [Dispatchers.Default, en GameViewModel]
+      │  1. SudokuBoard.generateComplete()  → tablero 9×9 completamente relleno
+      │  2. removeCells(puzzle, targetVisible) → elimina celdas verificando countSolutions(2)==1
       ▼
 SudokuGame(puzzle: SudokuBoard, solution: SudokuBoard)
-      │  puzzle  → tablero con celdas vacías (EMPTY=0) que el jugador debe completar
+      │  puzzle  → tablero con celdas vacías (EMPTY=0)
       │  solution → copia independiente con el tablero completo para verificar respuestas
       ▼
-[UI — aún no implementada]
-      │  Leerá puzzle para renderizar el tablero inicial
-      │  Comparará entradas del usuario contra solution para validar
-      │  Usará un ViewModel (por crear) para gestionar el estado mutable de juego
+GameViewModel
+      │  _cells: StateFlow<Array<Array<CellState>>>   — estado de cada celda (valor, isGiven, isError)
+      │  _notes: StateFlow<Map<Pair<Int,Int>, Set<Int>>> — notas en lápiz por celda
+      │  _selectedCell, _isNotesMode, _mistakes, _elapsedSeconds, _isCompleted, _isLoading
+      │  startGame() → genera puzzle en background
+      │  enterNumber() → valida vs solution, detecta errores, llama checkCompletion()
+      │  undoLastMove() → historial de movimientos (ArrayDeque<GameMove>)
+      ▼
+GameScreen  →  SudokuGrid + NumberPad + ActionButtons
+      │  isCompleted → navega a VictoryScreen(seconds, mistakes, difficulty, score)
+      ▼
+VictoryScreen (datos pasados como argumentos de navegación)
+      ├─ "Siguiente Nivel" → GameScreen (misma dificultad, nuevo puzzle)
+      └─ "Menú Principal"  → DifficultyScreen
 ```
 
-> Las invariantes que nunca deben romperse: (1) `puzzle` siempre tiene exactamente una solución, (2) `puzzle` y `solution` son copias independientes (`deep copy` vía `Array(SIZE) { cells[it].copyOf() }`), (3) las celdas visibles de `puzzle` coinciden con los valores de `solution`.
+> **Invariantes que nunca deben romperse:**
+> 1. `puzzle` siempre tiene exactamente una solución
+> 2. `puzzle` y `solution` son copias independientes (deep copy)
+> 3. Las celdas visibles de `puzzle` coinciden con los valores de `solution`
+> 4. `GameViewModel` es el único que muta el estado de juego — los Composables solo llaman a sus métodos públicos
+> 5. Las funciones `@Preview` nunca deben ser `private` (el runtime de Compose no puede invocarlas)

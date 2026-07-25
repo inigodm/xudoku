@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -91,5 +90,19 @@ fun SplashScreen(onSplashComplete: () -> Unit) {
                 color = OnSurfaceVariant
             )
         }
+    }
+}
+
+// ── Preview ──────────────────────────────────────────────────────────────────
+
+@androidx.compose.ui.tooling.preview.Preview(
+    name           = "SplashScreen",
+    showBackground = true,
+    device         = "spec:width=393dp,height=851dp,dpi=420"
+)
+@androidx.compose.runtime.Composable
+fun PreviewSplashScreen() {
+    com.inigo.xudoku.ui.theme.XudokuTheme {
+        SplashScreen(onSplashComplete = {})
     }
 }

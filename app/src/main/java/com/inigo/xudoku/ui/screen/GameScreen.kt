@@ -14,20 +14,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Backspace
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Undo
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -38,9 +37,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.model.SudokuBoard
@@ -48,11 +48,15 @@ import com.inigo.xudoku.ui.GameViewModel
 import com.inigo.xudoku.ui.components.NumberPad
 import com.inigo.xudoku.ui.components.SudokuGrid
 import com.inigo.xudoku.ui.theme.Background
+import com.inigo.xudoku.ui.theme.ErrorColor
+import com.inigo.xudoku.ui.theme.OnSecondaryContainer
 import com.inigo.xudoku.ui.theme.OnSurface
 import com.inigo.xudoku.ui.theme.OnSurfaceVariant
 import com.inigo.xudoku.ui.theme.Primary
+import com.inigo.xudoku.ui.theme.PrimaryContainer
 import com.inigo.xudoku.ui.theme.SecondaryContainer
-import com.inigo.xudoku.ui.theme.SurfaceContainer
+import com.inigo.xudoku.ui.theme.SurfaceContainerHigh
+import com.inigo.xudoku.ui.theme.SurfaceContainerHighest
 import com.inigo.xudoku.ui.theme.Tertiary
 
 /** Label localizado de la dificultad. */
@@ -116,43 +120,48 @@ fun GameScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Columna centrada: SUDOKU + chip + timer
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             "SUDOKU",
                             style      = MaterialTheme.typography.headlineMedium,
                             color      = Primary,
                             fontWeight = FontWeight.Bold
                         )
-                        Spacer(Modifier.width(10.dp))
-                        SuggestionChip(
-                            onClick = {},
-                            label   = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Chip de dificultad — pill con SecondaryContainer
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(50.dp))
+                                    .background(SecondaryContainer)
+                                    .padding(horizontal = 10.dp, vertical = 2.dp)
+                            ) {
                                 Text(
                                     difficulty.labelEs(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = SecondaryContainer
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = OnSecondaryContainer
                                 )
-                            },
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = Primary.copy(alpha = 0.15f)
-                            ),
-                            border = SuggestionChipDefaults.suggestionChipBorder(
-                                enabled       = true,
-                                borderColor   = Primary.copy(alpha = 0.3f),
-                                borderWidth   = 1.dp
+                            }
+                            Text(
+                                elapsed.toTimeString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = OnSurfaceVariant
                             )
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            elapsed.toTimeString(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Tertiary
-                        )
+                        }
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Outlined.Undo, "Atrás", tint = Primary)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Atrás", tint = Primary)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Outlined.Settings, "Ajustes", tint = Primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -168,16 +177,16 @@ fun GameScreen(
         ) {
             // HUD: errores + nivel
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment     = Alignment.CenterVertically
             ) {
                 Column {
                     Text("MISTAKES", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
                     Text(
                         "$mistakes/3",
                         style      = MaterialTheme.typography.headlineMedium,
-                        color      = if (mistakes > 0) com.inigo.xudoku.ui.theme.ErrorColor else OnSurface,
+                        color      = if (mistakes > 0) ErrorColor else OnSurface,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -187,14 +196,24 @@ fun GameScreen(
                         style = MaterialTheme.typography.labelLarge,
                         color = Tertiary
                     )
-                    LinearProgressIndicator(
-                        progress   = { 0f }, // TODO
-                        modifier   = Modifier.width(80.dp).height(6.dp).clip(RoundedCornerShape(3.dp)),
-                        color      = Tertiary,
-                        trackColor = SurfaceContainer,
-                        strokeCap  = StrokeCap.Round,
-                        gapSize    = 0.dp
-                    )
+                    // Progress bar con gradient Tertiary→Primary
+                    Box(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(SurfaceContainerHighest)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0f) // TODO: conectar a nivel de usuario
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(
+                                    Brush.horizontalGradient(listOf(Tertiary, PrimaryContainer))
+                                )
+                        )
+                    }
                 }
             }
 
@@ -219,7 +238,7 @@ fun GameScreen(
 
             // Toolbar de acciones
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 ActionButton(
@@ -286,19 +305,19 @@ private fun ActionButton(
                 .size(52.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(
-                    if (isActive) SecondaryContainer
-                    else SurfaceContainer
+                    if (isActive) PrimaryContainer
+                    else SurfaceContainerHigh
                 )
         ) {
             Icon(
                 imageVector        = icon,
                 contentDescription = label,
-                tint               = if (isActive) Primary else OnSurfaceVariant,
+                tint               = if (isActive) OnSurface else OnSurfaceVariant,
                 modifier           = Modifier.size(24.dp)
             )
         }
         Spacer(Modifier.height(4.dp))
-        Text(label, style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = if (isActive) Primary else OnSurfaceVariant)
     }
 }
 
@@ -314,4 +333,24 @@ private fun computeScore(elapsedSeconds: Int, mistakes: Int, difficulty: Difficu
     val timePenalty  = (elapsedSeconds / 10).coerceAtMost(baseScore / 2)
     val errorPenalty = mistakes * 200
     return (baseScore - timePenalty - errorPenalty).coerceAtLeast(100)
+}
+
+// ── Preview ──────────────────────────────────────────────────────────────────
+
+@androidx.compose.ui.tooling.preview.Preview(
+    name           = "GameScreen — layout",
+    showBackground = true,
+    device         = "spec:width=393dp,height=851dp,dpi=420"
+)
+@androidx.compose.runtime.Composable
+fun PreviewGameScreen() {
+    com.inigo.xudoku.ui.theme.XudokuTheme {
+        val vm = GameViewModel()
+        GameScreen(
+            difficulty      = com.inigo.xudoku.model.Difficulty.MEDIUM,
+            viewModel       = vm,
+            onGameCompleted = { _, _, _, _ -> },
+            onNavigateBack  = {}
+        )
+    }
 }
