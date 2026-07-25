@@ -74,11 +74,7 @@ class GameViewModelTest {
 
     @After
     fun teardown() {
-        // CRÍTICO: cancela el viewModelScope (y con él el timerJob).
-        // Sin esto el proceso queda bloqueado después del test: el timer (while(true)+delay)
-        // permanece suspendido en el scheduler virtual y el JVM no termina aunque el test pase.
-        // viewModelScope NO es hijo del scope de runTest → runTest no lo cancela automáticamente.
-        vm.viewModelScope.cancel()
+
         Dispatchers.resetMain()
     }
 
@@ -86,7 +82,12 @@ class GameViewModelTest {
     fun `nombre descriptivo en español`() = runTest(testDispatcher) {
         vm.startGame(Difficulty.VERY_EASY)
         // assertions sobre vm.xxx.value ...
-    }
+        // CRÍTICO: cancela el viewModelScope (y con él el timerJob).
+        // Sin esto el proceso queda bloqueado después del test: el timer (while(true)+delay)
+        // permanece suspendido en el scheduler virtual y el JVM no termina aunque el test pase.
+        // viewModelScope NO es hijo del scope de runTest → runTest no lo cancela automáticamente.
+        // se tiene que hacer aqui pq tiene que ejecutarse ANTES del @After, sino no lo coge
+        vm.viewModelScope.cancel()   }
 }
 ```
 
