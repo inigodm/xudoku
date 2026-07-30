@@ -1,6 +1,7 @@
-Antes de cualquier tarea de código, lee esta tabla. Si una fila coincide con la 
-petición del usuario, abre SOLO el resource correspondiente. Si ninguna coincide, 
-continúa sin abrir nada más de esta carpeta.
+Antes de cualquier tarea:
+1. Consulta esta tabla.
+2. Abre únicamente los resources que coincidan.
+3. No cargues otros skills por anticipación.
 
 | Skill | Cuándo usar | Resource |
 |---|---|---|
