@@ -65,12 +65,19 @@ com.inigo.xudoku
 
 ---
 
+## Uso de skills
+1. Antes de cualquier tarea, lee .agent/skills/INDEX.md (es corto, léelo siempre).
+2. Si alguna fila es aplicable a la tarea, abre SOLO ese resource.
+3. Si ninguna coincide, continúa sin abrir nada más de .agent/skills/.
+
+---
+
 ## Protocolo obligatorio antes de cada tarea
 
 Antes de escribir una sola línea de código, el agente DEBE completar estos pasos en orden:
 
 1. **Identificar el scope** — ¿Qué capa toca la petición? (`model/` / `ui/` / ambas)
-2. **Leer `.agent/skills/INDEX.md`** — Identificar los skills aplicables y abrirlos.
+2. **Leer ** — Identificar los skills aplicables y abrir solo esos. Si ninguna coincide NO abras nada mas de .agent/skills.
 3. **Validar scope con el usuario** — Si la petición es de UI pero parece requerir lógica nueva en `model/`, PARAR y preguntar al usuario antes de implementar nada.
 4. **Nunca hacer más de lo pedido** — Si el usuario pide pantallas, entregar pantallas. No añadir casos de uso, servicios ni lógica no solicitados.
 

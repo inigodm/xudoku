@@ -6,10 +6,6 @@
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="Tests in 'com.inigo.xudoku'">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DialogSelection />
-      </SelectionState>
       <SelectionState runConfigName="unitTest">
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />

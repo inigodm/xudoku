@@ -92,6 +92,9 @@ VictoryScreen (datos pasados como argumentos de navegación)
       ├─ "Siguiente Nivel" → GameScreen (misma dificultad, nuevo puzzle)
       └─ "Menú Principal"  → DifficultyScreen
 ```
+### Documentacion casos de uso
+
+Si es necesario conocer los casos de uso se pueden consultar en el archivo ./docs/casos-de-uso.md.
 
 > **Invariantes que nunca deben romperse:**
 > 1. `puzzle` siempre tiene exactamente una solución

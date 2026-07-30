@@ -130,4 +130,20 @@ class GameViewModelTest {
             vm.viewModelScope.cancel()
         }
     }
+
+    @Test
+    fun `CU-03 introducir numero en modo normal`() = runTest(testDispatcher) {
+        vm.selectedCell.test {
+            // StateFlow siempre emite su valor actual al colector nuevo → null inicial
+            assertNull(awaitItem())
+
+            // Seleccionamos la celda (3, 5)
+            vm.selectCell(3, 5)
+            vm.enterNumber(game.solution[row, col])
+
+            assertEquals(vm.selectedCell.value, 5)
+            cancelAndIgnoreRemainingEvents()
+            vm.viewModelScope.cancel()
+        }
+    }
 }
