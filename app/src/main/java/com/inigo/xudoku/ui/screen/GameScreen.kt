@@ -40,7 +40,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.model.SudokuBoard
@@ -322,7 +321,7 @@ private fun ActionButton(
 }
 
 /** Calcula una puntuación simple basada en tiempo, errores y dificultad. */
-private fun computeScore(elapsedSeconds: Int, mistakes: Int, difficulty: Difficulty): Int {
+internal fun computeScore(elapsedSeconds: Int, mistakes: Int, difficulty: Difficulty): Int {
     val baseScore = when (difficulty) {
         Difficulty.VERY_EASY -> 1_000
         Difficulty.EASY      -> 2_000
@@ -342,12 +341,12 @@ private fun computeScore(elapsedSeconds: Int, mistakes: Int, difficulty: Difficu
     showBackground = true,
     device         = "spec:width=393dp,height=851dp,dpi=420"
 )
-@androidx.compose.runtime.Composable
+@Composable
 fun PreviewGameScreen() {
     com.inigo.xudoku.ui.theme.XudokuTheme {
         val vm = GameViewModel()
         GameScreen(
-            difficulty      = com.inigo.xudoku.model.Difficulty.MEDIUM,
+            difficulty      = Difficulty.MEDIUM,
             viewModel       = vm,
             onGameCompleted = { _, _, _, _ -> },
             onNavigateBack  = {}

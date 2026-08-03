@@ -131,19 +131,291 @@ class GameViewModelTest {
         }
     }
 
+    // ── CU-03: Introducir número (modo normal) ────────────────────────────────
+
     @Test
-    fun `CU-03 introducir numero en modo normal`() = runTest(testDispatcher) {
-        vm.selectedCell.test {
-            // StateFlow siempre emite su valor actual al colector nuevo → null inicial
-            assertNull(awaitItem())
+    fun `CU-03 enterNumber en modo normal actualiza el valor de la celda seleccionada`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
 
-            // Seleccionamos la celda (3, 5)
-            vm.selectCell(3, 5)
-            vm.enterNumber(game.solution[row, col])
+        // Buscar una celda vacia (no dada)
+        var targetRow = -1
+        var targetCol = -1
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven) {
+                    targetRow = r
+                    targetCol = c
+                    break
+                }
+            }
+            if (targetRow != -1) break
+        }
 
-            assertEquals(vm.selectedCell.value, 5)
+        assertTrue("Debe existir al menos una celda no dada", targetRow != -1)
+
+        // Seleccionar la celda e introducir un numero (5)
+        vm.selectCell(targetRow, targetCol)
+        vm.enterNumber(5)
+
+        // Assert — la celda ahora contiene el número 5 y no es dada
+        val cell = vm.cells.value[targetRow][targetCol]
+        assertEquals(5, cell.value)
+        assertFalse(cell.isGiven)
+
+        vm.viewModelScope.cancel()
+    }
+
+    @Test
+    fun `CU-03 enterNumber no modifica celdas dadas`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        // Buscar una celda dada
+        var givenRow = -1
+        var givenCol = -1
+        var initialValue = 0
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (vm.cells.value[r][c].isGiven) {
+                    givenRow = r
+                    givenCol = c
+                    initialValue = vm.cells.value[r][c].value
+                    break
+                }
+            }
+            if (givenRow != -1) break
+        }
+
+        assertTrue("Debe existir al menos una celda dada", givenRow != -1)
+
+        // Intentar sobreescribir la celda dada con otro número
+        val newValue = if (initialValue == 9) 1 else initialValue + 1
+        vm.selectCell(givenRow, givenCol)
+        vm.enterNumber(newValue)
+
+        // Assert — el valor de la celda dada no ha cambiado
+        assertEquals(initialValue, vm.cells.value[givenRow][givenCol].value)
+        assertTrue(vm.cells.value[givenRow][givenCol].isGiven)
+
+        vm.viewModelScope.cancel()
+    }
+
+    // ── CU-04: Introducir nota en lápiz (modo notas) ─────────────────────────
+
+    @Test
+    fun `CU-04 enterNumber en modo notas anade y quita notas alternadamente`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        // Buscar celda vacía no dada
+        var targetRow = -1
+        var targetCol = -1
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven) {
+                    targetRow = r
+                    targetCol = c
+                    break
+                }
+            }
+            if (targetRow != -1) break
+        }
+
+        vm.selectCell(targetRow, targetCol)
+        vm.toggleNotesMode()
+
+        val key = Pair(targetRow, targetCol)
+
+        // Añadir nota 3
+        vm.enterNumber(3)
+        assertEquals(setOf(3), vm.notes.value[key])
+        assertEquals(0, vm.cells.value[targetRow][targetCol].value)
+
+        // Añadir nota 7
+        vm.enterNumber(7)
+        assertEquals(setOf(3, 7), vm.notes.value[key])
+
+        // Quitar nota 3 (toggle)
+        vm.enterNumber(3)
+        assertEquals(setOf(7), vm.notes.value[key])
+
+        vm.viewModelScope.cancel()
+    }
+
+    // ── CU-05: Activar y desactivar modo notas ────────────────────────────────
+
+    @Test
+    fun `CU-05 toggleNotesMode alterna el estado de isNotesMode`() = runTest(testDispatcher) {
+        vm.isNotesMode.test {
+            assertFalse(awaitItem())
+
+            vm.toggleNotesMode()
+            assertTrue(awaitItem())
+
+            vm.toggleNotesMode()
+            assertFalse(awaitItem())
+
             cancelAndIgnoreRemainingEvents()
             vm.viewModelScope.cancel()
         }
+    }
+
+    // ── CU-06: Borrar celda seleccionada ─────────────────────────────────────
+
+    @Test
+    fun `CU-06 clearSelectedCell limpia valor y notas de celda no dada`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        var targetRow = -1
+        var targetCol = -1
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven) {
+                    targetRow = r
+                    targetCol = c
+                    break
+                }
+            }
+            if (targetRow != -1) break
+        }
+
+        vm.selectCell(targetRow, targetCol)
+        vm.enterNumber(5)
+        assertEquals(5, vm.cells.value[targetRow][targetCol].value)
+
+        vm.clearSelectedCell()
+        assertEquals(0, vm.cells.value[targetRow][targetCol].value)
+        assertFalse(vm.cells.value[targetRow][targetCol].isError)
+
+        vm.viewModelScope.cancel()
+    }
+
+    @Test
+    fun `CU-06 clearSelectedCell ignora celdas dadas`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        var givenRow = -1
+        var givenCol = -1
+        var initialValue = 0
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (vm.cells.value[r][c].isGiven) {
+                    givenRow = r
+                    givenCol = c
+                    initialValue = vm.cells.value[r][c].value
+                    break
+                }
+            }
+            if (givenRow != -1) break
+        }
+
+        vm.selectCell(givenRow, givenCol)
+        vm.clearSelectedCell()
+
+        assertEquals(initialValue, vm.cells.value[givenRow][givenCol].value)
+        assertTrue(vm.cells.value[givenRow][givenCol].isGiven)
+
+        vm.viewModelScope.cancel()
+    }
+
+    // ── CU-07: Deshacer último movimiento ────────────────────────────────────
+
+    @Test
+    fun `CU-07 undoLastMove restaura valor anterior y gestiona contador de errores`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        var targetRow = -1
+        var targetCol = -1
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven) {
+                    targetRow = r
+                    targetCol = c
+                    break
+                }
+            }
+            if (targetRow != -1) break
+        }
+
+        vm.selectCell(targetRow, targetCol)
+        vm.enterNumber(5)
+
+        val mistakesAfterEnter = vm.mistakes.value
+
+        vm.undoLastMove()
+
+        assertEquals(0, vm.cells.value[targetRow][targetCol].value)
+        assertFalse(vm.cells.value[targetRow][targetCol].isError)
+        if (mistakesAfterEnter > 0) {
+            assertEquals(0, vm.mistakes.value)
+        }
+
+        vm.viewModelScope.cancel()
+    }
+
+    // ── CU-08: Solicitar pista ────────────────────────────────────────────────
+
+    @Test
+    fun `CU-08 requestHint revela la solucion correcta en la celda seleccionada`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        var targetRow = -1
+        var targetCol = -1
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven) {
+                    targetRow = r
+                    targetCol = c
+                    break
+                }
+            }
+            if (targetRow != -1) break
+        }
+
+        vm.selectCell(targetRow, targetCol)
+        vm.requestHint()
+
+        val cell = vm.cells.value[targetRow][targetCol]
+        assertTrue(cell.value != 0)
+        assertFalse(cell.isError)
+        assertFalse(cell.isGiven)
+
+        vm.viewModelScope.cancel()
+    }
+
+    @Test
+    fun `CU-08 requestHint busca la primera celda vacia si no hay celda seleccionada`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+        assertNull(vm.selectedCell.value)
+
+        vm.requestHint()
+
+        val selected = vm.selectedCell.value
+        assertTrue(selected != null)
+        val (r, c) = selected!!
+        val cell = vm.cells.value[r][c]
+        assertTrue(cell.value != 0)
+        assertFalse(cell.isError)
+
+        vm.viewModelScope.cancel()
+    }
+
+    // ── CU-09: Completar puzzle (detección automática) ────────────────────────
+
+    @Test
+    fun `CU-09 al rellenar todas las celdas correctamente se activa isCompleted`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        // Rellenar todas las celdas vacías pidiendo pistas (que colocan la solución correcta)
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven && vm.cells.value[r][c].value == SudokuBoard.EMPTY) {
+                    vm.selectCell(r, c)
+                    vm.requestHint()
+                }
+            }
+        }
+
+        assertTrue(vm.isCompleted.value)
+
+        vm.viewModelScope.cancel()
     }
 }

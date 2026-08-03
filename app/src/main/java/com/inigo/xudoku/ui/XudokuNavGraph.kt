@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.ui.screen.DifficultyScreen
+import com.inigo.xudoku.ui.screen.GameOverScreen
 import com.inigo.xudoku.ui.screen.GameScreen
 import com.inigo.xudoku.ui.screen.ProfileScreen
 import com.inigo.xudoku.ui.screen.SplashScreen
@@ -16,17 +17,19 @@ import com.inigo.xudoku.ui.screen.StatsScreen
 import com.inigo.xudoku.ui.screen.VictoryScreen
 
 /** Destinos de navegación de la app. */
-private object Dest {
+internal object Dest {
     const val SPLASH     = "splash"
     const val DIFFICULTY = "difficulty"
     const val GAME       = "game/{difficultyName}"
     const val VICTORY    = "victory/{seconds}/{mistakes}/{difficultyName}/{score}"
+    const val GAME_OVER  = "game_over/{seconds}/{mistakes}"
     const val STATS      = "stats"
     const val PROFILE    = "profile"
 
     fun game(difficulty: Difficulty)                             = "game/${difficulty.name}"
     fun victory(seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int) =
         "victory/$seconds/$mistakes/${difficulty.name}/$score"
+    fun gameOver(seconds: Int, mistakes: Int) = "game_over/$seconds/$mistakes"
 }
 
 /**
@@ -111,6 +114,31 @@ fun XudokuNavGraph() {
                     // Nueva partida con la misma dificultad
                     navController.navigate(Dest.game(difficulty)) {
                         popUpTo(Dest.DIFFICULTY)
+                    }
+                },
+                onMainMenu     = {
+                    navController.navigate(Dest.DIFFICULTY) {
+                        popUpTo(Dest.DIFFICULTY) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // ── Fin de juego ─────────────────────────────────────────────────────
+        composable(
+            route     = Dest.GAME_OVER,
+            arguments = listOf(
+                navArgument("seconds")  { type = NavType.IntType },
+                navArgument("mistakes") { type = NavType.IntType }
+            )
+        ) { entry ->
+            val args = entry.arguments!!
+            GameOverScreen(
+                elapsedSeconds = args.getInt("seconds"),
+                mistakes       = args.getInt("mistakes"),
+                onRetry        = {
+                    navController.navigate(Dest.DIFFICULTY) {
+                        popUpTo(Dest.DIFFICULTY) { inclusive = true }
                     }
                 },
                 onMainMenu     = {

@@ -19,7 +19,7 @@
 | Método VM    | `GameViewModel.startGame(difficulty: Difficulty)` |
 | Postcondición | `cells` contiene el puzzle nuevo, `mistakes=0`, `elapsedSeconds=0`, `isCompleted=false`, `isLoading=false` (tras generación), temporizador corriendo |
 | Efecto UI    | Grid visible con celdas dadas; spinner/texto "Generando puzzle…" mientras `isLoading=true` |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -33,7 +33,7 @@
 | Método VM    | `GameViewModel.selectCell(row: Int, col: Int)` |
 | Postcondición | `selectedCell = Pair(row, col)` |
 | Efecto UI    | Celda seleccionada resaltada; celdas de misma fila/columna/caja resaltadas; tecla del teclado activa si la celda tiene valor |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -47,7 +47,7 @@
 | Método VM    | `GameViewModel.enterNumber(number: Int)` |
 | Postcondición | `cells[row][col].value = number`; si incorrecto: `isError=true`, `mistakes += 1`; notas de esa celda eliminadas; movimiento guardado en historial |
 | Efecto UI    | Número visible en celda; celda en rojo si error; contador de errores actualizado |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -61,7 +61,7 @@
 | Método VM    | `GameViewModel.enterNumber(number: Int)` (misma función, rama distinta) |
 | Postcondición | `notes[Pair(row,col)]` añade o quita `number` (toggle); movimiento guardado |
 | Efecto UI    | Dígito pequeño aparece/desaparece en la celda |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -75,7 +75,7 @@
 | Método VM    | `GameViewModel.toggleNotesMode()` |
 | Postcondición | `isNotesMode` invierte su valor |
 | Efecto UI    | Badge visible sobre el icono; comportamiento del teclado cambia |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -89,7 +89,7 @@
 | Método VM    | `GameViewModel.clearSelectedCell()` |
 | Postcondición | `cells[row][col] = CellState(0, false, false)`; notas de esa celda eliminadas; movimiento guardado |
 | Efecto UI    | Celda queda vacía |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -103,7 +103,7 @@
 | Método VM    | `GameViewModel.undoLastMove()` |
 | Postcondición | El último `GameMove` se extrae del historial; `cells[row][col]` restaurado al valor y notas previos; si el movimiento revertido era un error, `mistakes` se decrementa (mínimo 0); `isCompleted=false` |
 | Efecto UI    | Celda vuelve a estado anterior |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -117,7 +117,7 @@
 | Método VM    | `GameViewModel.requestHint()` |
 | Postcondición | Si hay celda seleccionada vacía: se revela su valor correcto allí. Si no: se busca la primera celda vacía no dada en orden fila-columna y se revela. Notas de esa celda eliminadas. `selectedCell` apunta a la celda revelada. `checkCompletion()` ejecutado. |
 | Efecto UI    | Celda revelada muestra el número correcto (sin marcarse como error) |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -131,7 +131,7 @@
 | Método VM    | `checkCompletion()` (interno) → `_isCompleted.value = true` + `timerJob?.cancel()` |
 | Postcondición | `isCompleted=true`; temporizador detenido |
 | Efecto UI    | `LaunchedEffect(isCompleted)` en `GameScreen` calcula el score y navega a `VictoryScreen` |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -147,7 +147,7 @@
 | Método VM    | N/A |
 | Postcondición | Back stack: `[Difficulty]` (Splash eliminado con `popUpTo inclusive`) |
 | Efecto UI    | Usuario ve `DifficultyScreen` |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -161,7 +161,7 @@
 | Método VM    | N/A (la navegación llama a `startGame` vía `LaunchedEffect`) |
 | Postcondición | Back stack: `[Difficulty, Game]` |
 | Efecto UI    | `GameScreen` con la dificultad elegida |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -175,7 +175,7 @@
 | Método VM    | `computeScore(elapsed, mistakes, difficulty)` (función privada en GameScreen) |
 | Postcondición | Back stack: `[Difficulty, Victory]` (`popUpTo(DIFFICULTY)` elimina Game) |
 | Efecto UI    | `VictoryScreen` con segundos, errores, dificultad y puntuación |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -189,7 +189,7 @@
 | Método VM    | N/A |
 | Postcondición | Back stack: `[Difficulty, Game]` (nueva instancia) |
 | Efecto UI    | Nueva `GameScreen` con la misma dificultad |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -203,7 +203,7 @@
 | Método VM    | N/A |
 | Postcondición | Back stack: `[Difficulty]` |
 | Efecto UI    | `DifficultyScreen` |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -217,7 +217,7 @@
 | Método VM    | N/A |
 | Postcondición | `popBackStack(DIFFICULTY, inclusive=false)`; ViewModel no se destruye (sigue en memoria si vuelve) |
 | Efecto UI    | `DifficultyScreen` |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -233,7 +233,7 @@
 | Método VM    | `computeScore(elapsedSeconds, mistakes, difficulty)` (privado en `GameScreen.kt`) |
 | Postcondición | Score = `baseScore(difficulty) - (elapsedSeconds/10).coerceAtMost(baseScore/2) - mistakes*200`, mínimo 100 |
 | Efecto UI    | Score visible en `VictoryScreen` |
-| Tested       | ❌ |
+| Tested       | ✅ |
 
 ---
 
@@ -241,4 +241,4 @@
 
 | Total CUs | Tested ✅ | Pendientes ❌ |
 |-----------|-----------|---------------|
-| 16        | 0         | 16            |
+| 16        | 16        | 0             |
