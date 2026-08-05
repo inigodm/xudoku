@@ -30,13 +30,14 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.alpha
 import kotlinx.coroutines.launch
 import com.inigo.xudoku.model.SudokuBoard
 import com.inigo.xudoku.ui.CellState
+import com.inigo.xudoku.ui.ScoreAnimationEvent
 import com.inigo.xudoku.ui.theme.ErrorColor
 import com.inigo.xudoku.ui.theme.OnSurface
 import com.inigo.xudoku.ui.theme.OnSurfaceVariant
@@ -61,6 +62,7 @@ fun SudokuGrid(
     cells: Array<Array<CellState>>,
     notes: Map<Pair<Int, Int>, Set<Int>>,
     selectedCell: Pair<Int, Int>?,
+    lastScoreEvent: ScoreAnimationEvent?,
     onCellClick: (row: Int, col: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -97,6 +99,7 @@ fun SudokuGrid(
                             isSameArea    = !isSelected && (isSameBox || isSameRowOrCol),
                             row           = row,
                             col           = col,
+                            lastScoreEvent = lastScoreEvent,
                             onClick       = { onCellClick(row, col) },
                             modifier      = Modifier.weight(1f).fillMaxHeight()
                         )
@@ -140,6 +143,7 @@ private fun SudokuCell(
     isSameArea: Boolean,
     row: Int,
     col: Int,
+    lastScoreEvent: ScoreAnimationEvent?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -158,10 +162,11 @@ private fun SudokuCell(
 
     val alphaAnim = remember { Animatable(0f) }
     val offsetYAnim = remember { Animatable(0f) }
-    var previousValue by remember { mutableIntStateOf(cell.value) }
+    var displayedPoints by remember { mutableStateOf("") }
 
-    LaunchedEffect(cell.value) {
-        if (previousValue == SudokuBoard.EMPTY && cell.value != SudokuBoard.EMPTY && !cell.isError && !cell.isGiven) {
+    LaunchedEffect(lastScoreEvent) {
+        if (lastScoreEvent != null && lastScoreEvent.row == row && lastScoreEvent.col == col) {
+            displayedPoints = "+${lastScoreEvent.points}"
             launch {
                 alphaAnim.snapTo(1f)
                 offsetYAnim.snapTo(0f)
@@ -180,7 +185,6 @@ private fun SudokuCell(
                 }
             }
         }
-        previousValue = cell.value
     }
 
     Box(
@@ -213,7 +217,7 @@ private fun SudokuCell(
 
         if (alphaAnim.value > 0f) {
             Text(
-                text = "+50",
+                text = displayedPoints,
                 color = Color(0xFFFFD54F), // Amarillo
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = 14.sp,

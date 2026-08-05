@@ -34,6 +34,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.model.SudokuBoard
 import com.inigo.xudoku.ui.GameViewModel
+import com.inigo.xudoku.ui.ScoreAnimationEvent
 import com.inigo.xudoku.ui.components.NumberPad
 import com.inigo.xudoku.ui.components.SudokuGrid
 import com.inigo.xudoku.ui.theme.Background
@@ -103,11 +107,19 @@ fun GameScreen(
     val isCompleted  by viewModel.isCompleted.collectAsState()
     val isGameOver   by viewModel.isGameOver.collectAsState()
     val isLoading    by viewModel.isLoading.collectAsState()
+    val currentScore by viewModel.currentScore.collectAsState()
+
+    var lastScoreEvent by remember { mutableStateOf<ScoreAnimationEvent?>(null) }
+    LaunchedEffect(viewModel) {
+        viewModel.scoreEvents.collect { event ->
+            lastScoreEvent = event
+        }
+    }
 
     // Navegar a Victoria cuando el puzzle esté completo
     LaunchedEffect(isCompleted) {
         if (isCompleted) {
-            val score = computeScore(elapsed, mistakes, difficulty)
+            val score = viewModel.getFinalScore()
             onGameCompleted(elapsed, mistakes, difficulty, score)
         }
     }
@@ -199,6 +211,15 @@ fun GameScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("SCORE", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
+                    Text(
+                        "$currentScore",
+                        style      = MaterialTheme.typography.headlineMedium,
+                        color      = Tertiary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         "Level 1", // TODO("conectar a progreso de usuario")
@@ -235,11 +256,12 @@ fun GameScreen(
                 }
             } else {
                 SudokuGrid(
-                    cells        = cells,
-                    notes        = notes,
-                    selectedCell = selectedCell,
-                    onCellClick  = { r, c -> viewModel.selectCell(r, c) },
-                    modifier     = Modifier.fillMaxWidth()
+                    cells          = cells,
+                    notes          = notes,
+                    selectedCell   = selectedCell,
+                    lastScoreEvent = lastScoreEvent,
+                    onCellClick    = { r, c -> viewModel.selectCell(r, c) },
+                    modifier       = Modifier.fillMaxWidth()
                 )
             }
 
@@ -328,20 +350,6 @@ private fun ActionButton(
         Spacer(Modifier.height(4.dp))
         Text(label, style = MaterialTheme.typography.labelSmall, color = if (isActive) Primary else OnSurfaceVariant)
     }
-}
-
-/** Calcula una puntuación simple basada en tiempo, errores y dificultad. */
-internal fun computeScore(elapsedSeconds: Int, mistakes: Int, difficulty: Difficulty): Int {
-    val baseScore = when (difficulty) {
-        Difficulty.VERY_EASY -> 1_000
-        Difficulty.EASY      -> 2_000
-        Difficulty.MEDIUM    -> 4_000
-        Difficulty.HARD      -> 7_000
-        Difficulty.HARDEST   -> 12_000
-    }
-    val timePenalty  = (elapsedSeconds / 10).coerceAtMost(baseScore / 2)
-    val errorPenalty = mistakes * 200
-    return (baseScore - timePenalty - errorPenalty).coerceAtLeast(100)
 }
 
 // ── Preview ──────────────────────────────────────────────────────────────────

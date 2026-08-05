@@ -16,12 +16,24 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import com.inigo.xudoku.model.scoring.ScoreManager
 
 /** Estado inmutable de una celda del tablero visible en la UI. */
 data class CellState(
     val value: Int,       // 0 = vacía; 1-9 = número
     val isGiven: Boolean, // true → número pre-rellenado del puzzle, no editable
     val isError: Boolean  // true → el jugador introdujo un número incorrecto
+)
+
+/** Evento emitido cuando se ganan puntos para animar en la UI. */
+data class ScoreAnimationEvent(
+    val row: Int,
+    val col: Int,
+    val points: Int,
+    val isTripleCombo: Boolean
 )
 
 /** Un movimiento guardado para poder deshacerlo. */
@@ -82,6 +94,16 @@ class GameViewModel(
     /** true mientras se genera el puzzle en background. */
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val scoreManager = ScoreManager()
+
+    private val _currentScore = MutableStateFlow(0)
+    /** Puntuación acumulada durante la partida. */
+    val currentScore: StateFlow<Int> = _currentScore.asStateFlow()
+
+    private val _scoreEvents = MutableSharedFlow<ScoreAnimationEvent>(extraBufferCapacity = 10)
+    /** Eventos de animación de puntuación para la UI. */
+    val scoreEvents: SharedFlow<ScoreAnimationEvent> = _scoreEvents.asSharedFlow()
+
     // ── Estado interno ───────────────────────────────────────────────────────
 
     private val moveHistory = ArrayDeque<GameMove>()
@@ -102,6 +124,9 @@ class GameViewModel(
         _isGameOver.value    = false
         _difficulty.value    = difficulty
         _isLoading.value     = true
+        
+        scoreManager.reset()
+        _currentScore.value  = 0
 
         viewModelScope.launch {
             val generatedGame = withContext(ioDispatcher) {
@@ -144,6 +169,7 @@ class GameViewModel(
             updateCell(row, col) { CellState(value = number, isGiven = false, isError = isError) }
             _notes.update { it - key }
             if (isError) {
+                scoreManager.recordMistake()
                 _mistakes.update { count ->
                     val newCount = count + 1
                     if (newCount >= 3) {
@@ -152,6 +178,20 @@ class GameViewModel(
                     }
                     newCount
                 }
+            } else {
+                val grid = _cells.value
+                val (isRowComplete, isColComplete, isBlockComplete, isLastCell) = checkRegionCompletion(row, col, grid)
+                val moveResult = scoreManager.calculateAndAddMoveScore(
+                    difficulty = _difficulty.value!!,
+                    currentTimeSeconds = _elapsedSeconds.value,
+                    filledCellsRatio = calculateFilledRatio(),
+                    isRowComplete = isRowComplete,
+                    isColComplete = isColComplete,
+                    isBlockComplete = isBlockComplete,
+                    isLastCell = isLastCell
+                )
+                _currentScore.value = scoreManager.currentScore
+                _scoreEvents.tryEmit(ScoreAnimationEvent(row, col, moveResult.totalPoints, moveResult.isTripleCombo))
             }
             checkCompletion()
         }
@@ -221,6 +261,7 @@ class GameViewModel(
     private fun applyHint(row: Int, col: Int) {
         if (_cells.value[row][col].isGiven) return
         val correct = game.solution[row, col]
+        scoreManager.recordHint()
         updateCell(row, col) { CellState(value = correct, isGiven = false, isError = false) }
         _notes.update { it - Pair(row, col) }
         _selectedCell.value = Pair(row, col)
@@ -272,6 +313,48 @@ class GameViewModel(
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+    }
+
+    fun getFinalScore(): Int {
+        return scoreManager.calculateFinalScore(
+            difficulty = _difficulty.value ?: Difficulty.EASY,
+            totalTimeSeconds = _elapsedSeconds.value
+        )
+    }
+
+    private fun checkRegionCompletion(row: Int, col: Int, grid: Array<Array<CellState>>): List<Boolean> {
+        val isRowComplete = (0 until SudokuBoard.SIZE).all { c -> grid[row][c].value != SudokuBoard.EMPTY && !grid[row][c].isError }
+        val isColComplete = (0 until SudokuBoard.SIZE).all { r -> grid[r][col].value != SudokuBoard.EMPTY && !grid[r][col].isError }
+        
+        val boxRow = (row / 3) * 3
+        val boxCol = (col / 3) * 3
+        var isBlockComplete = true
+        for (r in boxRow until boxRow + 3) {
+            for (c in boxCol until boxCol + 3) {
+                if (grid[r][c].value == SudokuBoard.EMPTY || grid[r][c].isError) {
+                    isBlockComplete = false
+                }
+            }
+        }
+        
+        val isLastCell = (0 until SudokuBoard.SIZE).all { r ->
+            (0 until SudokuBoard.SIZE).all { c ->
+                grid[r][c].value != SudokuBoard.EMPTY && !grid[r][c].isError
+            }
+        }
+        
+        return listOf(isRowComplete, isColComplete, isBlockComplete, isLastCell)
+    }
+
+    private fun calculateFilledRatio(): Float {
+        var filled = 0
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                val cell = _cells.value[r][c]
+                if (cell.value != SudokuBoard.EMPTY && !cell.isError) filled++
+            }
+        }
+        return filled.toFloat() / (SudokuBoard.SIZE * SudokuBoard.SIZE)
     }
 
     private fun emptyBoard(): Array<Array<CellState>> =
