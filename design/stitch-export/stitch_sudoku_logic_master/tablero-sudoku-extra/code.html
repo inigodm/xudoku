@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;family=Quicksand:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .btn-3d-primary {
+            position: relative;
+            transition: transform 0.1s ease;
+        }
+        .btn-3d-primary:active {
+            transform: translateY(3px) scale(0.95);
+        }
+        .btn-3d-shadow {
+            position: absolute;
+            top: 4px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            z-index: -1;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-3d-primary:active .btn-3d-shadow {
+            box-shadow: 0 0 10px rgba(192, 193, 255, 0.4);
+        }
+        .cell-glow-cyan {
+            box-shadow: inset 0 0 15px rgba(76, 215, 246, 0.3);
+        }
+        
+        /* Active Cell Pulse */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 2px #c0c1ff, inset 0 0 5px rgba(192, 193, 255, 0.2); }
+            50% { box-shadow: 0 0 0 3px #8083ff, inset 0 0 15px rgba(192, 193, 255, 0.5); }
+            100% { box-shadow: 0 0 0 2px #c0c1ff, inset 0 0 5px rgba(192, 193, 255, 0.2); }
+        }
+        .cell-active {
+            animation: pulse-glow 2s infinite ease-in-out;
+            z-index: 10;
+        }
+
+        /* Ambient Background */
+        @keyframes ambient-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .ambient-bg {
+            background: linear-gradient(-45deg, #0b1326, #131b2e, #060e20, #0b1326);
+            background-size: 400% 400%;
+            animation: ambient-bg 15s ease infinite;
+        }
+
+        /* Grid Entrance Animation */
+        @keyframes cell-enter {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .sudoku-cell {
+            opacity: 0; /* Starts hidden */
+            animation: cell-enter 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Pop Animation for Input */
+        @keyframes pop-in {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: #fff; text-shadow: 0 0 10px #c0c1ff; }
+            100% { transform: scale(1); }
+        }
+        .cell-pop {
+            animation: pop-in 0.3s ease-out;
+        }
+
+        /* Floating Score Animation */
+        @keyframes float-up-fade {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.8);
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(0) scale(1.1);
+            }
+            80% {
+                opacity: 1;
+                transform: translateY(-20px) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+        }
+        .floating-score {
+            position: absolute;
+            pointer-events: none;
+            animation: float-up-fade 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: #4cd7f6; /* Tertiary color */
+            text-shadow: 0 0 8px rgba(76, 215, 246, 0.8), 0 0 12px rgba(111, 0, 190, 0.5);
+            z-index: 50;
+        }
+        
+        .neon-grid {
+            background-color: #0b1326;
+            background-image: 
+                linear-gradient(rgba(144, 143, 160, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(144, 143, 160, 0.1) 1px, transparent 1px);
+            background-size: 33.33% 33.33%;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#c0c1ff",
+                        "on-secondary-container": "#d6a9ff",
+                        "on-secondary": "#490080",
+                        "inverse-on-surface": "#283044",
+                        "primary-container": "#8083ff",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060e20",
+                        "outline": "#908fa0",
+                        "on-error-container": "#ffdad6",
+                        "surface": "#0b1326",
+                        "on-tertiary-fixed": "#001f26",
+                        "on-primary": "#1000a9",
+                        "surface-container-low": "#131b2e",
+                        "surface-tint": "#c0c1ff",
+                        "surface-container-high": "#222a3d",
+                        "tertiary-fixed": "#acedff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-surface-variant": "#c7c4d7",
+                        "tertiary-container": "#009eb9",
+                        "tertiary": "#4cd7f6",
+                        "secondary-container": "#6f00be",
+                        "on-tertiary-container": "#002f38",
+                        "secondary": "#ddb7ff",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed": "#2c0051",
+                        "error": "#ffb4ab",
+                        "on-error": "#690005",
+                        "on-background": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#004e5c",
+                        "secondary-fixed": "#f0dbff",
+                        "on-primary-container": "#0d0096",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "surface-variant": "#2d3449",
+                        "surface-dim": "#0b1326",
+                        "on-primary-fixed": "#07006c",
+                        "on-tertiary": "#003640",
+                        "tertiary-fixed-dim": "#4cd7f6",
+                        "inverse-surface": "#dae2fd",
+                        "on-surface": "#dae2fd",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "inverse-primary": "#494bd6",
+                        "surface-container": "#171f33",
+                        "outline-variant": "#464554",
+                        "primary-fixed": "#e1e0ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "2rem",
+                        "container-padding": "1.5rem",
+                        "stack-md": "1rem",
+                        "stack-sm": "0.5rem",
+                        "grid-gap": "2px",
+                        "block-gap": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Montserrat"],
+                        "body-lg": ["Montserrat"],
+                        "headline-lg": ["Quicksand"],
+                        "grid-number": ["Quicksand"],
+                        "body-md": ["Montserrat"],
+                        "headline-lg-mobile": ["Quicksand"],
+                        "display-lg": ["Quicksand"],
+                        "label-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "grid-number": ["28px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="ambient-bg text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky bg-background/80 backdrop-blur-xl z-40">
+<div class="flex justify-between items-center px-container-padding py-stack-md w-full">
+<button class="text-primary hover:opacity-80 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="flex flex-col items-center">
+<h1 class="font-display-lg text-headline-lg-mobile tracking-tighter text-primary">SUDOKU</h1>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full font-label-sm text-label-sm">Expert</span>
+<span class="text-outline font-label-sm text-label-sm">04:22</span>
+</div>
+</div>
+<button class="text-primary hover:opacity-80 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Game Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-container-padding pb-32 pt-4 relative">
+<!-- Game Stats / Mood Header -->
+<div class="w-full max-w-[400px] mb-6 flex justify-between items-end">
+<div>
+<p class="text-outline font-label-sm text-label-sm uppercase tracking-widest">Mistakes</p>
+<p class="text-on-background font-headline-lg-mobile text-headline-lg-mobile">0/3</p>
+</div>
+<div class="text-right">
+<p class="text-tertiary font-label-sm text-label-sm">Level 42</p>
+<div class="w-24 h-1.5 bg-surface-container-highest rounded-full mt-1 overflow-hidden">
+<div class="h-full bg-gradient-to-r from-tertiary to-primary w-2/3"></div>
+</div>
+</div>
+</div>
+<!-- Sudoku Grid -->
+<div class="w-full max-w-[400px] aspect-square relative glass-panel rounded-xl border-4 border-surface-container-highest p-1 grid grid-cols-3 gap-block-gap" id="sudoku-grid">
+<!-- Block 1 (Top Left 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">3</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+</div>
+<!-- Block 2 (Top Mid 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">8</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">1</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">4</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+</div>
+<!-- Block 3 (Top Right 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">2</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">7</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">9</div>
+</div>
+<!-- Block 4 (Mid Left 3x3) - Active Cell Here -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<!-- Active Cell with Pencil Marks -->
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background relative cell-active cursor-pointer">
+<span class="absolute top-1 left-1 text-[10px] text-tertiary font-mono leading-none">1</span>
+<span class="absolute top-1 right-1 text-[10px] text-tertiary font-mono leading-none">3</span>
+<span class="absolute bottom-1 left-1 text-[10px] text-tertiary font-mono leading-none">8</span>
+</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">6</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">4</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+</div>
+<!-- Block 5 (Center 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">7</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">3</div>
+</div>
+<!-- Block 6 (Mid Right 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">2</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">1</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+</div>
+<!-- Block 7 (Bottom Left 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">9</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">4</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+</div>
+<!-- Block 8 (Bottom Mid 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">6</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">1</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">2</div>
+</div>
+<!-- Block 9 (Bottom Right 3x3) -->
+<div class="grid grid-cols-3 gap-grid-gap">
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-tertiary cell-glow-cyan cursor-pointer hover:bg-white/10 transition-colors">5</div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors"></div>
+<div class="sudoku-cell glass-panel flex items-center justify-center font-grid-number text-grid-number text-on-background cursor-pointer hover:bg-white/10 transition-colors">6</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full max-w-[400px] mt-8 flex justify-between px-4">
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-14 h-14 rounded-xl glass-panel flex items-center justify-center border border-outline/20 group-active:scale-95 group-active:bg-white/5 transition-all text-outline group-active:text-primary">
+<span class="material-symbols-outlined" data-icon="undo">undo</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline group-active:text-primary">Deshacer</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-14 h-14 rounded-xl glass-panel flex items-center justify-center border border-outline/20 group-active:scale-95 group-active:bg-white/5 transition-all text-outline group-active:text-primary">
+<span class="material-symbols-outlined" data-icon="backspace">backspace</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline group-active:text-primary">Borrar</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<!-- Notas Toggled ON: using primary color container style -->
+<div class="w-14 h-14 rounded-xl bg-primary-container flex items-center justify-center shadow-lg shadow-primary/20 group-active:scale-95 transition-all relative group-active:shadow-primary/40">
+<span class="material-symbols-outlined text-white" data-icon="edit_note">edit_note</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-tertiary rounded-full border-2 border-background"></span>
+</div>
+<span class="font-label-sm text-label-sm text-primary">Notas</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="w-14 h-14 rounded-xl glass-panel flex items-center justify-center border border-outline/20 group-active:scale-95 group-active:bg-white/5 transition-all text-outline group-active:text-primary">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline group-active:text-primary">Pista</span>
+</button>
+</div>
+<!-- Number Pad -->
+<div class="w-full max-w-[400px] grid grid-cols-5 gap-3 mt-8 pb-10">
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">1</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">2</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">3</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">4</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn" data-val="5">
+<!-- Highlighted Number 5 in Keypad -->
+<div class="btn-3d-shadow bg-tertiary-container"></div>
+<div class="absolute inset-0 bg-tertiary rounded-lg flex items-center justify-center text-on-tertiary-container font-grid-number text-grid-number">5</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">6</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">7</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">8</div>
+</button>
+<button class="btn-3d-primary relative h-16 group keypad-btn">
+<div class="btn-3d-shadow bg-surface-container-highest"></div>
+<div class="absolute inset-0 glass-panel border border-white/10 rounded-lg flex items-center justify-center text-white font-grid-number text-grid-number">9</div>
+</button>
+<button class="btn-3d-primary relative h-16 group">
+<div class="btn-3d-shadow bg-secondary-container"></div>
+<div class="absolute inset-0 bg-secondary rounded-lg flex items-center justify-center text-on-secondary font-grid-number text-grid-number">
+<span class="material-symbols-outlined text-on-secondary" data-icon="close">close</span>
+</div>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-6 pt-3 bg-surface-container-low/90 border-t border-outline-variant/20 backdrop-blur-md rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full w-12 h-12 active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline w-12 h-12 hover:text-primary transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline w-12 h-12 hover:text-primary transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline w-12 h-12 hover:text-primary transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</button>
+</nav>
+<script>
+        // Floating Score Function
+        function showFloatingScore(element, scoreText = "+100") {
+            const rect = element.getBoundingClientRect();
+            const gridRect = document.getElementById('sudoku-grid').getBoundingClientRect();
+            
+            // Calculate position relative to the grid container
+            const top = rect.top - gridRect.top;
+            const left = rect.left - gridRect.left;
+            
+            const scoreEl = document.createElement('div');
+            scoreEl.className = 'floating-score';
+            scoreEl.innerText = scoreText;
+            
+            // Center the score over the cell
+            scoreEl.style.top = `${top - 10}px`;
+            scoreEl.style.left = `${left + (rect.width / 2) - 20}px`; // Rough centering based on text width
+            
+            document.getElementById('sudoku-grid').appendChild(scoreEl);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                scoreEl.remove();
+            }, 1500);
+        }
+
+        // Staggered Entry for Sudoku Cells
+        document.addEventListener('DOMContentLoaded', () => {
+            const cells = document.querySelectorAll('.sudoku-cell');
+            cells.forEach((cell, index) => {
+                cell.style.animationDelay = `${index * 5}ms`;
+            });
+        });
+
+        // Click interaction for cells: update active state and show floating points
+        document.querySelectorAll('.sudoku-cell').forEach(cell => {
+            cell.addEventListener('click', (e) => {
+                // Remove active class from previously active cell
+                document.querySelectorAll('.cell-active').forEach(c => c.classList.remove('cell-active'));
+                
+                // Add active class to clicked cell
+                e.currentTarget.classList.add('cell-active');
+                
+                // Show floating score
+                showFloatingScore(e.currentTarget, "+100");
+                
+                // Sound effect
+                const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+                audio.volume = 0.1;
+                audio.play().catch(() => {});
+            });
+        });
+
+        // Number Pad Interaction
+        document.querySelectorAll('.keypad-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const activeCell = document.querySelector('.cell-active');
+                if (activeCell) {
+                    // Trigger pop animation
+                    activeCell.classList.remove('cell-pop');
+                    void activeCell.offsetWidth; // trigger reflow
+                    activeCell.classList.add('cell-pop');
+                }
+                
+                const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+                audio.volume = 0.2;
+                audio.play().catch(() => {});
+            });
+        });
+
+        // No need for mousemove background parallax as we have CSS animated ambient background now
+    </script>
+</body></html>

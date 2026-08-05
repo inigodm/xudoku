@@ -24,6 +24,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.alpha
+import kotlinx.coroutines.launch
 import com.inigo.xudoku.model.SudokuBoard
 import com.inigo.xudoku.ui.CellState
 import com.inigo.xudoku.ui.theme.ErrorColor
@@ -145,9 +156,37 @@ private fun SudokuCell(
         Modifier.border(0.5.dp, Outline.copy(alpha = 0.25f))
     }
 
+    val alphaAnim = remember { Animatable(0f) }
+    val offsetYAnim = remember { Animatable(0f) }
+    var previousValue by remember { mutableIntStateOf(cell.value) }
+
+    LaunchedEffect(cell.value) {
+        if (previousValue == SudokuBoard.EMPTY && cell.value != SudokuBoard.EMPTY && !cell.isError && !cell.isGiven) {
+            launch {
+                alphaAnim.snapTo(1f)
+                offsetYAnim.snapTo(0f)
+                
+                launch {
+                    offsetYAnim.animateTo(
+                        targetValue = -40f,
+                        animationSpec = tween(durationMillis = 600)
+                    )
+                }
+                launch {
+                    alphaAnim.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(durationMillis = 600, delayMillis = 200)
+                    )
+                }
+            }
+        }
+        previousValue = cell.value
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
+            .zIndex(if (alphaAnim.value > 0f) 1f else 0f)
             .background(bgColor)
             .then(borderMod)
             .clickable(onClick = onClick)
@@ -170,6 +209,20 @@ private fun SudokuCell(
             cellNotes.isNotEmpty() -> {
                 NoteGrid(notes = cellNotes)
             }
+        }
+
+        if (alphaAnim.value > 0f) {
+            Text(
+                text = "+50",
+                color = Color(0xFFFFD54F), // Amarillo
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier
+                    .offset(y = offsetYAnim.value.dp)
+                    .alpha(alphaAnim.value)
+            )
         }
     }
 }

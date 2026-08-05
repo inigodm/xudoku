@@ -15,7 +15,7 @@
 | Archivo | Qué hace | Cuándo tocarlo |
 |---|---|---|
 | `app/src/main/java/com/inigo/xudoku/MainActivity.kt` | Entry point: `enableEdgeToEdge()` + `XudokuTheme { XudokuNavGraph() }`. Sin lógica de negocio | Solo si se añaden permisos o se cambia el punto de entrada |
-| `app/src/main/java/com/inigo/xudoku/ui/XudokuNavGraph.kt` | Grafo de navegación con `NavHost`: define rutas `splash`, `difficulty`, `game/{difficultyName}`, `victory/{seconds}/{mistakes}/{difficultyName}/{score}`, `stats`, `profile`. Instancia `GameViewModel` en el destino `game/` | Al añadir nuevas pantallas/rutas o cambiar parámetros de navegación |
+| `app/src/main/java/com/inigo/xudoku/ui/XudokuNavGraph.kt` | Grafo de navegación con `NavHost`: define rutas `splash`, `difficulty`, `game/{difficultyName}`, `victory/{seconds}/{mistakes}/{difficultyName}/{score}`, `game_over/{seconds}/{mistakes}`, `stats`, `profile`. Instancia `GameViewModel` en el destino `game/` | Al añadir nuevas pantallas/rutas o cambiar parámetros de navegación |
 | `app/src/main/java/com/inigo/xudoku/ui/GameViewModel.kt` | ViewModel con toda la lógica de estado mutable de una partida: `cells`, `notes`, `selectedCell`, `isNotesMode`, `mistakes`, `elapsedSeconds`, `isCompleted`, `isLoading`. Acciones: `startGame`, `selectCell`, `enterNumber`, `clearSelectedCell`, `toggleNotesMode`, `undoLastMove`, `requestHint` | Al añadir nuevo estado de juego (ej: power-ups, modos especiales) |
 | `app/src/main/java/com/inigo/xudoku/ui/theme/Color.kt` | Paleta completa "Vivid Logic / Deep Galactic" — 30+ constantes de color (Primary, Secondary, Tertiary, superficies, errores). Fuente de verdad de colores | Al cambiar la paleta; leer `design/style-tokens.md` antes |
 | `app/src/main/java/com/inigo/xudoku/ui/theme/Theme.kt` | `XudokuTheme` con `darkColorScheme` fijo (sin dynamic color). Asigna todos los slots semánticos de Material3 | Al cambiar el sistema de temas |
@@ -27,7 +27,7 @@
 |---|---|---|
 | `app/src/main/java/com/inigo/xudoku/ui/screen/SplashScreen.kt` | Splash animado (~2 s): logo + "SUDOKU" con animación de escala y fade, luego llama `onSplashComplete`. Incluye `@Preview` | Al cambiar la animación de entrada o el logo |
 | `app/src/main/java/com/inigo/xudoku/ui/screen/DifficultyScreen.kt` | Selección de dificultad: TopAppBar (← SUDOKU ⚙), logo con glow, 4 `DifficultyCard` 3D, barra de progreso global con gradient. Incluye `@Preview` | Al añadir dificultades o cambiar la selección |
-| `app/src/main/java/com/inigo/xudoku/ui/screen/GameScreen.kt` | Pantalla de juego activo: TopAppBar centrado con chip de dificultad + timer en segunda fila, HUD de mistakes + level, `SudokuGrid`, toolbar de acciones (Deshacer/Borrar/Notas/Pista), `NumberPad`. Calcula `computeScore` al completar. Incluye `@Preview` | Al cambiar el layout de juego; **conecta con `GameViewModel`** |
+| `app/src/main/java/com/inigo/xudoku/ui/screen/GameScreen.kt` | Pantalla de juego activo: TopAppBar centrado con chip de dificultad + timer en segunda fila, HUD de mistakes + level, `SudokuGrid`, toolbar de acciones (Deshacer/Borrar/Notas/Pista), `NumberPad`. Calcula `computeScore` al completar y maneja el fin de juego al llegar a 3 errores. Incluye `@Preview` | Al cambiar el layout de juego; **conecta con `GameViewModel`** |
 | `app/src/main/java/com/inigo/xudoku/ui/screen/VictoryScreen.kt` | Victoria: TopAppBar, confeti (4 colores brand), badge NUEVA MARCA, puntuación, StatCards con íconos (timer/cancel), card de dificultad con dots, barra XP gradient, botones "Siguiente Nivel" y "Menú Principal". Tab Badges activo en bottom nav. Incluye `@Preview` con datos reales | Al cambiar el layout de victoria |
 | `app/src/main/java/com/inigo/xudoku/ui/screen/StatsScreen.kt` | Estadísticas (placeholder): cabecera, chips de filtro por dificultad, card de logros totales, gráfica de evolución (vacía), difficulty split bars, stat cards individuales, recent flow. Todos los datos son placeholders hasta implementar persistencia | Al implementar persistencia de partidas o conectar datos reales |
 | `app/src/main/java/com/inigo/xudoku/ui/screen/ProfileScreen.kt` | Perfil de usuario (placeholder): avatar con borde Tertiary + badge de nivel, stats (partidas/win rate/streak), account settings con 3 filas, botón de logout. Todos los datos son placeholders hasta implementar auth | Al implementar autenticación o datos de usuario |
@@ -36,7 +36,7 @@
 
 | Archivo | Qué hace | Cuándo tocarlo |
 |---|---|---|
-| `app/src/main/java/com/inigo/xudoku/ui/components/SudokuGrid.kt` | Grid 9×9 con estados: celda seleccionada (ring Primary), celdas con mismo número (highlight Tertiary), celdas del mismo bloque/fila/col (tinte suave), errores (rojo), notas (`NoteGrid` 3×3). Líneas separadoras de bloque via Canvas | Al cambiar el aspecto visual del tablero |
+| `app/src/main/java/com/inigo/xudoku/ui/components/SudokuGrid.kt` | Grid 9×9 con estados: celda seleccionada (ring Primary), celdas con mismo número (highlight Tertiary), celdas del mismo bloque/fila/col (tinte suave), errores (rojo), notas (`NoteGrid` 3×3), animación de puntos en aciertos. Líneas separadoras de bloque via Canvas | Al cambiar el aspecto visual del tablero |
 | `app/src/main/java/com/inigo/xudoku/ui/components/NumberPad.kt` | Teclado numérico 5+5 (1–5 en fila 1, 6–9+borrar en fila 2) con efecto 3D táctil (`animateDpAsState`). El número activo se resalta en Tertiary. `DeleteKey` usa SecondaryContainer | Al cambiar el layout o aspecto del teclado |
 | `app/src/main/java/com/inigo/xudoku/ui/components/DifficultyCard.kt` | Tarjeta de dificultad con efecto 3D press (`offset(y = offsetY)` animado). Datos visuales en `DifficultyVisuals` (colores, label, icono). Helper `difficultyVisuals()` mapea `Difficulty` → colores correctos | Al cambiar colores o layout de las tarjetas de dificultad |
 | `app/src/main/java/com/inigo/xudoku/ui/components/XudokuBottomBar.kt` | Bottom nav con 4 tabs (Play/Stats/Badges/Profile). Tab activo: círculo `SecondaryContainer`. Badges deshabilitado (sin pantalla). Tab seleccionado recibe pill circular | Al añadir tabs o cambiar iconos |
@@ -80,13 +80,14 @@ SudokuGame(puzzle: SudokuBoard, solution: SudokuBoard)
 GameViewModel
       │  _cells: StateFlow<Array<Array<CellState>>>   — estado de cada celda (valor, isGiven, isError)
       │  _notes: StateFlow<Map<Pair<Int,Int>, Set<Int>>> — notas en lápiz por celda
-      │  _selectedCell, _isNotesMode, _mistakes, _elapsedSeconds, _isCompleted, _isLoading
+      │  _selectedCell, _isNotesMode, _mistakes, _elapsedSeconds, _isCompleted, _isLoading, _isGameOver
       │  startGame() → genera puzzle en background
       │  enterNumber() → valida vs solution, detecta errores, llama checkCompletion()
       │  undoLastMove() → historial de movimientos (ArrayDeque<GameMove>)
       ▼
 GameScreen  →  SudokuGrid + NumberPad + ActionButtons
       │  isCompleted → navega a VictoryScreen(seconds, mistakes, difficulty, score)
+      │  isGameOver  → navega a GameOverScreen(seconds, mistakes)
       ▼
 VictoryScreen (datos pasados como argumentos de navegación)
       ├─ "Siguiente Nivel" → GameScreen (misma dificultad, nuevo puzzle)
