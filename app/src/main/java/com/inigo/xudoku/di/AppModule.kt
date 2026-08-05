@@ -28,5 +28,5 @@ val appModule = module {
     single<GameHistoryRepository> { RoomGameHistoryRepository(get()) }
 
     // ViewModel
-    viewModel { GameViewModel(ioDispatcher = Dispatchers.IO) }
+    viewModel { GameViewModel(ioDispatcher = Dispatchers.IO, historyRepo = get()) }
 }

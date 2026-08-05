@@ -20,6 +20,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import com.inigo.xudoku.model.scoring.ScoreManager
+import com.inigo.xudoku.model.scoring.ScoreConfig
+import com.inigo.xudoku.data.repository.GameHistoryRepository
+import com.inigo.xudoku.model.history.SudokuGameResult
+import java.util.Date
+import java.util.UUID
 
 /** Estado inmutable de una celda del tablero visible en la UI. */
 data class CellState(
@@ -47,10 +52,12 @@ private data class GameMove(
 
 /** ViewModel que gestiona el estado mutable de una partida de Sudoku. */
 class GameViewModel(
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val historyRepo: GameHistoryRepository? = null
 ) : ViewModel() {
 
     private lateinit var game: SudokuGame
+    private var gameStartTime: Date? = null
 
     // ── Estado expuesto ──────────────────────────────────────────────────────
 
@@ -115,6 +122,7 @@ class GameViewModel(
     fun startGame(difficulty: Difficulty) {
         timerJob?.cancel()
         moveHistory.clear()
+        gameStartTime = Date()
         _mistakes.value      = 0
         _elapsedSeconds.value = 0
         _selectedCell.value  = null
@@ -175,6 +183,7 @@ class GameViewModel(
                     if (newCount >= 3) {
                         _isGameOver.value = true
                         timerJob?.cancel()
+                        saveGameResult()
                     }
                     newCount
                 }
@@ -298,6 +307,7 @@ class GameViewModel(
         if (complete) {
             _isCompleted.value = true
             timerJob?.cancel()
+            saveGameResult()
         }
     }
 
@@ -359,4 +369,57 @@ class GameViewModel(
 
     private fun emptyBoard(): Array<Array<CellState>> =
         Array(SudokuBoard.SIZE) { Array(SudokuBoard.SIZE) { CellState(0, false, false) } }
+        
+    private fun saveGameResult() {
+        val repo = historyRepo ?: return
+        val startTime = gameStartTime ?: Date()
+        val endTime = Date()
+        val difficultyEnum = _difficulty.value ?: Difficulty.EASY
+        val isWin = _isCompleted.value
+        
+        var placed = 0
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                val cell = _cells.value[r][c]
+                if (!cell.isGiven && cell.value != SudokuBoard.EMPTY) placed++
+            }
+        }
+        
+        val result = SudokuGameResult(
+            id = UUID.randomUUID().toString(),
+            fechaHoraInicio = startTime,
+            fechaHoraFin = endTime,
+            tiempoEmpleado = _elapsedSeconds.value.toLong(),
+            tiempoPausado = 0L,
+            dificultad = difficultyEnum,
+            nivel = 1,
+            identificadorSudoku = null,
+            seed = null,
+            tamanoTablero = SudokuBoard.SIZE,
+            puntuacionPartida = scoreManager.currentScore,
+            puntuacionFinal = getFinalScore(),
+            multiplicadorDificultad = ScoreConfig.getDifficultyMultiplier(difficultyEnum),
+            multiplicadorTiempo = 1.0f,
+            ayudasMostrarNumero = scoreManager.hintsUsed,
+            ayudasResolverCasilla = 0,
+            ayudasComprobarErrores = 0,
+            totalAyudas = scoreManager.hintsUsed,
+            erroresCometidos = _mistakes.value,
+            partidaPerfecta = _mistakes.value == 0,
+            movimientosTotales = moveHistory.size,
+            numerosColocados = placed,
+            porcentajeCompletadoManual = calculateFilledRatio(),
+            porcentajeCompletadoConAyudas = 0f,
+            completado = isWin,
+            abandono = false,
+            victoria = isWin,
+            versionJuego = 1,
+            versionAlgoritmoPuntuacion = 1,
+            metadata = "{}"
+        )
+        
+        viewModelScope.launch {
+            repo.saveGameResult(result)
+        }
+    }
 }
