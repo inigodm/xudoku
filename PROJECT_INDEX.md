@@ -11,6 +11,22 @@
 | `app/src/main/java/com/inigo/xudoku/model/Difficulty.kt` | Enum con 5 niveles (`VERY_EASY`→40 celdas visibles, …, `HARDEST`→17). Los valores están calibrados; 17 es el mínimo teórico con solución única | Solo si se añade un nuevo nivel de dificultad; no cambiar los existentes |
 | `app/src/main/java/com/inigo/xudoku/model/scoring/ScoreConfig.kt` | Objeto con constantes configurables del sistema de puntuación (base, multiplicadores, bonus y penalizaciones) | Al balancear la economía del juego o cambiar recompensas |
 | `app/src/main/java/com/inigo/xudoku/model/scoring/ScoreManager.kt` | Gestor con estado que calcula los puntos por movimiento y puntuación final, aplicando reglas de `ScoreConfig` | Al cambiar la lógica de cálculo de puntuación |
+| `app/src/main/java/com/inigo/xudoku/model/history/SudokuGameResult.kt` | Entidad Room (`@Entity`) que guarda el resultado completo de una partida para historial, estadísticas y futura sincronización online | Al añadir nuevos datos a persistir |
+
+### Capa de Datos (Persistencia y Repositorios)
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
+| `app/src/main/java/com/inigo/xudoku/data/local/XudokuDatabase.kt` | Configuración de RoomDatabase y `TypeConverters` (UUID, Enum, Dates) | Al añadir nuevas Entidades a la DB |
+| `app/src/main/java/com/inigo/xudoku/data/local/SudokuGameResultDao.kt` | DAO con queries SQL para obtener histórico, mejores tiempos, puntuaciones, etc | Al requerir nuevas consultas |
+| `app/src/main/java/com/inigo/xudoku/data/repository/GameHistoryRepository.kt` | Interfaz y su implementación concreta (`RoomGameHistoryRepository`) para acceder a los datos | Al añadir lógica de negocio relacionada con la base de datos |
+
+### Inyección de Dependencias
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
+| `app/src/main/java/com/inigo/xudoku/di/AppModule.kt` | Módulo de Koin que inyecta la Base de datos, DAO, Repositorios y ViewModels | Al añadir nuevas dependencias |
+| `app/src/main/java/com/inigo/xudoku/XudokuApplication.kt` | Entry point de la aplicación que inicializa Koin | Raramente |
 
 ### Capa de UI (`ui/`)
 

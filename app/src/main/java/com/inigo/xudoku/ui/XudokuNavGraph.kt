@@ -74,7 +74,7 @@ fun XudokuNavGraph() {
         ) { entry ->
             val difficultyName = entry.arguments?.getString("difficultyName") ?: Difficulty.VERY_EASY.name
             val difficulty     = runCatching { Difficulty.valueOf(difficultyName) }.getOrDefault(Difficulty.VERY_EASY)
-            val gameViewModel: GameViewModel = viewModel()
+            val gameViewModel: GameViewModel = org.koin.androidx.compose.koinViewModel()
 
             GameScreen(
                 difficulty       = difficulty,
