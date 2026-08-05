@@ -68,7 +68,7 @@ fun SplashScreen(onSplashComplete: () -> Unit) {
         ) {
             // Logo
             androidx.compose.foundation.Image(
-                painter            = painterResource(R.drawable.ic_launcher_foreground),
+                painter            = painterResource(R.mipmap.ic_launcher),
                 contentDescription = "Sudoku logo",
                 modifier           = Modifier
                     .size(140.dp)
@@ -77,18 +77,13 @@ fun SplashScreen(onSplashComplete: () -> Unit) {
             Spacer(Modifier.height(24.dp))
             // Nombre de la app
             Text(
-                text       = "SUDOKU",
+                text       = "XUDOKU",
                 style      = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color      = Primary,
                 letterSpacing = 6.sp
             )
             Spacer(Modifier.height(8.dp))
-            Text(
-                text  = "PON A PRUEBA TU MENTE",
-                style = MaterialTheme.typography.labelLarge,
-                color = OnSurfaceVariant
-            )
         }
     }
 }

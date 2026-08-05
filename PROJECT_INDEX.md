@@ -34,7 +34,7 @@
 |---|---|---|
 | `app/src/main/java/com/inigo/xudoku/MainActivity.kt` | Entry point: `enableEdgeToEdge()` + `XudokuTheme { XudokuNavGraph() }`. Sin lógica de negocio | Solo si se añaden permisos o se cambia el punto de entrada |
 | `app/src/main/java/com/inigo/xudoku/ui/XudokuNavGraph.kt` | Grafo de navegación con `NavHost`: define rutas `splash`, `difficulty`, `game/{difficultyName}`, `victory/{seconds}/{mistakes}/{difficultyName}/{score}`, `game_over/{seconds}/{mistakes}`, `stats`, `profile`. Instancia `GameViewModel` en el destino `game/` | Al añadir nuevas pantallas/rutas o cambiar parámetros de navegación |
-| `app/src/main/java/com/inigo/xudoku/ui/GameViewModel.kt` | ViewModel con toda la lógica de estado mutable de una partida: `cells`, `notes`, `selectedCell`, `isNotesMode`, `mistakes`, `elapsedSeconds`, `isCompleted`, `isLoading`, `currentScore`, `scoreEvents`. Acciones: `startGame`, `selectCell`, `enterNumber`, `clearSelectedCell`, `toggleNotesMode`, `undoLastMove`, `requestHint`. Utiliza `ScoreManager` | Al añadir nuevo estado de juego (ej: power-ups, modos especiales) |
+| `app/src/main/java/com/inigo/xudoku/ui/GameViewModel.kt` | ViewModel con toda la lógica de estado mutable de una partida: `cells`, `notes`, `selectedCell`, `isNotesMode`, `mistakes`, `elapsedSeconds`, `isCompleted`, `isLoading`, `currentScore`, `scoreEvents`. Acciones: `startGame`, `selectCell`, `enterNumber`, `clearSelectedCell`, `toggleNotesMode`, `undoLastMove`, `requestHint`. Utiliza `ScoreManager`. Inyecta `GameHistoryRepository` y guarda automáticamente el resultado en SQLite al ganar o perder (`saveGameResult`) | Al añadir nuevo estado de juego (ej: power-ups, modos especiales) o cambiar la recolección de estadísticas |
 | `app/src/main/java/com/inigo/xudoku/ui/theme/Color.kt` | Paleta completa "Vivid Logic / Deep Galactic" — 30+ constantes de color (Primary, Secondary, Tertiary, superficies, errores). Fuente de verdad de colores | Al cambiar la paleta; leer `design/style-tokens.md` antes |
 | `app/src/main/java/com/inigo/xudoku/ui/theme/Theme.kt` | `XudokuTheme` con `darkColorScheme` fijo (sin dynamic color). Asigna todos los slots semánticos de Material3 | Al cambiar el sistema de temas |
 | `app/src/main/java/com/inigo/xudoku/ui/theme/Type.kt` | Escala tipográfica Material3 con Quicksand (headers, números del grid) y Montserrat (labels, cuerpo). Usa Google Fonts downloadable con `R.array.com_google_android_gms_fonts_certs` | Al añadir estilos tipográficos o cambiar fuentes |
@@ -105,9 +105,10 @@ GameViewModel
       │  _currentScore: StateFlow<Int> — puntuación acumulada real en vivo
       │  _scoreEvents: SharedFlow<ScoreAnimationEvent> — eventos para animar flotantes (+70, etc.)
       │  _selectedCell, _isNotesMode, _mistakes, _elapsedSeconds, _isCompleted, _isLoading, _isGameOver
-      │  startGame() → genera puzzle en background, reinicia ScoreManager
+      │  startGame() → genera puzzle en background, reinicia ScoreManager, guarda fecha inicio
       │  enterNumber() → valida vs solution, llama a ScoreManager si acierto, llama checkCompletion()
       │  undoLastMove() → historial de movimientos (ArrayDeque<GameMove>)
+      │  saveGameResult() → guarda silenciosamente la partida en Room al hacer Game Over o Completar el tablero
       ▼
 GameScreen  →  SudokuGrid + NumberPad + ActionButtons
       │  isCompleted → navega a VictoryScreen(seconds, mistakes, difficulty, score)

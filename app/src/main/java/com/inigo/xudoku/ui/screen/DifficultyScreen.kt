@@ -149,13 +149,13 @@ fun DifficultyScreen(
                 // Capa de glow difuminado
                 Box(
                     modifier = Modifier
-                        .size(128.dp)
+                        .size(75.dp)
                         .drawBehind {
                             drawGlowCircle(color = Primary.copy(alpha = 0.25f), radius = size.minDimension * 0.85f)
                         }
                 )
                 Image(
-                    painter            = painterResource(R.drawable.ic_launcher_foreground),
+                    painter            = painterResource(R.mipmap.ic_launcher),
                     contentDescription = "Sudoku logo",
                     modifier           = Modifier
                         .size(100.dp)
@@ -170,11 +170,6 @@ fun DifficultyScreen(
                 style      = MaterialTheme.typography.headlineMedium,
                 color      = OnSurface,
                 fontWeight = FontWeight.Bold
-            )
-            Text(
-                text  = "PON A PRUEBA TU MENTE",
-                style = MaterialTheme.typography.labelLarge,
-                color = OnSurfaceVariant
             )
 
             Spacer(Modifier.height(32.dp))

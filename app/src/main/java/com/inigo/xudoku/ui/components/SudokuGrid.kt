@@ -28,12 +28,16 @@ import androidx.compose.ui.zIndex
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.offset
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 import com.inigo.xudoku.model.SudokuBoard
 import com.inigo.xudoku.ui.CellState
@@ -252,12 +256,61 @@ private fun NoteGrid(notes: Set<Int>) {
                                 text      = digit.toString(),
                                 color     = OnSurfaceVariant,
                                 fontSize  = 8.sp,
-                                textAlign = TextAlign.Center
+                                lineHeight = 8.sp,
+                                textAlign = TextAlign.Center,
+                                style = LocalTextStyle.current.copy(
+                                    platformStyle = PlatformTextStyle(
+                                        includeFontPadding = false // clave: quita el padding extra de Android
+                                    ),
+                                    lineHeightStyle = LineHeightStyle(
+                                        alignment = LineHeightStyle.Alignment.Center,
+                                        trim = LineHeightStyle.Trim.Both
+                                    )
+                                )
                             )
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+// ── Preview ──────────────────────────────────────────────────────────────────
+
+@Preview(
+    name           = "SudokuGrid — layout",
+    showBackground = true,
+    backgroundColor = 0xFF121212 // Simulando fondo oscuro
+)
+@Composable
+fun PreviewSudokuGrid() {
+    com.inigo.xudoku.ui.theme.XudokuTheme {
+        val dummyCells = Array(9) { r ->
+            Array(9) { c ->
+                val v = if (r == c) (r + 1) else 0
+                CellState(
+                    value = v,
+                    isGiven = v % 2 != 0,
+                    isError = r == 0 && c == 8
+                )
+            }
+        }
+        val dummyNotes = mapOf(
+            Pair(0, 1) to setOf(1, 2, 3),
+            Pair(1, 0) to setOf(4, 5, 6, 7, 8, 9),
+            Pair(2, 2) to setOf(7, 8, 9)
+        )
+        
+        Box(modifier = Modifier.padding(16.dp)) {
+            SudokuGrid(
+                cells = dummyCells,
+                notes = dummyNotes,
+                selectedCell = Pair(4, 4),
+                lastScoreEvent = null,
+                onCellClick = { _, _ -> },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
