@@ -77,6 +77,7 @@ fun Int.toTimeString(): String =
  * @param difficulty      Dificultad de la partida (se usa para iniciar el ViewModel).
  * @param viewModel       ViewModel con el estado mutable de la partida.
  * @param onGameCompleted Callback cuando el puzzle se completa: (seconds, mistakes, difficulty, score).
+ * @param onGameOver      Callback cuando el jugador agota sus 3 errores: (seconds, mistakes).
  * @param onNavigateBack  Volver a la pantalla de selección.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +86,7 @@ fun GameScreen(
     difficulty: Difficulty,
     viewModel: GameViewModel,
     onGameCompleted: (seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int) -> Unit,
+    onGameOver: (seconds: Int, mistakes: Int) -> Unit = { _, _ -> },
     onNavigateBack: () -> Unit
 ) {
     // Iniciar partida cuando cambie la dificultad
@@ -99,6 +101,7 @@ fun GameScreen(
     val mistakes     by viewModel.mistakes.collectAsState()
     val elapsed      by viewModel.elapsedSeconds.collectAsState()
     val isCompleted  by viewModel.isCompleted.collectAsState()
+    val isGameOver   by viewModel.isGameOver.collectAsState()
     val isLoading    by viewModel.isLoading.collectAsState()
 
     // Navegar a Victoria cuando el puzzle esté completo
@@ -106,6 +109,13 @@ fun GameScreen(
         if (isCompleted) {
             val score = computeScore(elapsed, mistakes, difficulty)
             onGameCompleted(elapsed, mistakes, difficulty, score)
+        }
+    }
+
+    // Navegar a Fin de Juego cuando se agoten los 3 errores
+    LaunchedEffect(isGameOver) {
+        if (isGameOver) {
+            onGameOver(elapsed, mistakes)
         }
     }
 

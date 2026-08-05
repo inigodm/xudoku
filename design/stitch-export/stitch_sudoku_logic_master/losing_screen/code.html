@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Game Over - Sudoku</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;family=Quicksand:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-tint": "#c0c1ff",
+                "surface-container-low": "#131b2e",
+                "error": "#ffb4ab",
+                "on-secondary-fixed": "#2c0051",
+                "surface": "#0b1326",
+                "on-surface": "#dae2fd",
+                "primary-fixed": "#e1e0ff",
+                "on-tertiary": "#003640",
+                "on-primary-container": "#0d0096",
+                "tertiary-fixed": "#acedff",
+                "surface-container-high": "#222a3d",
+                "error-container": "#93000a",
+                "surface-variant": "#2d3449",
+                "on-error-container": "#ffdad6",
+                "on-primary-fixed": "#07006c",
+                "on-background": "#dae2fd",
+                "secondary-fixed": "#f0dbff",
+                "primary-fixed-dim": "#c0c1ff",
+                "on-secondary-container": "#d6a9ff",
+                "tertiary-container": "#009eb9",
+                "secondary-container": "#6f00be",
+                "inverse-primary": "#494bd6",
+                "surface-container": "#171f33",
+                "primary": "#c0c1ff",
+                "on-tertiary-container": "#002f38",
+                "inverse-surface": "#dae2fd",
+                "outline-variant": "#464554",
+                "on-error": "#690005",
+                "primary-container": "#8083ff",
+                "tertiary-fixed-dim": "#4cd7f6",
+                "surface-dim": "#0b1326",
+                "surface-bright": "#31394d",
+                "surface-container-lowest": "#060e20",
+                "inverse-on-surface": "#283044",
+                "on-primary": "#1000a9",
+                "surface-container-highest": "#2d3449",
+                "on-tertiary-fixed": "#001f26",
+                "on-secondary": "#490080",
+                "outline": "#908fa0",
+                "on-primary-fixed-variant": "#2f2ebe",
+                "tertiary": "#4cd7f6",
+                "on-tertiary-fixed-variant": "#004e5c",
+                "on-surface-variant": "#c7c4d7",
+                "secondary": "#ddb7ff",
+                "on-secondary-fixed-variant": "#6900b3",
+                "secondary-fixed-dim": "#ddb7ff",
+                "background": "#0b1326"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "stack-md": "1rem",
+                "stack-lg": "2rem",
+                "grid-gap": "2px",
+                "container-padding": "1.5rem",
+                "block-gap": "4px",
+                "stack-sm": "0.5rem"
+        },
+        "fontFamily": {
+                "body-lg": [
+                        "Montserrat"
+                ],
+                "display-lg": [
+                        "Quicksand"
+                ],
+                "label-sm": [
+                        "Montserrat"
+                ],
+                "headline-lg": [
+                        "Quicksand"
+                ],
+                "grid-number": [
+                        "Quicksand"
+                ],
+                "label-lg": [
+                        "Montserrat"
+                ],
+                "body-md": [
+                        "Montserrat"
+                ],
+                "headline-lg-mobile": [
+                        "Quicksand"
+                ]
+        },
+        "fontSize": {
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "700"
+                        }
+                ],
+                "grid-number": [
+                        "28px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "label-lg": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "700"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background: radial-gradient(circle at top center, #171f33 0%, #0b1326 100%);
+            color: theme('colors.on-background');
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-3d-primary {
+            position: relative;
+            transition: all 0.1s ease;
+            transform: translateY(-4px);
+        }
+        .btn-3d-primary:active {
+            transform: translateY(0px);
+        }
+        .btn-3d-primary-shadow {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            transform: translateY(4px);
+            z-index: -1;
+        }
+
+        .neon-text-error {
+            text-shadow: 0 0 15px rgba(255, 180, 171, 0.4);
+        }
+        .cracked-icon {
+            filter: drop-shadow(0 0 15px rgba(255, 180, 171, 0.4));
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-hidden pb-24 md:pb-0 font-body-md bg-background text-on-background">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky bg-background/80 backdrop-blur-xl flex justify-between items-center px-container-padding py-stack-md z-40 hidden md:flex shadow-none">
+<button class="active:translate-y-1 transition-transform hover:opacity-80">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-display-lg text-headline-lg-mobile tracking-tighter text-primary">SUDOKU</h1>
+<div class="flex items-center gap-6">
+<a class="text-primary hover:opacity-80 font-label-lg text-label-lg flex items-center gap-2 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">grid_view</span> Jugar
+            </a>
+<a class="text-outline hover:text-primary hover:opacity-80 font-label-lg text-label-lg flex items-center gap-2 active:scale-90 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined">leaderboard</span> Ránking
+            </a>
+<a class="text-outline hover:text-primary hover:opacity-80 font-label-lg text-label-lg flex items-center gap-2 active:scale-90 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined">person</span> Perfil
+            </a>
+<a class="text-outline hover:text-primary hover:opacity-80 active:translate-y-1 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+</a>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col items-center justify-center px-container-padding z-10 relative">
+<!-- Icon/Graphic -->
+<div class="mb-stack-lg animate-pulse cracked-icon">
+<span class="material-symbols-outlined text-[80px] text-error" style="font-variation-settings: 'FILL' 1;">
+                heart_broken
+            </span>
+</div>
+<!-- Title & Subtitle -->
+<div class="text-center mb-stack-lg">
+<h1 class="font-display-lg text-display-lg text-error mb-stack-sm neon-text-error uppercase tracking-wider">
+                ¡FIN DEL JUEGO!
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant font-display-lg">
+                Te has quedado sin oportunidades.
+            </p>
+</div>
+<!-- Stats Grid (Bento style) -->
+<div class="grid grid-cols-2 gap-stack-md w-full max-w-md mb-stack-lg">
+<div class="glass-panel rounded-xl p-stack-md flex flex-col items-center justify-center gap-2 shadow-lg border-error/10">
+<span class="material-symbols-outlined text-error mb-1" style="font-variation-settings: 'FILL' 1;">
+                    cancel
+                </span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Errores</span>
+<span class="font-headline-lg text-headline-lg text-on-background">3/3</span>
+</div>
+<div class="glass-panel rounded-xl p-stack-md flex flex-col items-center justify-center gap-2 shadow-lg border-error/10">
+<span class="material-symbols-outlined text-tertiary mb-1" style="font-variation-settings: 'FILL' 0;">
+                    timer
+                </span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Tiempo</span>
+<span class="font-headline-lg text-headline-lg text-on-background">12:45</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full max-w-md flex flex-col gap-stack-md">
+<button class="w-full h-16 relative active:scale-95 transition-transform duration-150">
+<div class="btn-3d-primary-shadow bg-error-container/40"></div>
+<div class="btn-3d-primary w-full h-full bg-error-container rounded-xl flex items-center justify-center gap-3 text-on-error-container font-headline-lg-mobile text-headline-lg-mobile">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">
+                    play_circle
+                </span>
+<span>Ver Anuncio para Continuar</span>
+</div>
+</button>
+<button class="w-full h-14 glass-panel rounded-xl flex items-center justify-center gap-2 text-error font-label-lg text-label-lg uppercase tracking-widest active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">home</span>
+<span>Menú Principal</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container dark:bg-surface-container-high/90 backdrop-blur-md border-t border-white/10 shadow-[0_-4px_20px_rgba(6,14,32,0.5)] flex justify-around items-center h-20 pb-safe px-4">
+<!-- Play Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-sm text-label-sm">Play</span>
+</a>
+<!-- Stats Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label-sm text-label-sm">Stats</span>
+</a>
+<!-- Badges Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined">emoji_events</span>
+<span class="font-label-sm text-label-sm">Badges</span>
+</a>
+<!-- Profile Tab -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-secondary-fixed-dim transition-all active:translate-y-1 duration-150 ease-out" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

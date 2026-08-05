@@ -237,8 +237,24 @@
 
 ---
 
+## Fin de juego
+
+### CU-17 — Agotar errores (pantalla de fin de juego)
+
+| Campo        | Valor |
+|--------------|-------|
+| Actor        | Sistema |
+| Trigger      | Tras `enterNumber`, `mistakes` alcanza 3 errores |
+| Precondición | Partida en curso |
+| Método VM    | `enterNumber` incrementa `mistakes`; al llegar a 3, `_isGameOver.value = true` y cancela el temporizador |
+| Postcondición | `isGameOver=true`, temporizador detenido |
+| Efecto UI    | `GameScreen` detecta `isGameOver=true` y navega a `GameOverScreen` (`game_over/{seconds}/{mistakes}`) con `popUpTo(DIFFICULTY)` |
+| Tested       | ✅ |
+
+---
+
 ## Resumen de cobertura de tests
 
 | Total CUs | Tested ✅ | Pendientes ❌ |
 |-----------|-----------|---------------|
-| 16        | 16        | 0             |
+| 17        | 17        | 0             |

@@ -84,6 +84,11 @@ fun XudokuNavGraph() {
                         popUpTo(Dest.DIFFICULTY) // limpiar back stack del juego
                     }
                 },
+                onGameOver       = { seconds, mistakes ->
+                    navController.navigate(Dest.gameOver(seconds, mistakes)) {
+                        popUpTo(Dest.DIFFICULTY)
+                    }
+                },
                 onNavigateBack   = {
                     navController.popBackStack(Dest.DIFFICULTY, inclusive = false)
                 }

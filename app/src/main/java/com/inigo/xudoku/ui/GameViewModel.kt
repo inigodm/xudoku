@@ -70,6 +70,10 @@ class GameViewModel(
     /** true → el puzzle está completamente resuelto sin errores. */
     val isCompleted: StateFlow<Boolean> = _isCompleted.asStateFlow()
 
+    private val _isGameOver = MutableStateFlow(false)
+    /** true → el jugador agotó los 3 errores permitidos. */
+    val isGameOver: StateFlow<Boolean> = _isGameOver.asStateFlow()
+
     private val _difficulty = MutableStateFlow<Difficulty?>(null)
     /** Dificultad de la partida en curso. */
     val difficulty: StateFlow<Difficulty?> = _difficulty.asStateFlow()
@@ -95,6 +99,7 @@ class GameViewModel(
         _notes.value         = emptyMap()
         _isNotesMode.value   = false
         _isCompleted.value   = false
+        _isGameOver.value    = false
         _difficulty.value    = difficulty
         _isLoading.value     = true
 
@@ -123,7 +128,7 @@ class GameViewModel(
     fun enterNumber(number: Int) {
         val (row, col) = _selectedCell.value ?: return
         val cell = _cells.value[row][col]
-        if (cell.isGiven) return
+        if (cell.isGiven || _isGameOver.value) return
 
         val key = Pair(row, col)
 
@@ -138,7 +143,16 @@ class GameViewModel(
             saveMove(row, col, cell, _notes.value[key] ?: emptySet())
             updateCell(row, col) { CellState(value = number, isGiven = false, isError = isError) }
             _notes.update { it - key }
-            if (isError) _mistakes.update { it + 1 }
+            if (isError) {
+                _mistakes.update { count ->
+                    val newCount = count + 1
+                    if (newCount >= 3) {
+                        _isGameOver.value = true
+                        timerJob?.cancel()
+                    }
+                    newCount
+                }
+            }
             checkCompletion()
         }
     }

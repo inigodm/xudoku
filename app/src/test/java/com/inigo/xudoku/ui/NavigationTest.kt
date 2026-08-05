@@ -53,4 +53,10 @@ class NavigationTest {
     fun `CU-15 Volver atras desde partida mantiene el destino Dificultad`() {
         assertEquals("difficulty", Dest.DIFFICULTY)
     }
+
+    @Test
+    fun `CU-17 Agotar errores genera la ruta de fin de juego con segundos y errores`() {
+        val route = Dest.gameOver(seconds = 765, mistakes = 3)
+        assertEquals("game_over/765/3", route)
+    }
 }

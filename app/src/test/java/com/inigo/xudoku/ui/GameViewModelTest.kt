@@ -418,4 +418,40 @@ class GameViewModelTest {
 
         vm.viewModelScope.cancel()
     }
+
+    // ── CU-17: Agotar errores (pantalla de fin de juego) ──────────────────────
+
+    @Test
+    fun `CU-17 al alcanzar 3 errores se activa isGameOver`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+        assertFalse(vm.isGameOver.value)
+
+        // Encontrar celdas vacías e introducir números incorrectos para acumular 3 errores
+        var mistakesCount = 0
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven && vm.cells.value[r][c].value == SudokuBoard.EMPTY) {
+                    vm.selectCell(r, c)
+                    vm.enterNumber(9)
+                    if (vm.cells.value[r][c].isError) {
+                        mistakesCount++
+                        if (mistakesCount == 3) break
+                    } else {
+                        // Si 9 era la solución correcta, intentamos con 1
+                        vm.enterNumber(1)
+                        if (vm.cells.value[r][c].isError) {
+                            mistakesCount++
+                            if (mistakesCount == 3) break
+                        }
+                    }
+                }
+            }
+            if (mistakesCount == 3) break
+        }
+
+        assertEquals(3, vm.mistakes.value)
+        assertTrue(vm.isGameOver.value)
+
+        vm.viewModelScope.cancel()
+    }
 }
