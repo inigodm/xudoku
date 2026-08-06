@@ -38,6 +38,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,35 +74,49 @@ import com.inigo.xudoku.ui.theme.SurfaceContainerHighest
 import com.inigo.xudoku.ui.theme.SurfaceContainerLow
 import com.inigo.xudoku.ui.theme.Tertiary
 
-// TODO("Conectar a persistencia — todos los datos son placeholders")
-
-// Datos de muestra representativos (se reemplazarán por persistencia real)
-private data class RecentGame(
-    val label: String,
-    val subtitle: String,
-    val time: String,
-    val xp: String,
-    val completed: Boolean
-)
-
-private val sampleRecentGames = listOf(
-    RecentGame("Hard #402",   "YESTERDAY, 9:20 PM", "12:45", "+150 XP", true),
-    RecentGame("Medium #891", "NOV 12, 11:45 AM",   "07:22", "+85 XP",  true),
-    RecentGame("Expert #12",  "NOV 11, 4:30 PM",    "--:--", "DNF",     false)
-)
+import com.inigo.xudoku.ui.StatsUiState
+import com.inigo.xudoku.ui.StatsViewModel
+import com.inigo.xudoku.ui.RecentGameUiModel
 
 /**
  * Pantalla de estadísticas.
  * Datos completamente estáticos hasta implementar persistencia.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
+    viewModel: StatsViewModel,
     onNavigateToPlay: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
     val filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo")
     var selectedFilter by remember { mutableStateOf("Global") }
+
+    val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(selectedFilter) {
+        viewModel.loadStats(selectedFilter)
+    }
+
+    StatsScreenContent(
+        state = state,
+        filters = filters,
+        selectedFilter = selectedFilter,
+        onFilterSelected = { selectedFilter = it },
+        onNavigateToPlay = onNavigateToPlay,
+        onNavigateToProfile = onNavigateToProfile
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StatsScreenContent(
+    state: StatsUiState,
+    filters: List<String>,
+    selectedFilter: String,
+    onFilterSelected: (String) -> Unit,
+    onNavigateToPlay: () -> Unit,
+    onNavigateToProfile: () -> Unit
+) {
 
     Scaffold(
         containerColor = Background,
@@ -159,7 +175,7 @@ fun StatsScreen(
                     val selected = f == selectedFilter
                     FilterChip(
                         selected = selected,
-                        onClick  = { selectedFilter = f },
+                        onClick  = { onFilterSelected(f) },
                         label    = {
                             Text(
                                 f,
@@ -206,7 +222,7 @@ fun StatsScreen(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "0",
+                    "${state.totalGamesWon}",
                     style      = MaterialTheme.typography.displayLarge,
                     color      = Primary,
                     fontWeight = FontWeight.Bold
@@ -221,7 +237,7 @@ fun StatsScreen(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    MiniStat(label = "WIN RATE", value = "—", color = Tertiary)
+                    MiniStat(label = "WIN RATE", value = state.winRate, color = Tertiary)
                     // Separador vertical
                     Box(
                         modifier = Modifier
@@ -229,7 +245,7 @@ fun StatsScreen(
                             .height(40.dp)
                             .background(OnSurfaceVariant.copy(alpha = 0.2f))
                     )
-                    MiniStat(label = "STREAK", value = "0", color = Secondary)
+                    MiniStat(label = "STREAK", value = "${state.currentStreak}", color = Secondary)
                 }
             }
 
@@ -267,7 +283,15 @@ fun StatsScreen(
                         .background(SurfaceContainerHigh)
                         .padding(12.dp)
                 ) {
-                    StatsLineChart()
+                    if (state.pointsEvolution.isNotEmpty()) {
+                        StatsLineChart(dataPoints = state.pointsEvolution)
+                    } else {
+                        Text(
+                            text = "No hay datos suficientes",
+                            modifier = Modifier.align(Alignment.Center),
+                            color = OnSurfaceVariant
+                        )
+                    }
                 }
             }
 
@@ -298,12 +322,17 @@ fun StatsScreen(
                     )
                 }
                 Spacer(Modifier.height(12.dp))
+                val easyCount = (state.difficultySplit.getOrNull(0) ?: 0f)
+                val mediumCount = (state.difficultySplit.getOrNull(1) ?: 0f)
+                val hardCount = (state.difficultySplit.getOrNull(2) ?: 0f)
+                val extremeCount = (state.difficultySplit.getOrNull(3) ?: 0f)
+
                 listOf(
-                    Triple("Fácil",  Tertiary,   "0 games"),
-                    Triple("Medio",  Secondary,  "0 games"),
-                    Triple("Difícil", Primary,   "0 games"),
-                    Triple("Extremo", ErrorColor, "0 games")
-                ).forEach { (label, color, count) ->
+                    Triple("Fácil",  Tertiary,   easyCount),
+                    Triple("Medio",  Secondary,  mediumCount),
+                    Triple("Difícil", Primary,   hardCount),
+                    Triple("Extremo", ErrorColor, extremeCount)
+                ).forEach { (label, color, fraction) ->
                     Row(
                         verticalAlignment    = Alignment.CenterVertically,
                         modifier             = Modifier
@@ -325,15 +354,15 @@ fun StatsScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth(0f)   // TODO: fracción real
+                                    .fillMaxWidth(fraction as Float)
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(color)
+                                    .background(color as Color)
                             )
                         }
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            count,
+                            "${(fraction as Float * 100).toInt()}%",
                             style    = MaterialTheme.typography.labelSmall,
                             color    = OnSurfaceVariant,
                             modifier = Modifier.width(56.dp)
@@ -346,9 +375,9 @@ fun StatsScreen(
 
             // ── Stat cards individuales ────────────────────────────────────
             listOf(
-                Triple(Icons.Outlined.Timer,                 "Best Time",       "—"),
-                Triple(Icons.Outlined.AccessTime,            "Average Time",    "—"),
-                Triple(Icons.Outlined.LocalFireDepartment,   "Longest Streak",  "0 Days")
+                Triple(Icons.Outlined.Timer,                 "Best Time",       state.bestTime),
+                Triple(Icons.Outlined.AccessTime,            "Average Time",    state.averageTime),
+                Triple(Icons.Outlined.LocalFireDepartment,   "Longest Streak",  "${state.longestStreak} Games")
             ).forEach { (icon, label, value) ->
                 StatRow(
                     icon     = icon,
@@ -384,9 +413,17 @@ fun StatsScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            sampleRecentGames.forEach { game ->
-                RecentFlowRow(game = game)
-                Spacer(Modifier.height(6.dp))
+            if (state.recentGames.isEmpty()) {
+                Text(
+                    text = "Aún no has completado partidas.",
+                    color = OnSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            } else {
+                state.recentGames.forEach { game ->
+                    RecentFlowRow(game = game)
+                    Spacer(Modifier.height(6.dp))
+                }
             }
 
             Spacer(Modifier.height(24.dp))
@@ -443,7 +480,7 @@ private fun StatRow(
 }
 
 @Composable
-private fun RecentFlowRow(game: RecentGame) {
+private fun RecentFlowRow(game: RecentGameUiModel) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -507,15 +544,26 @@ private fun RecentFlowRow(game: RecentGame) {
     }
 }
 
-/** Gráfica de línea placeholder con datos de muestra. Se conectará a persistencia. */
+/** Gráfica de línea dinámica con datos de puntos. */
 @Composable
-private fun StatsLineChart() {
-    // Datos de muestra — TODO: conectar a persistencia
-    val dataPoints = listOf(10f, 11.5f, 13f, 12f, 15f, 17f, 16f, 19f, 21f, 22.5f)
-    val minY = 10f
-    val maxY = 25f
-    val yLabels = listOf("25k", "20k", "15k", "10k")
-    val xLabels = listOf("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10")
+private fun StatsLineChart(dataPoints: List<Float>) {
+    if (dataPoints.isEmpty()) return
+
+    val minY = (dataPoints.minOrNull() ?: 0f).coerceAtLeast(0f)
+    val maxY = (dataPoints.maxOrNull() ?: 100f).coerceAtLeast(minY + 10f)
+    
+    // Create roughly evenly spaced Y labels
+    val range = maxY - minY
+    val yStep = range / 3
+    val yLabels = listOf(
+        "${(maxY).toInt()}",
+        "${(minY + yStep * 2).toInt()}",
+        "${(minY + yStep).toInt()}",
+        "${(minY).toInt()}"
+    )
+
+    // X Labels are just indices for the recent games
+    val xLabels = dataPoints.indices.map { "${it + 1}" }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Ejes Y (etiquetas a la izquierda)
@@ -543,11 +591,14 @@ private fun StatsLineChart() {
             val w = size.width
             val h = size.height
             val n = dataPoints.size
-            val stepX = w / (n - 1).toFloat()
+            val stepX = if (n > 1) w / (n - 1).toFloat() else w / 2f
 
             // Grid lines horizontales
-            listOf(10f, 15f, 20f, 25f).forEach { y ->
-                val yPos = h - ((y - minY) / (maxY - minY)) * h
+            val hSteps = 4
+            for (i in 0 until hSteps) {
+                val yVal = minY + (range / (hSteps - 1)) * i
+                val yPos = h - ((yVal - minY) / (maxY - minY)) * h
+                if (yPos.isNaN()) continue
                 drawLine(
                     color       = OnSurfaceVariant.copy(alpha = 0.12f),
                     start       = Offset(0f, yPos),
@@ -629,7 +680,25 @@ private fun StatsLineChart() {
 @androidx.compose.runtime.Composable
 fun PreviewStatsScreen() {
     com.inigo.xudoku.ui.theme.XudokuTheme {
-        StatsScreen(
+        StatsScreenContent(
+            state = StatsUiState(
+                isLoading = false,
+                totalGamesWon = 15,
+                winRate = "75%",
+                currentStreak = 3,
+                longestStreak = 5,
+                pointsEvolution = listOf(100f, 120f, 90f, 150f, 160f, 140f),
+                bestTime = "04:30",
+                averageTime = "06:15",
+                recentGames = listOf(
+                    RecentGameUiModel("Medium #1", "NOV 12", "05:00", "+120 XP", true),
+                    RecentGameUiModel("Hard #2", "NOV 11", "10:00", "DNF", false)
+                ),
+                difficultySplit = listOf(0.4f, 0.3f, 0.2f, 0.1f)
+            ),
+            filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo"),
+            selectedFilter = "Global",
+            onFilterSelected = {},
             onNavigateToPlay    = {},
             onNavigateToProfile = {}
         )

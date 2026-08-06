@@ -5,6 +5,7 @@ import com.inigo.xudoku.data.local.XudokuDatabase
 import com.inigo.xudoku.data.repository.GameHistoryRepository
 import com.inigo.xudoku.data.repository.RoomGameHistoryRepository
 import com.inigo.xudoku.ui.GameViewModel
+import com.inigo.xudoku.ui.StatsViewModel
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -29,4 +30,5 @@ val appModule = module {
 
     // ViewModel
     viewModel { GameViewModel(ioDispatcher = Dispatchers.IO, historyRepo = get()) }
+    viewModel { StatsViewModel(historyRepo = get()) }
 }

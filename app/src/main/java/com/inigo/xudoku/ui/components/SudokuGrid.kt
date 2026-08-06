@@ -18,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -76,7 +78,22 @@ fun SudokuGrid(
     Box(
         modifier = modifier
             .aspectRatio(1f)
+            .drawWithContent {
+                drawContent()
+                selectedCell?.let { (sr, sc) ->
+                    val cellW = size.width / 9f
+                    val cellH = size.height / 9f
+                    val strokePx = 2.dp.toPx()
+                    drawRect(
+                        color = Primary,
+                        topLeft = Offset(sc * cellW, sr * cellH),
+                        size = androidx.compose.ui.geometry.Size(cellW, cellH),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokePx)
+                    )
+                }
+            }
             .border(2.dp, OutlineVariant, RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
     ) {
         Column(Modifier.fillMaxSize()) {
             for (row in 0 until SudokuBoard.SIZE) {
@@ -158,11 +175,7 @@ private fun SudokuCell(
         else        -> Color.Transparent
     }
 
-    val borderMod = if (isSelected) {
-        Modifier.border(2.dp, Primary)
-    } else {
-        Modifier.border(0.5.dp, Outline.copy(alpha = 0.25f))
-    }
+    val borderMod = Modifier.border(0.5.dp, Outline.copy(alpha = 0.25f))
 
     val alphaAnim = remember { Animatable(0f) }
     val offsetYAnim = remember { Animatable(0f) }

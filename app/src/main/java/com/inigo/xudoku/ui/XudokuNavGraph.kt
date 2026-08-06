@@ -156,7 +156,9 @@ fun XudokuNavGraph() {
 
         // ── Estadísticas ─────────────────────────────────────────────────────
         composable(Dest.STATS) {
+            val statsViewModel: com.inigo.xudoku.ui.StatsViewModel = org.koin.androidx.compose.koinViewModel()
             StatsScreen(
+                viewModel = statsViewModel,
                 onNavigateToPlay    = {
                     navController.navigate(Dest.DIFFICULTY) {
                         popUpTo(Dest.DIFFICULTY) { inclusive = true }
