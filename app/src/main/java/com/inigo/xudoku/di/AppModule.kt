@@ -4,6 +4,8 @@ import androidx.room.Room
 import com.inigo.xudoku.data.local.XudokuDatabase
 import com.inigo.xudoku.data.repository.GameHistoryRepository
 import com.inigo.xudoku.data.repository.RoomGameHistoryRepository
+import com.inigo.xudoku.data.repository.ProgressionRepository
+import com.inigo.xudoku.data.repository.SharedPreferencesProgressionRepository
 import com.inigo.xudoku.ui.GameViewModel
 import com.inigo.xudoku.ui.StatsViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +29,7 @@ val appModule = module {
 
     // Repository
     single<GameHistoryRepository> { RoomGameHistoryRepository(get()) }
+    single<ProgressionRepository> { SharedPreferencesProgressionRepository(androidContext()) }
 
     // ViewModel
     viewModel { GameViewModel(ioDispatcher = Dispatchers.IO, historyRepo = get()) }
