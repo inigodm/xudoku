@@ -89,7 +89,7 @@ fun Int.toTimeString(): String =
 fun GameScreen(
     difficulty: Difficulty,
     viewModel: GameViewModel,
-    onGameCompleted: (seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int) -> Unit,
+    onGameCompleted: (seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int, isNewHighScore: Boolean) -> Unit,
     onGameOver: (seconds: Int, mistakes: Int) -> Unit = { _, _ -> },
     onNavigateBack: () -> Unit
 ) {
@@ -109,6 +109,7 @@ fun GameScreen(
     val isLoading    by viewModel.isLoading.collectAsState()
     val currentScore by viewModel.currentScore.collectAsState()
     val completedNumbers by viewModel.completedNumbers.collectAsState()
+    val isNewHighScore by viewModel.isNewHighScore.collectAsState()
 
     var lastScoreEvent by remember { mutableStateOf<ScoreAnimationEvent?>(null) }
     LaunchedEffect(viewModel) {
@@ -121,7 +122,7 @@ fun GameScreen(
     LaunchedEffect(isCompleted) {
         if (isCompleted) {
             val score = viewModel.getFinalScore()
-            onGameCompleted(elapsed, mistakes, difficulty, score)
+            onGameCompleted(elapsed, mistakes, difficulty, score, isNewHighScore)
         }
     }
 
@@ -368,7 +369,7 @@ fun PreviewGameScreen() {
         GameScreen(
             difficulty      = Difficulty.MEDIUM,
             viewModel       = vm,
-            onGameCompleted = { _, _, _, _ -> },
+            onGameCompleted = { _, _, _, _, _ -> },
             onNavigateBack  = {}
         )
     }

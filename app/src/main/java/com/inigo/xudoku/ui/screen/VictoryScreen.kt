@@ -83,6 +83,7 @@ fun VictoryScreen(
     mistakes: Int,
     difficulty: Difficulty,
     score: Int,
+    isNewHighScore: Boolean,
     onNextLevel: () -> Unit,
     onMainMenu: () -> Unit
 ) {
@@ -144,24 +145,24 @@ fun VictoryScreen(
                 Spacer(Modifier.height(16.dp))
 
                 // Badge "NUEVA MARCA"
-                // TODO("mostrar solo cuando sea realmente una nueva marca")
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50.dp))
-                        .background(SecondaryContainer)
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
-                ) {
-                    Icon(Icons.Outlined.EmojiEvents, null, tint = Secondary, modifier = Modifier.size(18.dp))
-                    Text(
-                        "  NUEVA MARCA",
-                        style      = MaterialTheme.typography.labelLarge,
-                        color      = Secondary,
-                        fontWeight = FontWeight.Bold
-                    )
+                if (isNewHighScore) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50.dp))
+                            .background(SecondaryContainer)
+                            .padding(horizontal = 20.dp, vertical = 8.dp)
+                    ) {
+                        Icon(Icons.Outlined.EmojiEvents, null, tint = Secondary, modifier = Modifier.size(18.dp))
+                        Text(
+                            "  NUEVA MARCA",
+                            style      = MaterialTheme.typography.labelLarge,
+                            color      = Secondary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
                 }
-
-                Spacer(Modifier.height(16.dp))
 
                 Text(
                     "¡VICTORIA!",
@@ -399,7 +400,8 @@ private fun ConfettiLayer() {
     }
     val anim = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
-        anim.animateTo(1f, tween(8_000, easing = LinearEasing))
+        // Animamos a un valor muy alto para que sea infinito (duración de ~22 horas a la misma velocidad)
+        anim.animateTo(10000f, tween(80_000_000, easing = LinearEasing))
     }
 
     androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
@@ -444,6 +446,7 @@ fun PreviewVictoryScreen() {
             mistakes       = 0,
             difficulty     = Difficulty.MEDIUM,
             score          = 24_580,
+            isNewHighScore = true,
             onNextLevel    = {},
             onMainMenu     = {}
         )

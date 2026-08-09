@@ -93,6 +93,10 @@ class GameViewModel(
     /** true → el jugador agotó los 3 errores permitidos. */
     val isGameOver: StateFlow<Boolean> = _isGameOver.asStateFlow()
 
+    private val _isNewHighScore = MutableStateFlow(false)
+    /** true → la puntuación obtenida supera la máxima histórica para esta dificultad. */
+    val isNewHighScore: StateFlow<Boolean> = _isNewHighScore.asStateFlow()
+
     private val _completedNumbers = MutableStateFlow<Set<Int>>(emptySet())
     /** Números (1-9) que ya están colocados 9 veces en el tablero. */
     val completedNumbers: StateFlow<Set<Int>> = _completedNumbers.asStateFlow()
@@ -133,6 +137,7 @@ class GameViewModel(
         _notes.value         = emptyMap()
         _isNotesMode.value   = false
         _isCompleted.value   = false
+        _isNewHighScore.value = false
         _isGameOver.value    = false
         _difficulty.value    = difficulty
         _isLoading.value     = true
@@ -327,6 +332,7 @@ class GameViewModel(
     }
 
     private fun checkCompletion() {
+        if (_isCompleted.value) return
         val board = _cells.value
         val complete = (0 until SudokuBoard.SIZE).all { r ->
             (0 until SudokuBoard.SIZE).all { c ->
@@ -334,9 +340,22 @@ class GameViewModel(
             }
         }
         if (complete) {
-            _isCompleted.value = true
             timerJob?.cancel()
-            saveGameResult()
+            val finalScoreVal = getFinalScore()
+            val difficultyEnum = _difficulty.value ?: Difficulty.EASY
+            
+            viewModelScope.launch {
+                if (historyRepo != null) {
+                    val previousGames = historyRepo.getResultsByDifficulty(difficultyEnum)
+                    val maxPreviousScore = previousGames.maxOfOrNull { it.puntuacionFinal } ?: 0
+                    _isNewHighScore.value = finalScoreVal > maxPreviousScore
+                } else {
+                    _isNewHighScore.value = false
+                }
+                
+                saveGameResult()
+                _isCompleted.value = true
+            }
         }
     }
 

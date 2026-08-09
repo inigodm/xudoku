@@ -30,10 +30,11 @@ class NavigationTest {
             seconds = 120,
             mistakes = 1,
             difficulty = Difficulty.MEDIUM,
-            score = 3800
+            score = 3800,
+            isNewHighScore = true
         )
 
-        assertEquals("victory/120/1/MEDIUM/3800", route)
+        assertEquals("victory/120/1/MEDIUM/3800/true", route)
     }
 
     @Test

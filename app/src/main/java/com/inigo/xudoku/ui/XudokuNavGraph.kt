@@ -21,14 +21,14 @@ internal object Dest {
     const val SPLASH     = "splash"
     const val DIFFICULTY = "difficulty"
     const val GAME       = "game/{difficultyName}"
-    const val VICTORY    = "victory/{seconds}/{mistakes}/{difficultyName}/{score}"
+    const val VICTORY    = "victory/{seconds}/{mistakes}/{difficultyName}/{score}/{isNewHighScore}"
     const val GAME_OVER  = "game_over/{seconds}/{mistakes}"
     const val STATS      = "stats"
     const val PROFILE    = "profile"
 
     fun game(difficulty: Difficulty)                             = "game/${difficulty.name}"
-    fun victory(seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int) =
-        "victory/$seconds/$mistakes/${difficulty.name}/$score"
+    fun victory(seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int, isNewHighScore: Boolean) =
+        "victory/$seconds/$mistakes/${difficulty.name}/$score/$isNewHighScore"
     fun gameOver(seconds: Int, mistakes: Int) = "game_over/$seconds/$mistakes"
 }
 
@@ -79,8 +79,8 @@ fun XudokuNavGraph() {
             GameScreen(
                 difficulty       = difficulty,
                 viewModel        = gameViewModel,
-                onGameCompleted  = { seconds, mistakes, diff, score ->
-                    navController.navigate(Dest.victory(seconds, mistakes, diff, score)) {
+                onGameCompleted  = { seconds, mistakes, diff, score, isNew ->
+                    navController.navigate(Dest.victory(seconds, mistakes, diff, score, isNew)) {
                         popUpTo(Dest.DIFFICULTY) // limpiar back stack del juego
                     }
                 },
@@ -102,7 +102,8 @@ fun XudokuNavGraph() {
                 navArgument("seconds")        { type = NavType.IntType    },
                 navArgument("mistakes")       { type = NavType.IntType    },
                 navArgument("difficultyName") { type = NavType.StringType },
-                navArgument("score")          { type = NavType.IntType    }
+                navArgument("score")          { type = NavType.IntType    },
+                navArgument("isNewHighScore") { type = NavType.BoolType   }
             )
         ) { entry ->
             val args       = entry.arguments!!
@@ -115,6 +116,7 @@ fun XudokuNavGraph() {
                 mistakes       = args.getInt("mistakes"),
                 difficulty     = difficulty,
                 score          = args.getInt("score"),
+                isNewHighScore = args.getBoolean("isNewHighScore"),
                 onNextLevel    = {
                     // Nueva partida con la misma dificultad
                     navController.navigate(Dest.game(difficulty)) {
