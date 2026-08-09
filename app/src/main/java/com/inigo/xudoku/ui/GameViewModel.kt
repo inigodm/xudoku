@@ -198,6 +198,7 @@ class GameViewModel(
                     newCount
                 }
             } else {
+                clearNotesForRegion(row, col, number)
                 val grid = _cells.value
                 val (isRowComplete, isColComplete, isBlockComplete, isLastCell) = checkRegionCompletion(row, col, grid)
                 val moveResult = scoreManager.calculateAndAddMoveScore(
@@ -279,6 +280,7 @@ class GameViewModel(
         saveMove(row, col, _cells.value[row][col])
         updateCell(row, col) { CellState(value = correct, isGiven = false, isError = false) }
         _notes.update { it - Pair(row, col) }
+        clearNotesForRegion(row, col, correct)
         _selectedCell.value = Pair(row, col)
         checkCompletion()
     }
@@ -306,19 +308,34 @@ class GameViewModel(
             }
         }
         val newlyCompleted = (1..9).filter { counts[it] == 9 }.toSet()
-        val previous = _completedNumbers.value
         _completedNumbers.value = newlyCompleted
-        
-        val diff = newlyCompleted - previous
-        if (diff.isNotEmpty()) {
-            _notes.update { currentNotes ->
-                val newNotes = currentNotes.toMutableMap()
-                for ((key, notesSet) in newNotes.entries) {
-                    val remaining = notesSet - diff
-                    newNotes[key] = remaining
-                }
-                newNotes.filterValues { it.isNotEmpty() }
+    }
+
+    private fun clearNotesForRegion(row: Int, col: Int, number: Int) {
+        _notes.update { currentNotes ->
+            val newNotes = currentNotes.toMutableMap()
+            val blockRowStart = (row / 3) * 3
+            val blockColStart = (col / 3) * 3
+
+            val keysToRemoveFrom = mutableSetOf<Pair<Int, Int>>()
+            for (i in 0 until SudokuBoard.SIZE) {
+                keysToRemoveFrom.add(Pair(row, i))
+                keysToRemoveFrom.add(Pair(i, col))
             }
+            for (r in blockRowStart until blockRowStart + 3) {
+                for (c in blockColStart until blockColStart + 3) {
+                    keysToRemoveFrom.add(Pair(r, c))
+                }
+            }
+
+            for (key in keysToRemoveFrom) {
+                newNotes[key]?.let { notesSet ->
+                    if (number in notesSet) {
+                        newNotes[key] = notesSet - number
+                    }
+                }
+            }
+            newNotes.filterValues { it.isNotEmpty() }
         }
     }
 
