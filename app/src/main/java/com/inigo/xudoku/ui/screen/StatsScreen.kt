@@ -88,7 +88,7 @@ fun StatsScreen(
     onNavigateToPlay: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
-    val filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo")
+    val filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo", "Imposible")
     var selectedFilter by remember { mutableStateOf("Global") }
 
     val state by viewModel.uiState.collectAsState()
@@ -322,16 +322,18 @@ fun StatsScreenContent(
                     )
                 }
                 Spacer(Modifier.height(12.dp))
-                val easyCount = (state.difficultySplit.getOrNull(0) ?: 0f)
-                val mediumCount = (state.difficultySplit.getOrNull(1) ?: 0f)
-                val hardCount = (state.difficultySplit.getOrNull(2) ?: 0f)
-                val extremeCount = (state.difficultySplit.getOrNull(3) ?: 0f)
+                val veryEasyCount = (state.difficultySplit.getOrNull(0) ?: 0f)
+                val easyCount     = (state.difficultySplit.getOrNull(1) ?: 0f)
+                val mediumCount   = (state.difficultySplit.getOrNull(2) ?: 0f)
+                val hardCount     = (state.difficultySplit.getOrNull(3) ?: 0f)
+                val extremeCount  = (state.difficultySplit.getOrNull(4) ?: 0f)
 
                 listOf(
-                    Triple("Fácil",  Tertiary,   easyCount),
-                    Triple("Medio",  Secondary,  mediumCount),
-                    Triple("Difícil", Primary,   hardCount),
-                    Triple("Extremo", ErrorColor, extremeCount)
+                    Triple("Fácil",     Tertiary,   veryEasyCount),
+                    Triple("Medio",     Secondary,  easyCount),
+                    Triple("Difícil",   Primary,    mediumCount),
+                    Triple("Extremo",   ErrorColor, hardCount),
+                    Triple("Imposible", OnSurface, extremeCount)
                 ).forEach { (label, color, fraction) ->
                     Row(
                         verticalAlignment    = Alignment.CenterVertically,
@@ -694,9 +696,9 @@ fun PreviewStatsScreen() {
                     RecentGameUiModel("Medium #1", "NOV 12", "05:00", "+120 XP", true),
                     RecentGameUiModel("Hard #2", "NOV 11", "10:00", "DNF", false)
                 ),
-                difficultySplit = listOf(0.4f, 0.3f, 0.2f, 0.1f)
+                difficultySplit = listOf(0.4f, 0.2f, 0.2f, 0.1f, 0.1f)
             ),
-            filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo"),
+            filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo", "Imposible"),
             selectedFilter = "Global",
             onFilterSelected = {},
             onNavigateToPlay    = {},

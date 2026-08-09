@@ -34,7 +34,7 @@ data class StatsUiState(
     val bestTime: String = "—",
     val averageTime: String = "—",
     val recentGames: List<RecentGameUiModel> = emptyList(),
-    val difficultySplit: List<Float> = listOf(0f, 0f, 0f, 0f) // Easy, Medium, Hard, Extreme
+    val difficultySplit: List<Float> = listOf(0f, 0f, 0f, 0f, 0f) // VeryEasy, Easy, Medium, Hard, Extreme
 )
 
 class StatsViewModel(
@@ -146,14 +146,16 @@ class StatsViewModel(
 
     private fun calculateDifficultySplit(results: List<SudokuGameResult>): List<Float> {
         val total = results.size.toFloat()
-        if (total == 0f) return listOf(0f, 0f, 0f, 0f)
+        if (total == 0f) return listOf(0f, 0f, 0f, 0f, 0f)
 
-        val easyCount = results.count { it.dificultad == Difficulty.EASY || it.dificultad == Difficulty.VERY_EASY }
+        val veryEasyCount = results.count { it.dificultad == Difficulty.VERY_EASY }
+        val easyCount = results.count { it.dificultad == Difficulty.EASY }
         val mediumCount = results.count { it.dificultad == Difficulty.MEDIUM }
         val hardCount = results.count { it.dificultad == Difficulty.HARD }
         val extremeCount = results.count { it.dificultad == Difficulty.HARDEST }
 
         return listOf(
+            veryEasyCount / total,
             easyCount / total,
             mediumCount / total,
             hardCount / total,
@@ -163,10 +165,11 @@ class StatsViewModel(
 
     private fun mapFilterToDifficulty(filter: String): Difficulty? {
         return when (filter) {
-            "Fácil" -> Difficulty.EASY
-            "Medio" -> Difficulty.MEDIUM
-            "Difícil" -> Difficulty.HARD
-            "Extremo" -> Difficulty.HARDEST
+            "Fácil" -> Difficulty.VERY_EASY
+            "Medio" -> Difficulty.EASY
+            "Difícil" -> Difficulty.MEDIUM
+            "Extremo" -> Difficulty.HARD
+            "Imposible" -> Difficulty.HARDEST
             else -> null
         }
     }
