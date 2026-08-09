@@ -45,7 +45,7 @@
 | Trigger      | Tap en tecla numérica del `NumberPad` con `isNotesMode=false` |
 | Precondición | `selectedCell != null`, celda no es `isGiven` |
 | Método VM    | `GameViewModel.enterNumber(number: Int)` |
-| Postcondición | `cells[row][col].value = number`; si incorrecto: `isError=true`, `mistakes += 1`; notas de esa celda eliminadas; movimiento guardado en historial |
+| Postcondición | `cells[row][col].value = number`; si incorrecto: `isError=true`, `mistakes += 1`; notas de esa celda eliminadas; si se alcanzan 9 instancias correctas del número, se elimina de todas las notas; movimiento guardado en historial |
 | Efecto UI    | Número visible en celda; celda en rojo si error; contador de errores actualizado |
 | Tested       | ✅ |
 
@@ -115,7 +115,7 @@
 | Trigger      | Tap en botón "Pista" de la toolbar |
 | Precondición | Partida en curso; existe al menos una celda vacía no dada |
 | Método VM    | `GameViewModel.requestHint()` |
-| Postcondición | Si hay celda seleccionada vacía: se revela su valor correcto allí. Si no: se busca la primera celda vacía no dada en orden fila-columna y se revela. Notas de esa celda eliminadas. `selectedCell` apunta a la celda revelada. `checkCompletion()` ejecutado. |
+| Postcondición | Si hay celda seleccionada vacía: se revela su valor correcto allí. Si no: se busca la primera celda vacía no dada en orden fila-columna y se revela. Notas de esa celda eliminadas; si se alcanzan 9 instancias, se elimina de todas las notas. `selectedCell` apunta a la celda revelada. `checkCompletion()` ejecutado. |
 | Efecto UI    | Celda revelada muestra el número correcto (sin marcarse como error) |
 | Tested       | ✅ |
 

@@ -108,6 +108,7 @@ fun GameScreen(
     val isGameOver   by viewModel.isGameOver.collectAsState()
     val isLoading    by viewModel.isLoading.collectAsState()
     val currentScore by viewModel.currentScore.collectAsState()
+    val completedNumbers by viewModel.completedNumbers.collectAsState()
 
     var lastScoreEvent by remember { mutableStateOf<ScoreAnimationEvent?>(null) }
     LaunchedEffect(viewModel) {
@@ -310,6 +311,7 @@ fun GameScreen(
                 onNumberClick  = { viewModel.enterNumber(it) },
                 onDeleteClick  = { viewModel.clearSelectedCell() },
                 selectedNumber = selectedNumber,
+                completedNumbers = completedNumbers,
                 modifier       = Modifier.fillMaxWidth()
             )
 

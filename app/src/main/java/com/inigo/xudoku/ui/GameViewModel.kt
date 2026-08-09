@@ -46,7 +46,7 @@ private data class GameMove(
     val row: Int,
     val col: Int,
     val previousValue: Int,
-    val previousNotes: Set<Int>,
+    val previousNotesState: Map<Pair<Int, Int>, Set<Int>>,
     val previousWasError: Boolean
 )
 
@@ -92,6 +92,10 @@ class GameViewModel(
     private val _isGameOver = MutableStateFlow(false)
     /** true → el jugador agotó los 3 errores permitidos. */
     val isGameOver: StateFlow<Boolean> = _isGameOver.asStateFlow()
+
+    private val _completedNumbers = MutableStateFlow<Set<Int>>(emptySet())
+    /** Números (1-9) que ya están colocados 9 veces en el tablero. */
+    val completedNumbers: StateFlow<Set<Int>> = _completedNumbers.asStateFlow()
 
     private val _difficulty = MutableStateFlow<Difficulty?>(null)
     /** Dificultad de la partida en curso. */
@@ -148,6 +152,7 @@ class GameViewModel(
                 }
             }
             _isLoading.value = false
+            updateCompletedNumbers()
             startTimer()
         }
     }
@@ -166,14 +171,14 @@ class GameViewModel(
         val key = Pair(row, col)
 
         if (_isNotesMode.value) {
+            saveMove(row, col, cell)
             val current = _notes.value[key] ?: emptySet()
-            saveMove(row, col, cell, current)
             val updated = if (number in current) current - number else current + number
-            _notes.update { it + (key to updated) }
+            _notes.update { if (updated.isEmpty()) it - key else it + (key to updated) }
         } else {
             val correct = game.solution[row, col]
             val isError = number != correct
-            saveMove(row, col, cell, _notes.value[key] ?: emptySet())
+            saveMove(row, col, cell)
             updateCell(row, col) { CellState(value = number, isGiven = false, isError = isError) }
             _notes.update { it - key }
             if (isError) {
@@ -212,7 +217,7 @@ class GameViewModel(
         val cell = _cells.value[row][col]
         if (cell.isGiven) return
         val key = Pair(row, col)
-        saveMove(row, col, cell, _notes.value[key] ?: emptySet())
+        saveMove(row, col, cell)
         updateCell(row, col) { CellState(0, false, false) }
         _notes.update { it - key }
     }
@@ -225,7 +230,6 @@ class GameViewModel(
     /** Deshace el último movimiento registrado. */
     fun undoLastMove() {
         val move = moveHistory.removeLastOrNull() ?: return
-        val key = Pair(move.row, move.col)
         val current = _cells.value[move.row][move.col]
         // Revertir el contador de errores si corresponde
         if (current.isError && !move.previousWasError) {
@@ -234,11 +238,7 @@ class GameViewModel(
         updateCell(move.row, move.col) {
             CellState(value = move.previousValue, isGiven = false, isError = move.previousWasError)
         }
-        if (move.previousNotes.isNotEmpty()) {
-            _notes.update { it + (key to move.previousNotes) }
-        } else {
-            _notes.update { it - key }
-        }
+        _notes.value = move.previousNotesState
         _isCompleted.value = false
     }
 
@@ -271,22 +271,50 @@ class GameViewModel(
         if (_cells.value[row][col].isGiven) return
         val correct = game.solution[row, col]
         scoreManager.recordHint()
+        saveMove(row, col, _cells.value[row][col])
         updateCell(row, col) { CellState(value = correct, isGiven = false, isError = false) }
         _notes.update { it - Pair(row, col) }
         _selectedCell.value = Pair(row, col)
         checkCompletion()
     }
 
-    private fun saveMove(row: Int, col: Int, cell: CellState, notes: Set<Int>) {
+    private fun saveMove(row: Int, col: Int, cell: CellState) {
         moveHistory.addLast(
             GameMove(
                 row              = row,
                 col              = col,
                 previousValue    = cell.value,
-                previousNotes    = notes,
+                previousNotesState = _notes.value,
                 previousWasError = cell.isError
             )
         )
+    }
+
+    private fun updateCompletedNumbers() {
+        val counts = IntArray(10)
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                val cell = _cells.value[r][c]
+                if (cell.value != SudokuBoard.EMPTY && !cell.isError) {
+                    counts[cell.value]++
+                }
+            }
+        }
+        val newlyCompleted = (1..9).filter { counts[it] == 9 }.toSet()
+        val previous = _completedNumbers.value
+        _completedNumbers.value = newlyCompleted
+        
+        val diff = newlyCompleted - previous
+        if (diff.isNotEmpty()) {
+            _notes.update { currentNotes ->
+                val newNotes = currentNotes.toMutableMap()
+                for ((key, notesSet) in newNotes.entries) {
+                    val remaining = notesSet - diff
+                    newNotes[key] = remaining
+                }
+                newNotes.filterValues { it.isNotEmpty() }
+            }
+        }
     }
 
     private fun updateCell(row: Int, col: Int, transform: (CellState) -> CellState) {
@@ -295,6 +323,7 @@ class GameViewModel(
             newGrid[row][col] = transform(current[row][col])
             newGrid
         }
+        updateCompletedNumbers()
     }
 
     private fun checkCompletion() {

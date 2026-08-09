@@ -51,6 +51,7 @@ fun NumberPad(
     onNumberClick: (Int) -> Unit,
     onDeleteClick: () -> Unit,
     selectedNumber: Int? = null,
+    completedNumbers: Set<Int> = emptySet(),
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -61,7 +62,8 @@ fun NumberPad(
             for (n in 1..5) {
                 NumberKey(
                     digit           = n,
-                    isActive        = n == selectedNumber,
+                    isActive        = n == selectedNumber && n !in completedNumbers,
+                    isCompleted     = n in completedNumbers,
                     onClick         = { onNumberClick(n) },
                     modifier        = Modifier.weight(1f).padding(3.dp)
                 )
@@ -72,7 +74,8 @@ fun NumberPad(
             for (n in 6..9) {
                 NumberKey(
                     digit           = n,
-                    isActive        = n == selectedNumber,
+                    isActive        = n == selectedNumber && n !in completedNumbers,
+                    isCompleted     = n in completedNumbers,
                     onClick         = { onNumberClick(n) },
                     modifier        = Modifier.weight(1f).padding(3.dp)
                 )
@@ -89,6 +92,7 @@ fun NumberPad(
 private fun NumberKey(
     digit: Int,
     isActive: Boolean,
+    isCompleted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -100,9 +104,9 @@ private fun NumberKey(
         label = "key-press-$digit"
     )
 
-    val faceColor   = if (isActive) Tertiary else SurfaceContainerHigh
-    val shadowColor = if (isActive) Tertiary.copy(alpha = 0.4f) else SurfaceContainerHigh.copy(alpha = 0.6f)
-    val textColor   = if (isActive) SurfaceContainerHigh else OnSurface
+    val faceColor   = if (isActive) Tertiary else if (isCompleted) SurfaceContainerHigh.copy(alpha = 0.5f) else SurfaceContainerHigh
+    val shadowColor = if (isActive) Tertiary.copy(alpha = 0.4f) else if (isCompleted) SurfaceContainerHigh.copy(alpha = 0.3f) else SurfaceContainerHigh.copy(alpha = 0.6f)
+    val textColor   = if (isActive) SurfaceContainerHigh else if (isCompleted) OnSurfaceVariant.copy(alpha = 0.3f) else OnSurface
 
     Box(
         contentAlignment = Alignment.Center,
@@ -127,6 +131,7 @@ private fun NumberKey(
                 .clickable(
                     interactionSource = interactionSource,
                     indication        = null,
+                    enabled           = !isCompleted,
                     onClick           = onClick
                 )
         ) {
