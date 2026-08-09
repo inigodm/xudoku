@@ -15,11 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Backspace
+import androidx.compose.material.icons.automirrored.outlined.Backspace
+import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Undo
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +35,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import org.koin.androidx.compose.koinViewModel
+import com.inigo.xudoku.ui.ProgressionViewModel
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -89,10 +91,12 @@ fun Int.toTimeString(): String =
 fun GameScreen(
     difficulty: Difficulty,
     viewModel: GameViewModel,
-    onGameCompleted: (seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int, isNewHighScore: Boolean) -> Unit,
+    onGameCompleted: (seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int, isNewHighScore: Boolean, hasLeveledUp: Boolean) -> Unit,
     onGameOver: (seconds: Int, mistakes: Int) -> Unit = { _, _ -> },
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    progressionViewModel: ProgressionViewModel = koinViewModel()
 ) {
+    val progressionState by progressionViewModel.state.collectAsState()
     // Iniciar partida cuando cambie la dificultad
     LaunchedEffect(difficulty) {
         viewModel.startGame(difficulty)
@@ -110,6 +114,7 @@ fun GameScreen(
     val currentScore by viewModel.currentScore.collectAsState()
     val completedNumbers by viewModel.completedNumbers.collectAsState()
     val isNewHighScore by viewModel.isNewHighScore.collectAsState()
+    val hasLeveledUp by viewModel.hasLeveledUp.collectAsState()
 
     var lastScoreEvent by remember { mutableStateOf<ScoreAnimationEvent?>(null) }
     LaunchedEffect(viewModel) {
@@ -122,7 +127,7 @@ fun GameScreen(
     LaunchedEffect(isCompleted) {
         if (isCompleted) {
             val score = viewModel.getFinalScore()
-            onGameCompleted(elapsed, mistakes, difficulty, score, isNewHighScore)
+            onGameCompleted(elapsed, mistakes, difficulty, score, isNewHighScore, hasLeveledUp)
         }
     }
 
@@ -224,10 +229,15 @@ fun GameScreen(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        "Level 1", // TODO("conectar a progreso de usuario")
+                        "Level ${progressionState.currentLevel}",
                         style = MaterialTheme.typography.labelLarge,
                         color = Tertiary
                     )
+                    
+                    val progressPercent = if (progressionState.xpRequiredForNextLevel > 0) {
+                        (progressionState.currentLevelXP.toFloat() / progressionState.xpRequiredForNextLevel)
+                    } else 0f
+                    
                     // Progress bar con gradient Tertiary→Primary
                     Box(
                         modifier = Modifier
@@ -238,7 +248,7 @@ fun GameScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(0f) // TODO: conectar a nivel de usuario
+                                .fillMaxWidth(progressPercent)
                                 .height(6.dp)
                                 .clip(RoundedCornerShape(3.dp))
                                 .background(
@@ -275,12 +285,12 @@ fun GameScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 ActionButton(
-                    icon    = Icons.Outlined.Undo,
+                    icon    = Icons.AutoMirrored.Outlined.Undo,
                     label   = "Deshacer",
                     onClick = { viewModel.undoLastMove() }
                 )
                 ActionButton(
-                    icon    = Icons.Outlined.Backspace,
+                    icon    = Icons.AutoMirrored.Outlined.Backspace,
                     label   = "Borrar",
                     onClick = { viewModel.clearSelectedCell() }
                 )
@@ -369,7 +379,7 @@ fun PreviewGameScreen() {
         GameScreen(
             difficulty      = Difficulty.MEDIUM,
             viewModel       = vm,
-            onGameCompleted = { _, _, _, _, _ -> },
+            onGameCompleted = { _, _, _, _, _, _ -> },
             onNavigateBack  = {}
         )
     }

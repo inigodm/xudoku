@@ -19,7 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Home
@@ -41,6 +41,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,6 +69,11 @@ import com.inigo.xudoku.ui.theme.Tertiary
 import kotlin.math.sin
 import kotlin.random.Random
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import org.koin.androidx.compose.koinViewModel
+import com.inigo.xudoku.ui.ProgressionViewModel
+
 /**
  * Pantalla de victoria mostrada al completar un puzzle.
  *
@@ -84,9 +92,31 @@ fun VictoryScreen(
     difficulty: Difficulty,
     score: Int,
     isNewHighScore: Boolean,
+    hasLeveledUp: Boolean = false,
     onNextLevel: () -> Unit,
-    onMainMenu: () -> Unit
+    onMainMenu: () -> Unit,
+    progressionViewModel: ProgressionViewModel = koinViewModel()
 ) {
+    val progressionState by progressionViewModel.state.collectAsState()
+    var showLevelUpDialog by remember { mutableStateOf(hasLeveledUp) }
+
+    if (showLevelUpDialog) {
+        AlertDialog(
+            onDismissRequest = { showLevelUpDialog = false },
+            title = { Text("¡Nivel Aumentado!", color = Primary, fontWeight = FontWeight.Bold) },
+            text = { Text("¡Enhorabuena! Has alcanzado el Nivel ${progressionState.currentLevel}. Sigue jugando para subir de rango y desbloquear nuevas dificultades.", color = OnSurface) },
+            confirmButton = {
+                Button(
+                    onClick = { showLevelUpDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("¡Genial!", color = Background)
+                }
+            },
+            containerColor = SurfaceContainerHigh
+        )
+    }
+
     Scaffold(
         containerColor = Background,
         topBar = {
@@ -287,14 +317,18 @@ fun VictoryScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                // Barra de nivel/XP — TODO("conectar a persistencia")
+                // Barra de nivel/XP
                 Column(modifier = Modifier.fillMaxWidth()) {
+                    val progressPercent = if (progressionState.xpRequiredForNextLevel > 0) {
+                        (progressionState.currentLevelXP.toFloat() / progressionState.xpRequiredForNextLevel)
+                    } else 0f
+                    
                     Row(
                         modifier              = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("NIVEL 1", style = MaterialTheme.typography.labelLarge, color = Primary, fontWeight = FontWeight.Bold)
-                        Text("0 / 1000 XP", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
+                        Text("NIVEL ${progressionState.currentLevel}", style = MaterialTheme.typography.labelLarge, color = Primary, fontWeight = FontWeight.Bold)
+                        Text("${progressionState.currentLevelXP} / ${progressionState.xpRequiredForNextLevel} XP", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
                     }
                     Spacer(Modifier.height(6.dp))
                     Box(
@@ -306,7 +340,7 @@ fun VictoryScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(0f) // TODO: conectar a persistencia
+                                .fillMaxWidth(progressPercent)
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(
@@ -332,7 +366,7 @@ fun VictoryScreen(
                         color      = OnSurface
                     )
                     Spacer(Modifier.size(8.dp))
-                    Icon(Icons.Outlined.ArrowForward, null, tint = OnSurface, modifier = Modifier.size(18.dp))
+                    Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, tint = OnSurface, modifier = Modifier.size(18.dp))
                 }
 
                 Spacer(Modifier.height(12.dp))
@@ -447,6 +481,7 @@ fun PreviewVictoryScreen() {
             difficulty     = Difficulty.MEDIUM,
             score          = 24_580,
             isNewHighScore = true,
+            hasLeveledUp   = true,
             onNextLevel    = {},
             onMainMenu     = {}
         )

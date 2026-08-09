@@ -6,7 +6,9 @@ import com.inigo.xudoku.data.repository.GameHistoryRepository
 import com.inigo.xudoku.data.repository.RoomGameHistoryRepository
 import com.inigo.xudoku.data.repository.ProgressionRepository
 import com.inigo.xudoku.data.repository.SharedPreferencesProgressionRepository
+import com.inigo.xudoku.model.progression.ProgressionManager
 import com.inigo.xudoku.ui.GameViewModel
+import com.inigo.xudoku.ui.ProgressionViewModel
 import com.inigo.xudoku.ui.StatsViewModel
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
@@ -30,8 +32,12 @@ val appModule = module {
     // Repository
     single<GameHistoryRepository> { RoomGameHistoryRepository(get()) }
     single<ProgressionRepository> { SharedPreferencesProgressionRepository(androidContext()) }
+    
+    // Core Managers
+    single { ProgressionManager() }
 
     // ViewModel
-    viewModel { GameViewModel(ioDispatcher = Dispatchers.IO, historyRepo = get()) }
+    viewModel { GameViewModel(ioDispatcher = Dispatchers.IO, historyRepo = get(), progressionRepo = get<ProgressionRepository>(), progressionManager = get<ProgressionManager>()) }
     viewModel { StatsViewModel(historyRepo = get()) }
+    viewModel { ProgressionViewModel(progressionRepository = get(), progressionManager = get()) }
 }

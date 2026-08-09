@@ -31,10 +31,11 @@ class NavigationTest {
             mistakes = 1,
             difficulty = Difficulty.MEDIUM,
             score = 3800,
-            isNewHighScore = true
+            isNewHighScore = true,
+            hasLeveledUp = true
         )
 
-        assertEquals("victory/120/1/MEDIUM/3800/true", route)
+        assertEquals("victory/120/1/MEDIUM/3800/true/true", route)
     }
 
     @Test

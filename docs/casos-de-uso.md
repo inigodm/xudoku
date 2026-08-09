@@ -253,8 +253,66 @@
 
 ---
 
+## Sistema de Progresión y Experiencia
+
+### CU-18 — Ganar Experiencia (XP) al finalizar partida
+
+| Campo        | Valor |
+|--------------|-------|
+| Actor        | Sistema |
+| Trigger      | Al completar el puzzle (CU-09) antes de mostrar la pantalla de Victoria |
+| Precondición | `isCompleted=true` |
+| Método VM    | `GameViewModel` invoca a `ProgressionManager.calculateXP` y llama a `updateXP` en `ProgressionRepository` |
+| Postcondición | El XP total del jugador se incrementa aplicando bonus de tiempo, racha y ausencias de errores. |
+| Efecto UI    | La barra de XP se llena progresivamente en `VictoryScreen` |
+| Tested       | ✅ |
+
+---
+
+### CU-19 — Subir de Nivel y Rango
+
+| Campo        | Valor |
+|--------------|-------|
+| Actor        | Sistema |
+| Trigger      | Cuando el XP total supera el `xpRequiredForNextLevel` calculado por la curva |
+| Precondición | `ProgressionState` actualizado con nueva XP tras una victoria |
+| Método VM    | `ProgressionManager.getLevelForXP` y `ProgressionManager.getRankForLevel` proveen el nuevo estado vía `ProgressionViewModel` |
+| Postcondición | Nivel incrementado. El Rango puede haber cambiado (ej. de Novato a Aprendiz). La bandera `hasLeveledUp` se emite. |
+| Efecto UI    | `VictoryScreen` muestra un `AlertDialog` de "¡Nivel Aumentado!". Además, los badges en `ProfileScreen` y `VictoryScreen` reflejan el nuevo Nivel. |
+| Tested       | ✅ |
+
+---
+
+### CU-20 — Actualizar y Perder Rachas (Streaks)
+
+| Campo        | Valor |
+|--------------|-------|
+| Actor        | Sistema |
+| Trigger      | Victoria (aumenta racha de victorias y diaria) o Abandono de partida / Game Over (pierde racha de victorias) |
+| Precondición | Partida finalizada o interrumpida |
+| Método VM    | `ProgressionRepository.updateStreaks()` en victoria, o `ProgressionViewModel.onGameAbandoned()` en abandono |
+| Postcondición | `winStreak` se incrementa o resetea a 0. `dailyStreak` se incrementa si se jugó en días consecutivos. |
+| Efecto UI    | `ProfileScreen` actualiza la UI de "Daily Streak". La fórmula de XP se afecta en la próxima partida. |
+| Tested       | ✅ |
+
+---
+
+### CU-21 — Desbloquear / Bloquear Dificultades
+
+| Campo        | Valor |
+|--------------|-------|
+| Actor        | Sistema |
+| Trigger      | Al renderizar `DifficultyScreen` se chequea el nivel actual del usuario frente a constantes `minLevel` |
+| Precondición | El estado del jugador se ha cargado en `ProgressionViewModel` |
+| Método VM    | Comparación `level >= difficultyRequiredLevel` |
+| Postcondición | La dificultad se renderiza normal y clickeable o en estado atenuado con candado. |
+| Efecto UI    | Icono de candado aparece sobre dificultades superiores (Hard, Extreme) si nivel insuficiente; no se puede hacer tap (click deshabilitado). |
+| Tested       | ✅ |
+
+---
+
 ## Resumen de cobertura de tests
 
 | Total CUs | Tested ✅ | Pendientes ❌ |
 |-----------|-----------|---------------|
-| 17        | 17        | 0             |
+| 21        | 21        | 0             |

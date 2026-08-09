@@ -62,18 +62,23 @@ import com.inigo.xudoku.ui.theme.SurfaceContainerHigh
 import com.inigo.xudoku.ui.theme.SurfaceContainerHighest
 import com.inigo.xudoku.ui.theme.Tertiary
 
-// TODO("Conectar a datos de usuario — todos los datos son placeholders")
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import org.koin.androidx.compose.koinViewModel
+import com.inigo.xudoku.ui.ProgressionViewModel
 
 /**
  * Pantalla de perfil de usuario.
- * Datos completamente estáticos hasta implementar autenticación/persistencia.
+ * Datos de progresión integrados.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onNavigateToPlay: () -> Unit,
-    onNavigateToStats: () -> Unit
+    onNavigateToStats: () -> Unit,
+    progressionViewModel: ProgressionViewModel = koinViewModel()
 ) {
+    val progressionState by progressionViewModel.state.collectAsState()
     Scaffold(
         containerColor = Background,
         topBar = {
@@ -174,7 +179,7 @@ fun ProfileScreen(
                             .padding(horizontal = 16.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            "LEVEL 1",
+                            "LEVEL ${progressionState.currentLevel}",
                             style      = MaterialTheme.typography.labelSmall,
                             color      = OnSurface,
                             fontWeight = FontWeight.Bold
@@ -192,10 +197,50 @@ fun ProfileScreen(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "NOVATO",    // TODO: rango basado en XP
+                    progressionState.currentRank?.name?.uppercase() ?: "NOVATO",
                     style = MaterialTheme.typography.labelLarge,
                     color = OnSurfaceVariant
                 )
+                
+                Spacer(Modifier.height(16.dp))
+                
+                // Barra de progreso de XP
+                val progressPercent = if (progressionState.xpRequiredForNextLevel > 0) {
+                    (progressionState.currentLevelXP.toFloat() / progressionState.xpRequiredForNextLevel)
+                } else 0f
+                val progressPercentInt = (progressPercent * 100).toInt()
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(SurfaceContainer)
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier              = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("${progressionState.currentLevelXP} XP", style = MaterialTheme.typography.labelMedium, color = OnSurfaceVariant)
+                        Text("${progressionState.xpRequiredForNextLevel} XP", style = MaterialTheme.typography.labelMedium, color = Tertiary)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(com.inigo.xudoku.ui.theme.SurfaceContainerHighest)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progressPercent)
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Brush.horizontalGradient(colors = listOf(Tertiary, PrimaryContainer)))
+                        )
+                    }
+                }
             }
 
             Spacer(Modifier.height(24.dp))
@@ -240,7 +285,7 @@ fun ProfileScreen(
                         color = OnSurfaceVariant
                     )
                     Text(
-                        "0 Days",
+                        "${progressionState.dailyStreak} Days",
                         style      = MaterialTheme.typography.headlineMedium,
                         color      = OnSurface,
                         fontWeight = FontWeight.Bold

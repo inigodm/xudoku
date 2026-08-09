@@ -1,5 +1,9 @@
 package com.inigo.xudoku.ui.screen
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import org.koin.androidx.compose.koinViewModel
+import com.inigo.xudoku.ui.ProgressionViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -64,13 +68,15 @@ private val difficultyIcons = DifficultyIcons(
     extreme = Icons.Outlined.LocalFireDepartment
 )
 
-/** Dificultades visibles en la UI (HARDEST oculto hasta desbloquearse). */
+/** Dificultades visibles en la UI. */
 private val visibleDifficulties = listOf(
     Difficulty.VERY_EASY,
     Difficulty.EASY,
     Difficulty.MEDIUM,
-    Difficulty.HARD
+    Difficulty.HARD,
+    Difficulty.HARDEST
 )
+
 
 /**
  * Pantalla de selección de dificultad.
@@ -84,8 +90,11 @@ private val visibleDifficulties = listOf(
 fun DifficultyScreen(
     onDifficultySelected: (Difficulty) -> Unit,
     onNavigateToStats: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    progressionViewModel: ProgressionViewModel = koinViewModel()
 ) {
+    val progressionState by progressionViewModel.state.collectAsState()
+    
     Scaffold(
         containerColor = Background,
         topBar = {
@@ -176,18 +185,27 @@ fun DifficultyScreen(
 
             // Tarjetas de dificultad
             visibleDifficulties.forEach { difficulty ->
+                val requiredLevel = when(difficulty) {
+                    Difficulty.VERY_EASY -> 1
+                    Difficulty.EASY -> 1
+                    Difficulty.MEDIUM -> 2
+                    Difficulty.HARD -> 5
+                    Difficulty.HARDEST -> 15
+                }
+                val isLocked = progressionState.currentLevel < requiredLevel
+                
                 DifficultyCard(
                     difficulty = difficulty,
                     visuals    = difficultyVisuals(difficulty, difficultyIcons),
-                    onClick    = { onDifficultySelected(difficulty) },
+                    isLocked   = isLocked,
+                    onClick    = { if (!isLocked) onDifficultySelected(difficulty) },
                     modifier   = Modifier.fillMaxWidth()
                 )
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // Barra de progreso global (placeholder hasta implementar persistencia)
-            // TODO("conectar a persistencia")
+            // Barra de progreso global
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -195,12 +213,17 @@ fun DifficultyScreen(
                     .background(SurfaceContainer)
                     .padding(16.dp)
             ) {
+                val progressPercent = if (progressionState.xpRequiredForNextLevel > 0) {
+                    (progressionState.currentLevelXP.toFloat() / progressionState.xpRequiredForNextLevel)
+                } else 0f
+                val progressPercentInt = (progressPercent * 100).toInt()
+                
                 Row(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Progreso Global", style = MaterialTheme.typography.labelLarge, color = OnSurfaceVariant)
-                    Text("0%", style = MaterialTheme.typography.labelLarge, color = Tertiary)
+                    Text("Nivel ${progressionState.currentLevel}", style = MaterialTheme.typography.labelLarge, color = OnSurfaceVariant)
+                    Text("$progressPercentInt%", style = MaterialTheme.typography.labelLarge, color = Tertiary)
                 }
                 Spacer(Modifier.height(8.dp))
                 // Progress bar con gradient Tertiary→PrimaryContainer
@@ -213,7 +236,7 @@ fun DifficultyScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0f) // 0% por ahora — TODO persistencia
+                            .fillMaxWidth(progressPercent)
                             .height(10.dp)
                             .clip(RoundedCornerShape(5.dp))
                             .background(

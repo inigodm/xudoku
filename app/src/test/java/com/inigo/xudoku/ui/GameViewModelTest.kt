@@ -11,6 +11,10 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.flow.MutableStateFlow
+import com.inigo.xudoku.model.progression.ProgressionManager
+import com.inigo.xudoku.data.repository.ProgressionRepository
+import com.inigo.xudoku.data.repository.ProgressionState
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -453,5 +457,60 @@ class GameViewModelTest {
         assertTrue(vm.isGameOver.value)
 
         vm.viewModelScope.cancel()
+    }
+
+    // ── CU-18 / CU-19: Ganar Experiencia y Subir de Nivel ──────────────────────
+    
+    @Test
+    fun `CU-18 y CU-19 al completar el puzzle evalua si hasLeveledUp cambia a true`() = runTest(testDispatcher) {
+        val manager = ProgressionManager()
+        val repo = object : ProgressionRepository {
+            override val progressionState = MutableStateFlow(ProgressionState(totalXP = 0))
+            override suspend fun getProgressionState() = progressionState.value
+            override suspend fun updateXP(xpToAdd: Int) {
+                progressionState.value = progressionState.value.copy(totalXP = progressionState.value.totalXP + xpToAdd)
+            }
+            override suspend fun updateStreaks(newDailyStreak: Int, newWinStreak: Int, playDate: Long) {}
+            override suspend fun resetWinStreak() {}
+            override suspend fun ascendPrestige() {}
+        }
+        
+        val vmWithProgression = GameViewModel(
+            ioDispatcher = testDispatcher, 
+            progressionRepo = repo, 
+            progressionManager = manager
+        )
+        
+        vmWithProgression.startGame(Difficulty.VERY_EASY)
+        assertFalse(vmWithProgression.hasLeveledUp.value)
+
+        // Usamos reflexión para simular que han pasado 65 segundos, burlando el anti-farmeo
+        val elapsedField = GameViewModel::class.java.getDeclaredField("_elapsedSeconds")
+        elapsedField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val elapsedStateFlow = elapsedField.get(vmWithProgression) as MutableStateFlow<Int>
+        elapsedStateFlow.value = 65
+
+        // Rellenar todas las celdas vacías con la solución sin usar pistas para no arruinar el score
+        val gameField = GameViewModel::class.java.getDeclaredField("game")
+        gameField.isAccessible = true
+        val game = gameField.get(vmWithProgression) as com.inigo.xudoku.model.SudokuGame
+        
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vmWithProgression.cells.value[r][c].isGiven && vmWithProgression.cells.value[r][c].value == SudokuBoard.EMPTY) {
+                    vmWithProgression.selectCell(r, c)
+                    vmWithProgression.enterNumber(game.solution.get(r, c))
+                }
+            }
+        }
+
+        assertTrue(vmWithProgression.isCompleted.value)
+        
+        // Al empezar con 0 XP, la partida en VERY_EASY otorga suficiente XP (aprox 10k) 
+        // para subir desde el nivel 1 al menos al nivel 2.
+        assertTrue("hasLeveledUp debería ser true ya que se empieza en nivel 1 y la partida da XP suficiente", vmWithProgression.hasLeveledUp.value)
+
+        vmWithProgression.viewModelScope.cancel()
     }
 }

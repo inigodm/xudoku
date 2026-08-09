@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -61,6 +62,7 @@ data class DifficultyVisuals(
 fun DifficultyCard(
     difficulty: Difficulty,
     visuals: DifficultyVisuals,
+    isLocked: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -83,7 +85,7 @@ fun DifficultyCard(
                 .matchParentSize()
                 .offset(y = 4.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(visuals.shadowColor)
+                .background(if (isLocked) Color.Gray.copy(alpha = 0.3f) else visuals.shadowColor)
         )
         // Cara del botón
         Row(
@@ -92,10 +94,11 @@ fun DifficultyCard(
                 .fillMaxWidth()
                 .offset(y = offsetY)
                 .clip(RoundedCornerShape(14.dp))
-                .background(visuals.faceColor)
+                .background(if (isLocked) Color.Gray.copy(alpha = 0.15f) else visuals.faceColor)
                 .clickable(
                     interactionSource = interactionSource,
                     indication        = null,
+                    enabled           = !isLocked,
                     onClick           = onClick
                 )
                 .padding(horizontal = 20.dp, vertical = 18.dp)
@@ -109,9 +112,9 @@ fun DifficultyCard(
                     .background(Color.White.copy(alpha = 0.15f))
             ) {
                 Icon(
-                    imageVector        = visuals.icon,
+                    imageVector        = if (isLocked) androidx.compose.material.icons.Icons.Outlined.Lock else visuals.icon,
                     contentDescription = visuals.labelEs,
-                    tint               = visuals.iconColor,
+                    tint               = if (isLocked) Color.Gray else visuals.iconColor,
                     modifier           = Modifier.size(26.dp)
                 )
             }
@@ -121,13 +124,13 @@ fun DifficultyCard(
                 Text(
                     text       = visuals.labelEs,
                     style      = MaterialTheme.typography.headlineMedium,
-                    color      = visuals.textColor,
+                    color      = if (isLocked) Color.Gray else visuals.textColor,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text  = visuals.subtitle,
+                    text  = if (isLocked) "Bloqueado" else visuals.subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = visuals.textColor.copy(alpha = 0.75f)
+                    color = if (isLocked) Color.Gray.copy(alpha = 0.75f) else visuals.textColor.copy(alpha = 0.75f)
                 )
             }
         }

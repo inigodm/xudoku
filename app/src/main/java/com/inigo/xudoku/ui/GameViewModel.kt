@@ -25,6 +25,9 @@ import com.inigo.xudoku.data.repository.GameHistoryRepository
 import com.inigo.xudoku.model.history.SudokuGameResult
 import java.util.Date
 import java.util.UUID
+import com.inigo.xudoku.data.repository.ProgressionRepository
+import com.inigo.xudoku.model.progression.ProgressionManager
+import com.inigo.xudoku.model.progression.BonusType
 
 /** Estado inmutable de una celda del tablero visible en la UI. */
 data class CellState(
@@ -52,8 +55,10 @@ private data class GameMove(
 
 /** ViewModel que gestiona el estado mutable de una partida de Sudoku. */
 class GameViewModel(
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.Default,
-    private val historyRepo: GameHistoryRepository? = null
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val historyRepo: GameHistoryRepository? = null,
+    private val progressionRepo: ProgressionRepository? = null,
+    private val progressionManager: ProgressionManager? = null
 ) : ViewModel() {
 
     private lateinit var game: SudokuGame
@@ -96,6 +101,9 @@ class GameViewModel(
     private val _isNewHighScore = MutableStateFlow(false)
     /** true → la puntuación obtenida supera la máxima histórica para esta dificultad. */
     val isNewHighScore: StateFlow<Boolean> = _isNewHighScore.asStateFlow()
+
+    private val _hasLeveledUp = MutableStateFlow(false)
+    val hasLeveledUp: StateFlow<Boolean> = _hasLeveledUp.asStateFlow()
 
     private val _completedNumbers = MutableStateFlow<Set<Int>>(emptySet())
     /** Números (1-9) que ya están colocados 9 veces en el tablero. */
@@ -370,7 +378,42 @@ class GameViewModel(
                     _isNewHighScore.value = false
                 }
                 
+                
                 saveGameResult()
+                
+                // Calculamos XP si ganamos y tenemos los managers
+                if (progressionRepo != null && progressionManager != null) {
+                    val playTime = (_elapsedSeconds.value * 1000L)
+                    val currentState = progressionRepo.getProgressionState()
+                    val bonuses = mutableListOf<BonusType>()
+                    
+                    if (mistakes.value == 0) bonuses.add(BonusType.PERFECT_GAME)
+                    if (isNotesMode.value == false) bonuses.add(BonusType.BLIND_SUDOKU)
+                    
+                    val xp = progressionManager.calculateXP(
+                        score = finalScoreVal,
+                        playTimeMs = playTime,
+                        bonuses = bonuses,
+                        dailyStreak = currentState.dailyStreak,
+                        winStreak = currentState.winStreak + 1,
+                        prestigeStars = currentState.prestigeStars
+                    )
+                    
+                    
+                    if (xp > 0) {
+                        val currentLevelBefore = progressionManager!!.getLevelFromTotalXP(currentState.totalXP)
+                        val currentLevelAfter = progressionManager!!.getLevelFromTotalXP(currentState.totalXP + xp)
+                        _hasLeveledUp.value = currentLevelAfter > currentLevelBefore
+                        
+                        progressionRepo.updateXP(xp)
+                        progressionRepo.updateStreaks(
+                            newDailyStreak = currentState.dailyStreak, // Simplified: should check date
+                            newWinStreak = currentState.winStreak + 1,
+                            playDate = System.currentTimeMillis()
+                        )
+                    }
+                }
+                
                 _isCompleted.value = true
             }
         }
