@@ -39,6 +39,10 @@ import org.koin.androidx.compose.koinViewModel
 import com.inigo.xudoku.ui.ProgressionViewModel
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -102,12 +106,26 @@ fun GameScreen(
         viewModel.startGame(difficulty)
     }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
+                viewModel.pauseTimer()
+            } else if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.resumeTimer()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     val cells        by viewModel.cells.collectAsState()
     val notes        by viewModel.notes.collectAsState()
     val selectedCell by viewModel.selectedCell.collectAsState()
     val isNotesMode  by viewModel.isNotesMode.collectAsState()
     val mistakes     by viewModel.mistakes.collectAsState()
-    val elapsed      by viewModel.elapsedSeconds.collectAsState()
     val isCompleted  by viewModel.isCompleted.collectAsState()
     val isGameOver   by viewModel.isGameOver.collectAsState()
     val isLoading    by viewModel.isLoading.collectAsState()
@@ -127,14 +145,16 @@ fun GameScreen(
     LaunchedEffect(isCompleted) {
         if (isCompleted) {
             val score = viewModel.getFinalScore()
-            onGameCompleted(elapsed, mistakes, difficulty, score, isNewHighScore, hasLeveledUp)
+            val finalElapsed = viewModel.elapsedSeconds.value
+            onGameCompleted(finalElapsed, mistakes, difficulty, score, isNewHighScore, hasLeveledUp)
         }
     }
 
     // Navegar a Fin de Juego cuando se agoten los 3 errores
     LaunchedEffect(isGameOver) {
         if (isGameOver) {
-            onGameOver(elapsed, mistakes)
+            val finalElapsed = viewModel.elapsedSeconds.value
+            onGameOver(finalElapsed, mistakes)
         }
     }
 
@@ -174,11 +194,7 @@ fun GameScreen(
                                     color = OnSecondaryContainer
                                 )
                             }
-                            Text(
-                                elapsed.toTimeString(),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = OnSurfaceVariant
-                            )
+                                TimerDisplay(viewModel = viewModel)
                         }
                     }
                 },
@@ -363,6 +379,16 @@ private fun ActionButton(
         Spacer(Modifier.height(4.dp))
         Text(label, style = MaterialTheme.typography.labelSmall, color = if (isActive) Primary else OnSurfaceVariant)
     }
+}
+
+@Composable
+fun TimerDisplay(viewModel: GameViewModel) {
+    val elapsed by viewModel.elapsedSeconds.collectAsState()
+    Text(
+        elapsed.toTimeString(),
+        style = MaterialTheme.typography.labelSmall,
+        color = OnSurfaceVariant
+    )
 }
 
 // ── Preview ──────────────────────────────────────────────────────────────────

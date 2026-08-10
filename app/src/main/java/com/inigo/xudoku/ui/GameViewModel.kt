@@ -365,6 +365,7 @@ class GameViewModel(
             }
         }
         if (complete) {
+            _isCompleted.value = true
             timerJob?.cancel()
             val finalScoreVal = getFinalScore()
             val difficultyEnum = _difficulty.value ?: Difficulty.EASY
@@ -420,12 +421,22 @@ class GameViewModel(
     }
 
     private fun startTimer() {
+        timerJob?.cancel()
         timerJob = viewModelScope.launch {
             while (true) {
                 delay(1_000L)
                 _elapsedSeconds.update { it + 1 }
             }
         }
+    }
+    
+    fun pauseTimer() {
+        timerJob?.cancel()
+    }
+
+    fun resumeTimer() {
+        if (_isCompleted.value || _isGameOver.value) return
+        startTimer()
     }
 
     override fun onCleared() {
