@@ -201,7 +201,7 @@ class GameViewModel(
                     if (newCount >= 3) {
                         _isGameOver.value = true
                         timerJob?.cancel()
-                        saveGameResult()
+                        saveGameResult(0)
                     }
                     newCount
                 }
@@ -379,19 +379,18 @@ class GameViewModel(
                     _isNewHighScore.value = false
                 }
                 
+                var xpEarned = 0
                 
-                saveGameResult()
-                
-                // Calculamos XP si ganamos y tenemos los managers
+                // Calculamos XP si ganamos y tenemos los managers ANTES de guardar
                 if (progressionRepo != null && progressionManager != null) {
                     val playTime = (_elapsedSeconds.value * 1000L)
                     val currentState = progressionRepo.getProgressionState()
-                    val bonuses = mutableListOf<BonusType>()
+                    val bonuses = mutableListOf<com.inigo.xudoku.model.progression.BonusType>()
                     
-                    if (mistakes.value == 0) bonuses.add(BonusType.PERFECT_GAME)
-                    if (isNotesMode.value == false) bonuses.add(BonusType.BLIND_SUDOKU)
+                    if (mistakes.value == 0) bonuses.add(com.inigo.xudoku.model.progression.BonusType.PERFECT_GAME)
+                    if (isNotesMode.value == false) bonuses.add(com.inigo.xudoku.model.progression.BonusType.BLIND_SUDOKU)
                     
-                    val xp = progressionManager.calculateXP(
+                    xpEarned = progressionManager.calculateXP(
                         score = finalScoreVal,
                         playTimeMs = playTime,
                         bonuses = bonuses,
@@ -400,13 +399,12 @@ class GameViewModel(
                         prestigeStars = currentState.prestigeStars
                     )
                     
-                    
-                    if (xp > 0) {
-                        val currentLevelBefore = progressionManager!!.getLevelFromTotalXP(currentState.totalXP)
-                        val currentLevelAfter = progressionManager!!.getLevelFromTotalXP(currentState.totalXP + xp)
+                    if (xpEarned > 0) {
+                        val currentLevelBefore = progressionManager.getLevelFromTotalXP(currentState.totalXP)
+                        val currentLevelAfter = progressionManager.getLevelFromTotalXP(currentState.totalXP + xpEarned)
                         _hasLeveledUp.value = currentLevelAfter > currentLevelBefore
                         
-                        progressionRepo.updateXP(xp)
+                        progressionRepo.updateXP(xpEarned)
                         progressionRepo.updateStreaks(
                             newDailyStreak = currentState.dailyStreak, // Simplified: should check date
                             newWinStreak = currentState.winStreak + 1,
@@ -414,6 +412,8 @@ class GameViewModel(
                         )
                     }
                 }
+                
+                saveGameResult(xpEarned)
                 
                 _isCompleted.value = true
             }
@@ -489,7 +489,7 @@ class GameViewModel(
     private fun emptyBoard(): Array<Array<CellState>> =
         Array(SudokuBoard.SIZE) { Array(SudokuBoard.SIZE) { CellState(0, false, false) } }
         
-    private fun saveGameResult() {
+    private fun saveGameResult(xpEarned: Int) {
         val repo = historyRepo ?: return
         val startTime = gameStartTime ?: Date()
         val endTime = Date()
@@ -534,7 +534,7 @@ class GameViewModel(
             victoria = isWin,
             versionJuego = 1,
             versionAlgoritmoPuntuacion = 1,
-            metadata = "{}"
+            metadata = "{\"xpEarned\": $xpEarned}"
         )
         
         viewModelScope.launch {

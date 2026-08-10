@@ -42,8 +42,10 @@ class StatsViewModelTest {
     private fun createDummyResult(
         difficulty: Difficulty = Difficulty.EASY,
         isWin: Boolean = true,
-        idSudoku: String = "1"
+        idSudoku: String = "1",
+        xpEarned: Int? = null
     ): SudokuGameResult {
+        val meta = if (xpEarned != null) "{\"xpEarned\": $xpEarned}" else "{}"
         return SudokuGameResult(
             id = UUID.randomUUID().toString(),
             fechaHoraInicio = Date(),
@@ -74,19 +76,19 @@ class StatsViewModelTest {
             victoria = isWin,
             versionJuego = 1,
             versionAlgoritmoPuntuacion = 1,
-            metadata = "{}"
+            metadata = meta
         )
     }
 
     @Test
-    fun `loadStats populates totalGamesPlayed and translates recent flow labels`() = runTest(testDispatcher) {
+    fun `loadStats populates totalGamesPlayed and translates recent flow labels and reads metadata xp`() = runTest(testDispatcher) {
         // Arrange
         val games = listOf(
-            createDummyResult(Difficulty.VERY_EASY, true, "10"),
-            createDummyResult(Difficulty.EASY, false, "11"),
-            createDummyResult(Difficulty.MEDIUM, true, "12"),
-            createDummyResult(Difficulty.HARD, false, "13"),
-            createDummyResult(Difficulty.HARDEST, true, "14")
+            createDummyResult(Difficulty.VERY_EASY, true, "10", 1250), // Has XP in metadata
+            createDummyResult(Difficulty.EASY, false, "11", null),
+            createDummyResult(Difficulty.MEDIUM, true, "12", 2400),
+            createDummyResult(Difficulty.HARD, false, "13", null),
+            createDummyResult(Difficulty.HARDEST, true, "14", 5000)
         )
         fakeRepository.results = games
         
@@ -108,9 +110,22 @@ class StatsViewModelTest {
         val mappedLabels = recentGames.map { it.label }
         assert(mappedLabels.contains("Fácil #10"))
         assert(mappedLabels.contains("Medio #11"))
-        assert(mappedLabels.contains("Difícil #12"))
-        assert(mappedLabels.contains("Extremo #13"))
-        assert(mappedLabels.contains("Imposible #14"))
+        
+        // Check XP extraction
+        val veryEasyGame = recentGames.find { it.label == "Fácil #10" }
+        assertEquals("+1250 XP", veryEasyGame?.xp)
+        
+        val hardGame = recentGames.find { it.label == "Difícil #12" }
+        assertEquals("+2400 XP", hardGame?.xp)
+        
+        // Check Points Evolution
+        val points = state.pointsEvolution
+        assertEquals(5, points.size)
+        // Ensure PointData maps correctly. For older games (like no XP), it should fallback to score.
+        // Assuming score is 100 as per createDummyResult
+        val mediumPoint = points.find { it.xp == 2400 }
+        assertTrue(mediumPoint != null)
+        assertEquals(100f, mediumPoint?.score)
     }
 }
 

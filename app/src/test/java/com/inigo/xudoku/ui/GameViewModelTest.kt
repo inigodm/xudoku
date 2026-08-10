@@ -513,4 +513,68 @@ class GameViewModelTest {
 
         vmWithProgression.viewModelScope.cancel()
     }
+    
+    @Test
+    fun `CU-18 saveGameResult stores xpEarned in metadata when game is won`() = runTest(testDispatcher) {
+        val manager = ProgressionManager()
+        val progressionRepo = object : ProgressionRepository {
+            override val progressionState = MutableStateFlow(ProgressionState(totalXP = 0))
+            override suspend fun getProgressionState() = progressionState.value
+            override suspend fun updateXP(xpToAdd: Int) {}
+            override suspend fun updateStreaks(newDailyStreak: Int, newWinStreak: Int, playDate: Long) {}
+            override suspend fun resetWinStreak() {}
+            override suspend fun ascendPrestige() {}
+        }
+        
+        var savedResult: com.inigo.xudoku.model.history.SudokuGameResult? = null
+        val historyRepo = object : com.inigo.xudoku.data.repository.GameHistoryRepository {
+            override suspend fun saveGameResult(result: com.inigo.xudoku.model.history.SudokuGameResult) {
+                savedResult = result
+            }
+            override suspend fun getAllResults(): List<com.inigo.xudoku.model.history.SudokuGameResult> = emptyList()
+            override fun getAllResultsFlow(): kotlinx.coroutines.flow.Flow<List<com.inigo.xudoku.model.history.SudokuGameResult>> = kotlinx.coroutines.flow.flowOf()
+            override suspend fun getResultById(id: String): com.inigo.xudoku.model.history.SudokuGameResult? = null
+            override suspend fun deleteResult(id: String) {}
+            override suspend fun clearHistory() {}
+            override suspend fun getTopScores(limit: Int): List<com.inigo.xudoku.model.history.SudokuGameResult> = emptyList()
+            override suspend fun getBestTimeForDifficulty(difficulty: Difficulty): com.inigo.xudoku.model.history.SudokuGameResult? = null
+            override suspend fun getResultsByDifficulty(difficulty: Difficulty): List<com.inigo.xudoku.model.history.SudokuGameResult> = emptyList()
+            override suspend fun getResultsByDateRange(startDate: Long, endDate: Long): List<com.inigo.xudoku.model.history.SudokuGameResult> = emptyList()
+            override suspend fun getResultsByLevel(level: Int): List<com.inigo.xudoku.model.history.SudokuGameResult> = emptyList()
+        }
+        
+        val vmWithProgression = GameViewModel(
+            ioDispatcher = testDispatcher, 
+            historyRepo = historyRepo,
+            progressionRepo = progressionRepo, 
+            progressionManager = manager
+        )
+        
+        vmWithProgression.startGame(Difficulty.VERY_EASY)
+
+        val elapsedField = GameViewModel::class.java.getDeclaredField("_elapsedSeconds")
+        elapsedField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val elapsedStateFlow = elapsedField.get(vmWithProgression) as MutableStateFlow<Int>
+        elapsedStateFlow.value = 65
+
+        val gameField = GameViewModel::class.java.getDeclaredField("game")
+        gameField.isAccessible = true
+        val game = gameField.get(vmWithProgression) as com.inigo.xudoku.model.SudokuGame
+        
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vmWithProgression.cells.value[r][c].isGiven && vmWithProgression.cells.value[r][c].value == SudokuBoard.EMPTY) {
+                    vmWithProgression.selectCell(r, c)
+                    vmWithProgression.enterNumber(game.solution.get(r, c))
+                }
+            }
+        }
+
+        assertTrue(vmWithProgression.isCompleted.value)
+        assertTrue(savedResult != null)
+        assertTrue("El metadata debe contener xpEarned", savedResult!!.metadata.contains("\"xpEarned\""))
+        
+        vmWithProgression.viewModelScope.cancel()
+    }
 }

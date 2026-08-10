@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -24,6 +25,11 @@ data class RecentGameUiModel(
     val completed: Boolean
 )
 
+data class PointData(
+    val score: Float,
+    val xp: Int
+)
+
 data class StatsUiState(
     val isLoading: Boolean = true,
     val totalGamesPlayed: Int = 0,
@@ -31,7 +37,7 @@ data class StatsUiState(
     val winRate: String = "—",
     val currentStreak: Int = 0,
     val longestStreak: Int = 0,
-    val pointsEvolution: List<Float> = emptyList(),
+    val pointsEvolution: List<PointData> = emptyList(),
     val bestTime: String = "—",
     val averageTime: String = "—",
     val recentGames: List<RecentGameUiModel> = emptyList(),
@@ -68,6 +74,15 @@ class StatsViewModel(
         }
     }
 
+    private fun extractXp(game: SudokuGameResult): Int {
+        return try {
+            val json = JSONObject(game.metadata)
+            if (json.has("xpEarned")) json.getInt("xpEarned") else game.puntuacionFinal
+        } catch (e: Exception) {
+            game.puntuacionFinal
+        }
+    }
+
     private fun calculateStats(
         results: List<SudokuGameResult>, 
         allResults: List<SudokuGameResult> // Used for difficulty split to maintain global view
@@ -87,7 +102,9 @@ class StatsViewModel(
         // Points evolution (last 15 games)
         // Ensure chronological order for chart (oldest to newest)
         val sortedForChart = results.sortedBy { it.fechaHoraFin }
-        val last15 = sortedForChart.takeLast(15).map { it.puntuacionFinal.toFloat() }
+        val last15 = sortedForChart.takeLast(15).map { 
+            PointData(it.puntuacionFinal.toFloat(), extractXp(it)) 
+        }
 
         // Time calculations
         val bestTimeSeconds = completedGames.minByOrNull { it.tiempoEmpleado }?.tiempoEmpleado
@@ -132,7 +149,7 @@ class StatsViewModel(
                 label = "$diffLabel #${game.identificadorSudoku ?: "0"}",
                 subtitle = dateFormat.format(game.fechaHoraFin).uppercase(),
                 time = formatTime(game.tiempoEmpleado),
-                xp = if (game.victoria) "+${game.puntuacionFinal} XP" else "DNF",
+                xp = if (game.victoria) "+${extractXp(game)} XP" else "DNF",
                 completed = game.victoria
             )
         }

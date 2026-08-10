@@ -84,6 +84,7 @@ import com.inigo.xudoku.ui.theme.Tertiary
 
 import com.inigo.xudoku.ui.StatsUiState
 import com.inigo.xudoku.ui.StatsViewModel
+import com.inigo.xudoku.ui.PointData
 import com.inigo.xudoku.ui.RecentGameUiModel
 
 /**
@@ -556,14 +557,14 @@ private fun RecentFlowRow(game: RecentGameUiModel) {
 
 /** Gráfica de línea dinámica con datos de puntos. */
 @Composable
-private fun StatsLineChart(dataPoints: List<Float>) {
+private fun StatsLineChart(dataPoints: List<PointData>) {
     if (dataPoints.isEmpty()) return
 
     val textMeasurer = rememberTextMeasurer()
     var selectedPointIndex by remember { mutableStateOf<Int?>(null) }
 
-    val minY = (dataPoints.minOrNull() ?: 0f).coerceAtLeast(0f)
-    val maxY = (dataPoints.maxOrNull() ?: 100f).coerceAtLeast(minY + 10f)
+    val minY = (dataPoints.minOfOrNull { it.score } ?: 0f).coerceAtLeast(0f)
+    val maxY = (dataPoints.maxOfOrNull { it.score } ?: 100f).coerceAtLeast(minY + 10f)
     
     // Create roughly evenly spaced Y labels
     val range = maxY - minY
@@ -632,9 +633,9 @@ private fun StatsLineChart(dataPoints: List<Float>) {
 
             // Path de la línea
             val linePath = Path()
-            dataPoints.forEachIndexed { i, value ->
+            dataPoints.forEachIndexed { i, data ->
                 val x = i * stepX
-                val y = h - ((value - minY) / (maxY - minY)) * h
+                val y = h - ((data.score - minY) / (maxY - minY)) * h
                 if (i == 0) linePath.moveTo(x, y) else linePath.lineTo(x, y)
             }
 
@@ -666,9 +667,9 @@ private fun StatsLineChart(dataPoints: List<Float>) {
             )
 
             // Puntos en la línea y Tooltip
-            dataPoints.forEachIndexed { i, value ->
+            dataPoints.forEachIndexed { i, data ->
                 val x = i * stepX
-                val y = h - ((value - minY) / (maxY - minY)) * h
+                val y = h - ((data.score - minY) / (maxY - minY)) * h
                 
                 val isSelected = selectedPointIndex == i
                 val outerRadius = if (isSelected) 5.dp.toPx() else 3.5.dp.toPx()
@@ -678,8 +679,8 @@ private fun StatsLineChart(dataPoints: List<Float>) {
                 drawCircle(color = Background, radius = innerRadius, center = Offset(x, y))
                 
                 if (isSelected) {
-                    val score = value.toInt()
-                    val tooltipText = "Score: $score\n+$score XP"
+                    val score = data.score.toInt()
+                    val tooltipText = "Score: $score\n+${data.xp} XP"
                     val textLayoutResult = textMeasurer.measure(
                         text = tooltipText,
                         style = TextStyle(color = Background, fontSize = 10.sp, fontWeight = FontWeight.Bold)
@@ -745,7 +746,14 @@ fun PreviewStatsScreen() {
                 winRate = "75%",
                 currentStreak = 3,
                 longestStreak = 5,
-                pointsEvolution = listOf(100f, 120f, 90f, 150f, 160f, 140f),
+                pointsEvolution = listOf(
+                    PointData(100f, 100), 
+                    PointData(120f, 150), 
+                    PointData(90f, 90), 
+                    PointData(150f, 200), 
+                    PointData(160f, 220), 
+                    PointData(140f, 180)
+                ),
                 bestTime = "04:30",
                 averageTime = "06:15",
                 recentGames = listOf(
