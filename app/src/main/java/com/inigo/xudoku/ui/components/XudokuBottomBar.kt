@@ -20,18 +20,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.inigo.xudoku.R
 import com.inigo.xudoku.ui.theme.OnSecondaryContainer
 import com.inigo.xudoku.ui.theme.OnSurfaceVariant
 import com.inigo.xudoku.ui.theme.SecondaryContainer
 import com.inigo.xudoku.ui.theme.SurfaceContainerLow
 
 /** Tabs de la barra de navegación inferior. */
-enum class XudokuTab(val label: String) {
-    PLAY("Play"),
-    STATS("Stats"),
-    BADGES("Badges"),
-    PROFILE("Profile")
+enum class XudokuTab(@StringRes val labelResId: Int) {
+    PLAY(R.string.tab_play),
+    STATS(R.string.tab_stats),
+    BADGES(R.string.tab_badges),
+    PROFILE(R.string.tab_profile)
 }
 
 /**
@@ -54,6 +57,7 @@ fun XudokuBottomBar(
         XudokuTab.entries.forEach { tab ->
             val selected = tab == currentTab
             val disabled = tab == XudokuTab.BADGES
+            val label = stringResource(id = tab.labelResId)
 
             NavigationBarItem(
                 selected = selected,
@@ -61,7 +65,7 @@ fun XudokuBottomBar(
                 enabled  = !disabled,
                 label    = {
                     Text(
-                        text  = tab.label,
+                        text  = label,
                         modifier = if (disabled) Modifier.alpha(0.4f) else Modifier
                     )
                 },
@@ -82,14 +86,14 @@ fun XudokuBottomBar(
                         ) {
                             Icon(
                                 imageVector        = icon,
-                                contentDescription = tab.label,
+                                contentDescription = label,
                                 tint               = OnSecondaryContainer
                             )
                         }
                     } else {
                         Icon(
                             imageVector        = icon,
-                            contentDescription = tab.label,
+                            contentDescription = label,
                             tint               = if (disabled) OnSurfaceVariant.copy(alpha = 0.4f)
                                                  else OnSurfaceVariant,
                         )

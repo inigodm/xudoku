@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">xudoku</string>
+
+    <!-- Navigation -->
+    <string name="nav_play">Jokatu</string>
+    <string name="nav_profile">Profila</string>
+    <string name="nav_stats">Estatistikak</string>
+    <string name="nav_settings">Ezarpenak</string>
+
+    <!-- Difficulty -->
+    <string name="diff_very_easy">Oso Erraza</string>
+    <string name="diff_easy">Erraza</string>
+    <string name="diff_medium">Ertaina</string>
+    <string name="diff_hard">Zaila</string>
+    <string name="diff_hardest">Ezinezkoa</string>
+
+    <!-- Difficulty Screen -->
+    <string name="resume">Jarraitu</string>
+    <string name="new_game">Partida Berria</string>
+    <string name="level_formatted">%1$d. Maila</string>
+    <string name="percent_formatted">%1$d%%</string>
+    <string name="locked">Blokeatuta</string>
+
+    <!-- Game Screen -->
+    <string name="mistakes">AKATSAK</string>
+    <string name="score">PUNTUAZIOA</string>
+
+    <!-- Game Over Screen -->
+    <string name="game_over_reason">3 akats egin dituzu!</string>
+    <string name="try_again">SAIATU BERRIRO</string>
+
+    <!-- Victory Screen -->
+    <string name="time_formatted">DENBORA: %1$s</string>
+    <string name="difficulty_formatted">ZAILTASUNA: %1$s</string>
+    <string name="level_up_title">Mailaz Igo Zara!</string>
+    <string name="level_up_body">Zorionak! %1$d. mailara iritsi zara. Jarraitu jokatzen mailaz igotzeko eta zailtasun berriak desblokeatzeko.</string>
+    <string name="awesome">Bikaina!</string>
+
+    <!-- Profile & Stats -->
+    <string name="total_games_played">Jokatutako Partidak</string>
+    <string name="win_rate">Garaipen Ehunekoa</string>
+    <string name="total_wins">Garaipenak Guztira</string>
+    <string name="daily_streak">Eguneroko Bolada</string>
+    <string name="longest_streak">Bolada Luzeena</string>
+    <string name="best_time">Denbora Onena</string>
+    <string name="average_time">Batez Besteko Denbora</string>
+    <string name="points_evolution">Puntuen Bilakaera</string>
+    <string name="recent_flow">Azken Partidak</string>
+    <string name="global">Globala</string>
+    <string name="sudoku_flow">SUDOKU FLOW</string>
+    <string name="total_achievements">LORPENAK GUZTIRA</string>
+    <string name="games_won">Irabazitako Partidak</string>
+    <string name="streak">BOLADA</string>
+    <string name="not_enough_data">Ez dago datu nahikorik</string>
+    <string name="difficulty_split">Zailtasun Banaketa</string>
+    <string name="view_all">Ikusi Guztiak</string>
+    <string name="no_completed_games">Oraindik ez duzu partidarik amaitu.</string>
+    <string name="menu">Menua</string>
+    <string name="settings">Ezarpenak</string>
+    
+    <!-- Profile Screen -->
+    <string name="player_default">Jokalaria</string>
+    <string name="rookie">HASIBERRIA</string>
+    <string name="games_played_caps">JOKATUTAKO PARTIDAK</string>
+    <string name="win_rate_caps">GARAIPEN EHUNEKOA</string>
+    <string name="wins_caps">GARAIPENAK</string>
+    <string name="daily_streak_caps">EGUNEROKO BOLADA</string>
+    <string name="account_settings">KONTUAREN EZARPENAK</string>
+    <string name="edit_profile">Profila Editatu</string>
+    <string name="notifications">Jakinarazpenak</string>
+    <string name="privacy_and_safety">Pribatutasuna eta Segurtasuna</string>
+    <string name="log_out">Saioa Itxi</string>
+    
+    <string name="diff_subtitle_very_easy">35+ Zenbaki emanda</string>
+    <string name="diff_subtitle_easy">28–34 Zenbaki emanda</string>
+    <string name="diff_subtitle_medium">22–27 Zenbaki emanda</string>
+    <string name="diff_subtitle_hard">&lt; 22 Zenbaki emanda</string>
+    <string name="diff_subtitle_hardest">17 Zenbaki emanda</string>
+    
+    <string name="select_difficulty">Aukeratu Zailtasuna</string>
+    <string name="sudoku_title">SUDOKU</string>
+    <string name="back">Atzera</string>
+    <string name="mistakes_caps">AKATSAK</string>
+    <string name="mistakes_formatted">%1$d/3</string>
+    <string name="score_caps">PUNTUAZIOA</string>
+    <string name="generating_puzzle">Puzzlea sortzen…</string>
+    <string name="undo">Desegin</string>
+    <string name="erase">Ezabatu</string>
+    <string name="notes">Oharrak</string>
+    <string name="hint">Pista</string>
+    
+    <string name="game_over">GAME OVER</string>
+    <string name="out_of_chances">Aukerarik gabe geratu zara.</string>
+    <string name="time_caps">DENBORA</string>
+    <string name="watch_ad_to_continue">Ikusi Iragarkia Jarraitzeko</string>
+    <string name="main_menu">MENU NAGUSIA</string>
+    <string name="level_up">Maila Igoera!</string>
+    <string name="level_up_desc_formatted">Zorionak! %1$d. Mailara iritsi zara. Jarraitu jokatzen mailaz igotzeko eta zailtasun berriak desblokeatzeko.</string>
+    <string name="great">Bikain!</string>
+    <string name="new_record">MARKA BERRIA</string>
+    <string name="victory">GARAIPENA!</string>
+    <string name="level_completed_successfully">Maila arrakastaz gaindituta</string>
+    <string name="final_score">AZKEN PUNTUAZIOA</string>
+    <string name="difficulty_caps">ZAILTASUNA</string>
+    <string name="level_only_formatted">%1$d. MAILA</string>
+    <string name="next_level">Hurrengo Maila</string>
+    
+    <string name="tab_play">Jolastu</string>
+    <string name="tab_stats">Estat.</string>
+    <string name="tab_badges">Lorpenak</string>
+    <string name="tab_profile">Profila</string>
+    
+    <string name="rank_novato">Hasiberria</string>
+    <string name="rank_aprendiz">Ikaslea</string>
+    <string name="rank_aficionado">Zalea</string>
+    <string name="rank_aspirante">Hautagaia</string>
+    <string name="rank_pensador">Pentsalaria</string>
+    <string name="rank_logico">Logikoa</string>
+    <string name="rank_analista">Analista</string>
+    <string name="rank_calculador">Kalkulatzailea</string>
+    <string name="rank_tactico">Taktikoa</string>
+    <string name="rank_estratega">Estratega</string>
+    <string name="rank_resolutor">Ebazlea</string>
+    <string name="rank_especialista">Espezialista</string>
+    <string name="rank_profesional">Profesionala</string>
+    <string name="rank_experto">Aditua</string>
+    <string name="rank_veterano">Beteranoa</string>
+    <string name="rank_maestro">Maisua</string>
+    <string name="rank_gran_maestro">Maisu Handia</string>
+    <string name="rank_ilustre">Argi</string>
+    <string name="rank_erudito">Jakintsua</string>
+    <string name="rank_sabio">Zuhurra</string>
+    <string name="rank_virtuoso">Birtuosoa</string>
+    <string name="rank_elite">Elite</string>
+    <string name="rank_leyenda">Kondaira</string>
+    <string name="rank_mito">Mitoa</string>
+    <string name="rank_xudoku_supremo">Xudoku Gorena</string>
+    
+    <string name="level_title_formatted">%1$d. MAILA - %2$s</string>
+    <string name="xp_formatted">%1$d XP</string>
+    <string name="xp_progress_formatted">%1$d / %2$d XP</string>
+    <string name="xp_earned_formatted">+%1$d XP</string>
+    <string name="dnf">Utzita</string>
+    
+    <string name="tooltip_score_xp">Puntuak: %1$d\n+%2$d XP</string>
+    
+    <!-- Game Formatting -->
+    <string name="game_label_formatted">%1$s #%2$s</string>
+</resources>

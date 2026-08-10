@@ -39,9 +39,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.inigo.xudoku.R
 import com.inigo.xudoku.ui.components.XudokuBottomBar
 import com.inigo.xudoku.ui.components.XudokuTab
 import com.inigo.xudoku.ui.theme.Background
@@ -78,7 +81,7 @@ fun GameOverScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "SUDOKU",
+                        stringResource(R.string.sudoku_title),
                         style      = MaterialTheme.typography.headlineMedium,
                         color      = Primary,
                         fontWeight = FontWeight.Bold
@@ -86,12 +89,12 @@ fun GameOverScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onMainMenu) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Atrás", tint = Primary)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = Primary)
                     }
                 },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Settings, "Ajustes", tint = Primary)
+                        Icon(Icons.Outlined.Settings, stringResource(R.string.settings), tint = Primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -137,14 +140,14 @@ fun GameOverScreen(
 
             // Título y Subtítulo
             Text(
-                "¡FIN DEL JUEGO!",
+                stringResource(R.string.game_over),
                 style      = MaterialTheme.typography.displayLarge,
                 color      = ErrorColor,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Te has quedado sin oportunidades.",
+                stringResource(R.string.out_of_chances),
                 style = MaterialTheme.typography.bodyLarge,
                 color = OnSurfaceVariant
             )
@@ -159,14 +162,14 @@ fun GameOverScreen(
                 StatCard(
                     icon     = Icons.Outlined.Cancel,
                     iconTint = ErrorColor,
-                    label    = "ERRORES",
-                    value    = "$mistakes/3",
+                    label    = stringResource(R.string.mistakes_caps),
+                    value    = stringResource(R.string.mistakes_formatted, mistakes),
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     icon     = Icons.Outlined.Timer,
                     iconTint = Tertiary,
-                    label    = "TIEMPO",
+                    label    = stringResource(R.string.time_caps),
                     value    = elapsedSeconds.toTimeString(),
                     modifier = Modifier.weight(1f)
                 )
@@ -191,7 +194,7 @@ fun GameOverScreen(
                 )
                 Spacer(Modifier.size(8.dp))
                 Text(
-                    "Ver Anuncio para Continuar",
+                    stringResource(R.string.watch_ad_to_continue),
                     style      = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color      = OnErrorContainer
@@ -213,7 +216,7 @@ fun GameOverScreen(
                 Icon(Icons.Outlined.Home, null, tint = ErrorColor, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.size(8.dp))
                 Text(
-                    "MENÚ PRINCIPAL",
+                    stringResource(R.string.main_menu),
                     style      = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color      = ErrorColor

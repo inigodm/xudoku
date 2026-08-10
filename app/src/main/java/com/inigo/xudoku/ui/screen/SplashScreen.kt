@@ -23,12 +23,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.inigo.xudoku.R
 import com.inigo.xudoku.ui.theme.Background
-import com.inigo.xudoku.ui.theme.OnSurfaceVariant
 import com.inigo.xudoku.ui.theme.Primary
 import com.inigo.xudoku.ui.theme.SurfaceContainer
 import kotlinx.coroutines.delay
@@ -77,7 +77,7 @@ fun SplashScreen(onSplashComplete: () -> Unit) {
             Spacer(Modifier.height(24.dp))
             // Nombre de la app
             Text(
-                text       = "XUDOKU",
+                text       = stringResource(R.string.app_name),
                 style      = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color      = Primary,

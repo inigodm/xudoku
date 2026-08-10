@@ -1,3 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">xudoku</string>
+
+    <!-- Navigation -->
+    <string name="nav_play">Play</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Difficulty -->
+    <string name="diff_very_easy">Very Easy</string>
+    <string name="diff_easy">Easy</string>
+    <string name="diff_medium">Medium</string>
+    <string name="diff_hard">Hard</string>
+    <string name="diff_hardest">Hardest</string>
+
+    <!-- Difficulty Screen -->
+    <string name="resume">Resume</string>
+    <string name="new_game">New Game</string>
+    <string name="level_formatted">Level %1$d</string>
+    <string name="percent_formatted">%1$d%%</string>
+    <string name="locked">Locked</string>
+
+    <!-- Game Screen -->
+    <string name="mistakes">MISTAKES</string>
+    <string name="score">SCORE</string>
+
+    <!-- Game Over Screen -->
+    <string name="game_over_reason">You made 3 mistakes!</string>
+    <string name="try_again">TRY AGAIN</string>
+
+    <!-- Victory Screen -->
+    <string name="victory">You win!</string>
+    <string name="time_formatted">TIME: %1$s</string>
+    <string name="difficulty_formatted">DIFFICULTY: %1$s</string>
+    <string name="level_up_title">Level Up!</string>
+    <string name="level_up_body">Congratulations! You reached Level %1$d. Keep playing to rank up and unlock new difficulties.</string>
+    <string name="awesome">Awesome!</string>
+
+    <!-- Profile & Stats -->
+    <string name="total_games_played">Games Played</string>
+    <string name="win_rate">Win Rate</string>
+    <string name="total_wins">Total Wins</string>
+    <string name="daily_streak">Daily Streak</string>
+    <string name="longest_streak">Longest Streak</string>
+    <string name="best_time">Best Time</string>
+    <string name="average_time">Average Time</string>
+    <string name="points_evolution">Points Evolution</string>
+    <string name="recent_flow">Recent Flow</string>
+    <string name="global">Global</string>
+    <string name="sudoku_flow">SUDOKU FLOW</string>
+    <string name="total_achievements">TOTAL ACHIEVEMENTS</string>
+    <string name="games_won">Games Won</string>
+    <string name="streak">STREAK</string>
+    <string name="not_enough_data">Not enough data</string>
+    <string name="difficulty_split">Difficulty Split</string>
+    <string name="view_all">View All</string>
+    <string name="no_completed_games">No completed games yet.</string>
+    <string name="menu">Menu</string>
+    <string name="settings">Settings</string>
+    
+    <!-- Profile Screen -->
+    <string name="player_default">Player</string>
+    <string name="rookie">ROOKIE</string>
+    <string name="games_played_caps">GAMES PLAYED</string>
+    <string name="win_rate_caps">WIN RATE</string>
+    <string name="wins_caps">WINS</string>
+    <string name="daily_streak_caps">DAILY STREAK</string>
+    <string name="account_settings">ACCOUNT SETTINGS</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="notifications">Notifications</string>
+    <string name="privacy_and_safety">Privacy &amp; Safety</string>
+    <string name="log_out">Log Out</string>
+    
+    <string name="diff_subtitle_very_easy">35+ Given numbers</string>
+    <string name="diff_subtitle_easy">28–34 Given numbers</string>
+    <string name="diff_subtitle_medium">22–27 Given numbers</string>
+    <string name="diff_subtitle_hard">&lt; 22 Given numbers</string>
+    <string name="diff_subtitle_hardest">17 Given numbers</string>
+    
+    <string name="select_difficulty">Select Difficulty</string>
+    <string name="sudoku_title">SUDOKU</string>
+    <string name="back">Back</string>
+    <string name="mistakes_caps">MISTAKES</string>
+    <string name="mistakes_formatted">%1$d/3</string>
+    <string name="score_caps">SCORE</string>
+    <string name="generating_puzzle">Generating puzzle…</string>
+    <string name="undo">Undo</string>
+    <string name="erase">Erase</string>
+    <string name="notes">Notes</string>
+    <string name="hint">Hint</string>
+    
+    <string name="game_over">GAME OVER!</string>
+    <string name="out_of_chances">You have run out of chances.</string>
+    <string name="time_caps">TIME</string>
+    <string name="watch_ad_to_continue">Watch Ad to Continue</string>
+    <string name="main_menu">MAIN MENU</string>
+    <string name="level_up">Level Up!</string>
+    <string name="level_up_desc_formatted">Congratulations! You have reached Level %1$d. Keep playing to rank up and unlock new difficulties.</string>
+    <string name="great">Great!</string>
+    <string name="new_record">NEW RECORD</string>
+    <string name="level_completed_successfully">Level Successfully Completed</string>
+    <string name="final_score">FINAL SCORE</string>
+    <string name="difficulty_caps">DIFFICULTY</string>
+    <string name="level_only_formatted">LEVEL %1$d</string>
+    <string name="next_level">Next Level</string>
+    
+    <string name="tab_play">Play</string>
+    <string name="tab_stats">Stats</string>
+    <string name="tab_badges">Badges</string>
+    <string name="tab_profile">Profile</string>
+    
+    <string name="rank_novato">Rookie</string>
+    <string name="rank_aprendiz">Apprentice</string>
+    <string name="rank_aficionado">Amateur</string>
+    <string name="rank_aspirante">Challenger</string>
+    <string name="rank_pensador">Thinker</string>
+    <string name="rank_logico">Logician</string>
+    <string name="rank_analista">Analyst</string>
+    <string name="rank_calculador">Calculator</string>
+    <string name="rank_tactico">Tactician</string>
+    <string name="rank_estratega">Strategist</string>
+    <string name="rank_resolutor">Solver</string>
+    <string name="rank_especialista">Specialist</string>
+    <string name="rank_profesional">Professional</string>
+    <string name="rank_experto">Expert</string>
+    <string name="rank_veterano">Veteran</string>
+    <string name="rank_maestro">Master</string>
+    <string name="rank_gran_maestro">Grandmaster</string>
+    <string name="rank_ilustre">Illustrious</string>
+    <string name="rank_erudito">Scholar</string>
+    <string name="rank_sabio">Sage</string>
+    <string name="rank_virtuoso">Virtuoso</string>
+    <string name="rank_elite">Elite</string>
+    <string name="rank_leyenda">Legend</string>
+    <string name="rank_mito">Myth</string>
+    <string name="rank_xudoku_supremo">Supreme Xudoku</string>
+    
+    <string name="level_title_formatted">LEVEL %1$d - %2$s</string>
+    <string name="xp_formatted">%1$d XP</string>
+    <string name="xp_progress_formatted">%1$d / %2$d XP</string>
+    <string name="xp_earned_formatted">+%1$d XP</string>
+    <string name="dnf">DNF</string>
+    
+    <string name="tooltip_score_xp">Score: %1$d\n+%2$d XP</string>
+    
+    <!-- Game Formatting -->
+    <string name="game_label_formatted">%1$s #%2$s</string>
 </resources>

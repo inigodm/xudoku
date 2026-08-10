@@ -3,6 +3,7 @@ package com.inigo.xudoku.model.progression
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.inigo.xudoku.R
 
 class ProgressionManagerTest {
 
@@ -103,19 +104,19 @@ class ProgressionManagerTest {
     @Test
     fun `getRankForLevel returns correct rank`() {
         val rankLvl1 = progressionManager.getRankForLevel(1)
-        assertEquals("Novato", rankLvl1.name)
+        assertEquals(R.string.rank_novato, rankLvl1.nameResId)
         
         val rankLvl4 = progressionManager.getRankForLevel(4)
-        assertEquals("Novato", rankLvl4.name)
+        assertEquals(R.string.rank_novato, rankLvl4.nameResId)
 
         val rankLvl5 = progressionManager.getRankForLevel(5)
-        assertEquals("Aprendiz", rankLvl5.name)
+        assertEquals(R.string.rank_aprendiz, rankLvl5.nameResId)
 
         val rankLvl100 = progressionManager.getRankForLevel(100)
-        assertEquals("Xudoku Supremo", rankLvl100.name)
+        assertEquals(R.string.rank_xudoku_supremo, rankLvl100.nameResId)
         
         // Capped beyond 100
         val rankLvl105 = progressionManager.getRankForLevel(105)
-        assertEquals("Xudoku Supremo", rankLvl105.name)
+        assertEquals(R.string.rank_xudoku_supremo, rankLvl105.nameResId)
     }
 }

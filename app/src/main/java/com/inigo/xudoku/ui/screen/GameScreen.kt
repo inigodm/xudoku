@@ -48,8 +48,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.inigo.xudoku.R
 import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.model.SudokuBoard
 import com.inigo.xudoku.ui.GameViewModel
@@ -69,12 +73,13 @@ import com.inigo.xudoku.ui.theme.SurfaceContainerHighest
 import com.inigo.xudoku.ui.theme.Tertiary
 
 /** Label localizado de la dificultad. */
-private fun Difficulty.labelEs() = when (this) {
-    Difficulty.VERY_EASY -> "Fácil"
-    Difficulty.EASY      -> "Medio"
-    Difficulty.MEDIUM    -> "Difícil"
-    Difficulty.HARD      -> "Extremo"
-    Difficulty.HARDEST   -> "Imposible"
+@Composable
+private fun Difficulty.toFriendlyString(): String = when (this) {
+    Difficulty.VERY_EASY -> stringResource(R.string.diff_very_easy)
+    Difficulty.EASY      -> stringResource(R.string.diff_easy)
+    Difficulty.MEDIUM    -> stringResource(R.string.diff_medium)
+    Difficulty.HARD      -> stringResource(R.string.diff_hard)
+    Difficulty.HARDEST   -> stringResource(R.string.diff_hardest)
 }
 
 /** Formatea segundos en MM:SS. */
@@ -171,7 +176,7 @@ fun GameScreen(
                     // Columna centrada: SUDOKU + chip + timer
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "SUDOKU",
+                            stringResource(R.string.sudoku_title),
                             style      = MaterialTheme.typography.headlineMedium,
                             color      = Primary,
                             fontWeight = FontWeight.Bold
@@ -189,7 +194,7 @@ fun GameScreen(
                                     .padding(horizontal = 10.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    difficulty.labelEs(),
+                                    difficulty.toFriendlyString(),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = OnSecondaryContainer
                                 )
@@ -200,12 +205,12 @@ fun GameScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Atrás", tint = Primary)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = Primary)
                     }
                 },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Settings, "Ajustes", tint = Primary)
+                        Icon(Icons.Outlined.Settings, stringResource(R.string.settings), tint = Primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -226,16 +231,16 @@ fun GameScreen(
                 verticalAlignment     = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("MISTAKES", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
+                    Text(stringResource(R.string.mistakes_caps), style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
                     Text(
-                        "$mistakes/3",
+                        stringResource(R.string.mistakes_formatted, mistakes),
                         style      = MaterialTheme.typography.headlineMedium,
                         color      = if (mistakes > 0) ErrorColor else OnSurface,
                         fontWeight = FontWeight.Bold
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("SCORE", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
+                    Text(stringResource(R.string.score_caps), style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
                     Text(
                         "$currentScore",
                         style      = MaterialTheme.typography.headlineMedium,
@@ -245,7 +250,7 @@ fun GameScreen(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        "Level ${progressionState.currentLevel}",
+                        stringResource(R.string.level_formatted, progressionState.currentLevel),
                         style = MaterialTheme.typography.labelLarge,
                         color = Tertiary
                     )
@@ -280,7 +285,7 @@ fun GameScreen(
             // Grid 9×9
             if (isLoading) {
                 Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                    Text("Generando puzzle…", color = OnSurfaceVariant)
+                    Text(stringResource(R.string.generating_puzzle), color = OnSurfaceVariant)
                 }
             } else {
                 SudokuGrid(
@@ -302,12 +307,12 @@ fun GameScreen(
             ) {
                 ActionButton(
                     icon    = Icons.AutoMirrored.Outlined.Undo,
-                    label   = "Deshacer",
+                    label   = stringResource(R.string.undo),
                     onClick = { viewModel.undoLastMove() }
                 )
                 ActionButton(
                     icon    = Icons.AutoMirrored.Outlined.Backspace,
-                    label   = "Borrar",
+                    label   = stringResource(R.string.erase),
                     onClick = { viewModel.clearSelectedCell() }
                 )
                 // Notas con badge cuando está activo
@@ -318,7 +323,7 @@ fun GameScreen(
                 ) {
                     ActionButton(
                         icon      = Icons.Outlined.EditNote,
-                        label     = "Notas",
+                        label     = stringResource(R.string.notes),
                         onClick   = { viewModel.toggleNotesMode() },
                         isActive  = isNotesMode,
                         modifier  = Modifier
@@ -326,7 +331,7 @@ fun GameScreen(
                 }
                 ActionButton(
                     icon    = Icons.Outlined.Lightbulb,
-                    label   = "Pista",
+                    label   = stringResource(R.string.hint),
                     onClick = { viewModel.requestHint() }
                 )
             }

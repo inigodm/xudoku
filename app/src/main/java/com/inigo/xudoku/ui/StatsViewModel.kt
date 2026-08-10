@@ -1,5 +1,6 @@
 package com.inigo.xudoku.ui
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.inigo.xudoku.data.repository.GameHistoryRepository
@@ -18,10 +19,11 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 data class RecentGameUiModel(
-    val label: String,
+    @StringRes val difficultyResId: Int,
+    val sudokuId: String,
     val subtitle: String,
     val time: String,
-    val xp: String,
+    val xp: Int?,
     val completed: Boolean
 )
 
@@ -53,7 +55,7 @@ class StatsViewModel(
 
     private val dateFormat = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
 
-    fun loadStats(filter: String = "Global") {
+    fun loadStats(difficulty: Difficulty? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             
@@ -61,11 +63,10 @@ class StatsViewModel(
                 historyRepo.getAllResults()
             }
             
-            val filteredResults = if (filter == "Global") {
+            val filteredResults = if (difficulty == null) {
                 allResults
             } else {
-                val diff = mapFilterToDifficulty(filter)
-                if (diff != null) allResults.filter { it.dificultad == diff } else allResults
+                allResults.filter { it.dificultad == difficulty }
             }
             
             val newState = calculateStats(filteredResults, allResults)
@@ -138,18 +139,19 @@ class StatsViewModel(
 
         // Recent Flow
         val recentGames = sortedDesc.take(10).map { game ->
-            val diffLabel = when (game.dificultad) {
-                Difficulty.VERY_EASY -> "Fácil"
-                Difficulty.EASY -> "Medio"
-                Difficulty.MEDIUM -> "Difícil"
-                Difficulty.HARD -> "Extremo"
-                Difficulty.HARDEST -> "Imposible"
+            val diffResId = when (game.dificultad) {
+                Difficulty.VERY_EASY -> com.inigo.xudoku.R.string.diff_very_easy
+                Difficulty.EASY -> com.inigo.xudoku.R.string.diff_easy
+                Difficulty.MEDIUM -> com.inigo.xudoku.R.string.diff_medium
+                Difficulty.HARD -> com.inigo.xudoku.R.string.diff_hard
+                Difficulty.HARDEST -> com.inigo.xudoku.R.string.diff_hardest
             }
             RecentGameUiModel(
-                label = "$diffLabel #${game.identificadorSudoku ?: "0"}",
+                difficultyResId = diffResId,
+                sudokuId = game.identificadorSudoku ?: "0",
                 subtitle = dateFormat.format(game.fechaHoraFin).uppercase(),
                 time = formatTime(game.tiempoEmpleado),
-                xp = if (game.victoria) "+${extractXp(game)} XP" else "DNF",
+                xp = if (game.victoria) extractXp(game) else null,
                 completed = game.victoria
             )
         }
@@ -188,17 +190,6 @@ class StatsViewModel(
             hardCount / total,
             extremeCount / total
         )
-    }
-
-    private fun mapFilterToDifficulty(filter: String): Difficulty? {
-        return when (filter) {
-            "Fácil" -> Difficulty.VERY_EASY
-            "Medio" -> Difficulty.EASY
-            "Difícil" -> Difficulty.MEDIUM
-            "Extremo" -> Difficulty.HARD
-            "Imposible" -> Difficulty.HARDEST
-            else -> null
-        }
     }
 
     private fun formatTime(seconds: Long): String {

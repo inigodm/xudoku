@@ -49,8 +49,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.inigo.xudoku.R
 import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.ui.components.XudokuBottomBar
 import com.inigo.xudoku.ui.components.XudokuTab
@@ -103,14 +106,14 @@ fun VictoryScreen(
     if (showLevelUpDialog) {
         AlertDialog(
             onDismissRequest = { showLevelUpDialog = false },
-            title = { Text("¡Nivel Aumentado!", color = Primary, fontWeight = FontWeight.Bold) },
-            text = { Text("¡Enhorabuena! Has alcanzado el Nivel ${progressionState.currentLevel}. Sigue jugando para subir de rango y desbloquear nuevas dificultades.", color = OnSurface) },
+            title = { Text(stringResource(R.string.level_up), color = Primary, fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.level_up_desc_formatted, progressionState.currentLevel), color = OnSurface) },
             confirmButton = {
                 Button(
                     onClick = { showLevelUpDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
-                    Text("¡Genial!", color = Background)
+                    Text(stringResource(R.string.great), color = Background)
                 }
             },
             containerColor = SurfaceContainerHigh
@@ -123,7 +126,7 @@ fun VictoryScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "SUDOKU",
+                        stringResource(R.string.sudoku_title),
                         style      = MaterialTheme.typography.headlineMedium,
                         color      = Primary,
                         fontWeight = FontWeight.Bold
@@ -131,12 +134,12 @@ fun VictoryScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onMainMenu) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Atrás", tint = Primary)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = Primary)
                     }
                 },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Settings, "Ajustes", tint = Primary)
+                        Icon(Icons.Outlined.Settings, stringResource(R.string.settings), tint = Primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -185,7 +188,7 @@ fun VictoryScreen(
                     ) {
                         Icon(Icons.Outlined.EmojiEvents, null, tint = Secondary, modifier = Modifier.size(18.dp))
                         Text(
-                            "  NUEVA MARCA",
+                            "  ${stringResource(R.string.new_record)}",
                             style      = MaterialTheme.typography.labelLarge,
                             color      = Secondary,
                             fontWeight = FontWeight.Bold
@@ -195,13 +198,13 @@ fun VictoryScreen(
                 }
 
                 Text(
-                    "¡VICTORIA!",
+                    stringResource(R.string.victory),
                     style      = MaterialTheme.typography.displayLarge,
                     color      = Primary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "Nivel Completado con éxito",
+                    stringResource(R.string.level_completed_successfully),
                     style = MaterialTheme.typography.bodyLarge,
                     color = Tertiary
                 )
@@ -230,7 +233,7 @@ fun VictoryScreen(
                         Icon(Icons.Outlined.Stars, null, tint = Secondary, modifier = Modifier.size(32.dp))
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "PUNTUACIÓN FINAL",
+                            stringResource(R.string.final_score),
                             style = MaterialTheme.typography.labelLarge,
                             color = OnSurfaceVariant
                         )
@@ -253,15 +256,15 @@ fun VictoryScreen(
                     StatCard(
                         icon     = Icons.Outlined.Timer,
                         iconTint = Tertiary,
-                        label    = "TIEMPO",
+                        label    = stringResource(R.string.time_caps),
                         value    = elapsedSeconds.toTimeString(),
                         modifier = Modifier.weight(1f)
                     )
                     StatCard(
                         icon     = Icons.Outlined.Cancel,
                         iconTint = if (mistakes == 0) Tertiary else ErrorColor,
-                        label    = "ERRORES",
-                        value    = "$mistakes/3",
+                        label    = stringResource(R.string.mistakes_caps),
+                        value    = stringResource(R.string.mistakes_formatted, mistakes),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -287,9 +290,9 @@ fun VictoryScreen(
                         Icon(Icons.Outlined.Psychology, null, tint = Secondary)
                     }
                     Column(Modifier.padding(start = 12.dp).weight(1f)) {
-                        Text("DIFICULTAD", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
+                        Text(stringResource(R.string.difficulty_caps), style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
                         Text(
-                            difficulty.labelEs(),
+                            difficulty.toFriendlyString(),
                             style      = MaterialTheme.typography.headlineMedium,
                             color      = OnSurface,
                             fontWeight = FontWeight.Bold
@@ -327,8 +330,8 @@ fun VictoryScreen(
                         modifier              = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("NIVEL ${progressionState.currentLevel}", style = MaterialTheme.typography.labelLarge, color = Primary, fontWeight = FontWeight.Bold)
-                        Text("${progressionState.currentLevelXP} / ${progressionState.xpRequiredForNextLevel} XP", style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
+                        Text(stringResource(R.string.level_only_formatted, progressionState.currentLevel), style = MaterialTheme.typography.labelLarge, color = Primary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.xp_progress_formatted, progressionState.currentLevelXP, progressionState.xpRequiredForNextLevel), style = MaterialTheme.typography.labelSmall, color = OnSurfaceVariant)
                     }
                     Spacer(Modifier.height(6.dp))
                     Box(
@@ -360,7 +363,7 @@ fun VictoryScreen(
                     colors   = ButtonDefaults.buttonColors(containerColor = PrimaryContainer)
                 ) {
                     Text(
-                        "Siguiente Nivel",
+                        stringResource(R.string.next_level),
                         style      = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color      = OnSurface
@@ -380,7 +383,7 @@ fun VictoryScreen(
                     border   = androidx.compose.foundation.BorderStroke(1.dp, OnSurfaceVariant.copy(alpha = 0.4f))
                 ) {
                     Icon(Icons.Outlined.Home, null, modifier = Modifier.size(18.dp))
-                    Text("  MENÚ PRINCIPAL", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                    Text("  ${stringResource(R.string.main_menu)}", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(Modifier.height(32.dp))
@@ -457,12 +460,13 @@ private data class ConfettiParticle(
     val size: Float, val speed: Float, val angle: Float
 )
 
-private fun Difficulty.labelEs() = when (this) {
-    Difficulty.VERY_EASY -> "Fácil"
-    Difficulty.EASY      -> "Medio"
-    Difficulty.MEDIUM    -> "Difícil"
-    Difficulty.HARD      -> "Extremo"
-    Difficulty.HARDEST   -> "Imposible"
+@Composable
+private fun Difficulty.toFriendlyString(): String = when (this) {
+    Difficulty.VERY_EASY -> stringResource(R.string.diff_very_easy)
+    Difficulty.EASY      -> stringResource(R.string.diff_easy)
+    Difficulty.MEDIUM    -> stringResource(R.string.diff_medium)
+    Difficulty.HARD      -> stringResource(R.string.diff_hard)
+    Difficulty.HARDEST   -> stringResource(R.string.diff_hardest)
 }
 
 // ── Preview ──────────────────────────────────────────────────────────────────

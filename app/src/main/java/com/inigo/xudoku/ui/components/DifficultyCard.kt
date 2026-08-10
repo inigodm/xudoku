@@ -40,10 +40,14 @@ import com.inigo.xudoku.ui.theme.PrimaryContainer
 import com.inigo.xudoku.ui.theme.SecondaryContainer
 import com.inigo.xudoku.ui.theme.TertiaryContainer
 
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.inigo.xudoku.R
+
 /** Metadatos visuales de una dificultad para la tarjeta de selección. */
 data class DifficultyVisuals(
-    val labelEs: String,
-    val subtitle: String,
+    @StringRes val labelResId: Int,
+    @StringRes val subtitleResId: Int,
     val faceColor: Color,
     val shadowColor: Color,
     val textColor: Color,
@@ -113,7 +117,7 @@ fun DifficultyCard(
             ) {
                 Icon(
                     imageVector        = if (isLocked) androidx.compose.material.icons.Icons.Outlined.Lock else visuals.icon,
-                    contentDescription = visuals.labelEs,
+                    contentDescription = stringResource(id = visuals.labelResId),
                     tint               = if (isLocked) Color.Gray else visuals.iconColor,
                     modifier           = Modifier.size(26.dp)
                 )
@@ -122,13 +126,13 @@ fun DifficultyCard(
             // Textos
             androidx.compose.foundation.layout.Column {
                 Text(
-                    text       = visuals.labelEs,
+                    text       = stringResource(id = visuals.labelResId),
                     style      = MaterialTheme.typography.headlineMedium,
                     color      = if (isLocked) Color.Gray else visuals.textColor,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text  = if (isLocked) "Bloqueado" else visuals.subtitle,
+                    text  = if (isLocked) stringResource(R.string.locked) else stringResource(id = visuals.subtitleResId),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isLocked) Color.Gray.copy(alpha = 0.75f) else visuals.textColor.copy(alpha = 0.75f)
                 )
@@ -142,8 +146,8 @@ fun DifficultyCard(
 fun difficultyVisuals(difficulty: Difficulty, icons: DifficultyIcons): DifficultyVisuals =
     when (difficulty) {
         Difficulty.VERY_EASY -> DifficultyVisuals(
-            labelEs     = "Fácil",
-            subtitle    = "35+ Números dados",
+            labelResId    = R.string.diff_very_easy,
+            subtitleResId = R.string.diff_subtitle_very_easy,
             faceColor   = TertiaryContainer,
             shadowColor = TertiaryContainer.copy(alpha = 0.45f),
             textColor   = OnTertiaryContainer,
@@ -151,8 +155,8 @@ fun difficultyVisuals(difficulty: Difficulty, icons: DifficultyIcons): Difficult
             icon        = icons.easy
         )
         Difficulty.EASY -> DifficultyVisuals(
-            labelEs     = "Medio",
-            subtitle    = "28–34 Números dados",
+            labelResId    = R.string.diff_easy,
+            subtitleResId = R.string.diff_subtitle_easy,
             faceColor   = SecondaryContainer,
             shadowColor = SecondaryContainer.copy(alpha = 0.45f),
             textColor   = OnSecondaryContainer,
@@ -160,8 +164,8 @@ fun difficultyVisuals(difficulty: Difficulty, icons: DifficultyIcons): Difficult
             icon        = icons.medium
         )
         Difficulty.MEDIUM -> DifficultyVisuals(
-            labelEs     = "Difícil",
-            subtitle    = "22–27 Números dados",
+            labelResId    = R.string.diff_medium,
+            subtitleResId = R.string.diff_subtitle_medium,
             faceColor   = PrimaryContainer,
             shadowColor = PrimaryContainer.copy(alpha = 0.45f),
             textColor   = OnPrimaryContainer,
@@ -169,8 +173,8 @@ fun difficultyVisuals(difficulty: Difficulty, icons: DifficultyIcons): Difficult
             icon        = icons.hard
         )
         Difficulty.HARD -> DifficultyVisuals(
-            labelEs     = "Extremo",
-            subtitle    = "< 22 Números dados",
+            labelResId    = R.string.diff_hard,
+            subtitleResId = R.string.diff_subtitle_hard,
             faceColor   = ErrorContainer,
             shadowColor = ErrorContainer.copy(alpha = 0.45f),
             textColor   = OnErrorContainer,
@@ -178,8 +182,8 @@ fun difficultyVisuals(difficulty: Difficulty, icons: DifficultyIcons): Difficult
             icon        = icons.extreme
         )
         Difficulty.HARDEST -> DifficultyVisuals( // oculto en la UI por ahora
-            labelEs     = "Imposible",
-            subtitle    = "17 Números dados",
+            labelResId    = R.string.diff_hardest,
+            subtitleResId = R.string.diff_subtitle_hardest,
             faceColor   = ErrorContainer,
             shadowColor = ErrorContainer.copy(alpha = 0.45f),
             textColor   = OnErrorContainer,

@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.inigo.xudoku.R
@@ -101,7 +102,7 @@ fun DifficultyScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "SUDOKU",
+                        stringResource(R.string.sudoku_title),
                         style      = MaterialTheme.typography.headlineMedium,
                         color      = Primary,
                         fontWeight = FontWeight.Bold
@@ -115,7 +116,7 @@ fun DifficultyScreen(
                     IconButton(onClick = {}) {
                         Icon(
                             imageVector        = Icons.Outlined.Settings,
-                            contentDescription = "Ajustes",
+                            contentDescription = stringResource(R.string.settings),
                             tint               = Primary
                         )
                     }
@@ -175,7 +176,7 @@ fun DifficultyScreen(
             Spacer(Modifier.height(20.dp))
 
             Text(
-                text       = "Selecciona Dificultad",
+                text       = stringResource(R.string.select_difficulty),
                 style      = MaterialTheme.typography.headlineMedium,
                 color      = OnSurface,
                 fontWeight = FontWeight.Bold
@@ -222,8 +223,8 @@ fun DifficultyScreen(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Nivel ${progressionState.currentLevel}", style = MaterialTheme.typography.labelLarge, color = OnSurfaceVariant)
-                    Text("$progressPercentInt%", style = MaterialTheme.typography.labelLarge, color = Tertiary)
+                    Text(stringResource(R.string.level_formatted, progressionState.currentLevel), style = MaterialTheme.typography.labelLarge, color = OnSurfaceVariant)
+                    Text(stringResource(R.string.percent_formatted, progressPercentInt), style = MaterialTheme.typography.labelLarge, color = Tertiary)
                 }
                 Spacer(Modifier.height(8.dp))
                 // Progress bar con gradient Tertiary→PrimaryContainer

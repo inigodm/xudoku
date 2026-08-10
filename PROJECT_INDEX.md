@@ -11,7 +11,7 @@
 | `app/src/main/java/com/inigo/xudoku/model/Difficulty.kt` | Enum con 5 niveles (`VERY_EASY`→40 celdas visibles, …, `HARDEST`→17). Los valores están calibrados; 17 es el mínimo teórico con solución única | Solo si se añade un nuevo nivel de dificultad; no cambiar los existentes |
 | `app/src/main/java/com/inigo/xudoku/model/scoring/ScoreConfig.kt` | Objeto con constantes configurables del sistema de puntuación (base, multiplicadores, bonus y penalizaciones) | Al balancear la economía del juego o cambiar recompensas |
 | `app/src/main/java/com/inigo/xudoku/model/scoring/ScoreManager.kt` | Gestor con estado que calcula los puntos por movimiento y puntuación final, aplicando reglas de `ScoreConfig` | Al cambiar la lógica de cálculo de puntuación |
-| `app/src/main/java/com/inigo/xudoku/model/progression/ProgressionModels.kt` | Define entidades como `Rank`, `League`, `BonusType` (para bonus de XP en partidas) y el estado global de progreso `ProgressionState` | Al modificar el sistema de ligas, rangos o bonificadores de XP |
+| `app/src/main/java/com/inigo/xudoku/model/progression/ProgressionModels.kt` | Define entidades como `Rank` (con soporte i18n vía `nameResId`), `League` (con referencia visual `@DrawableRes iconResId`), `BonusType` (para bonus de XP en partidas) y el estado global de progreso `ProgressionState` | Al modificar el sistema de ligas, rangos o bonificadores de XP |
 | `app/src/main/java/com/inigo/xudoku/model/progression/ProgressionConfig.kt` | Configuración matemática del sistema de progresión (fórmula de nivel base, exponentes, XP por partida) | Al balancear la curva de aprendizaje y XP |
 | `app/src/main/java/com/inigo/xudoku/model/progression/ProgressionManager.kt` | Gestor sin estado que calcula XP por partida, determina nivel basado en XP total, rangos, e interacciones con rachas (streaks) | Al cambiar las reglas matemáticas de conversión de puntos a XP |
 | `app/src/main/java/com/inigo/xudoku/model/history/SudokuGameResult.kt` | Entidad Room (`@Entity`) que guarda el resultado completo de una partida para historial, estadísticas y futura sincronización online | Al añadir nuevos datos a persistir |
@@ -54,7 +54,7 @@
 | `app/src/main/java/com/inigo/xudoku/ui/screen/GameScreen.kt` | Pantalla de juego activo: TopAppBar centrado con chip de dificultad + timer en segunda fila, HUD de mistakes + **score** + level, `SudokuGrid`, toolbar de acciones, `NumberPad`. Evalúa `viewModel.getFinalScore()` al ganar y maneja el fin de juego al llegar a 3 errores. Pasa eventos de puntos al grid. Incluye `@Preview` | Al cambiar el layout de juego; **conecta con `GameViewModel`** |
 | `app/src/main/java/com/inigo/xudoku/ui/screen/VictoryScreen.kt` | Victoria: TopAppBar, confeti (4 colores brand), badge NUEVA MARCA, puntuación, StatCards con íconos (timer/cancel), card de dificultad con dots, barra XP gradient, botones "Siguiente Nivel" y "Menú Principal". Tab Badges activo en bottom nav. Incluye `@Preview` con datos reales | Al cambiar el layout de victoria |
 | `app/src/main/java/com/inigo/xudoku/ui/screen/StatsScreen.kt` | Estadísticas reales del jugador: cabecera, chips de filtro, logros totales, gráfica de evolución, stat cards individuales y recent flow. Conectado a `StatsViewModel` para mostrar los datos de Room. | Al cambiar el layout de las estadísticas |
-| `app/src/main/java/com/inigo/xudoku/ui/screen/ProfileScreen.kt` | Perfil de usuario (placeholder): avatar con borde Tertiary + badge de nivel, stats (partidas/win rate/streak), account settings con 3 filas, botón de logout. Todos los datos son placeholders hasta implementar auth | Al implementar autenticación o datos de usuario |
+| `app/src/main/java/com/inigo/xudoku/ui/screen/ProfileScreen.kt` | Perfil de usuario: Avatar dinámico estilo Origami que cambia en base a la Liga del jugador y muestra su sub-rango (I, II, III, IV), stats (partidas/win rate/streak), account settings con 3 filas, botón de logout. Datos parcialmente reales a través de ProgressionState. | Al implementar autenticación o actualizar visualización de avatares |
 
 ### Componentes (`ui/components/`)
 
@@ -63,7 +63,17 @@
 | `app/src/main/java/com/inigo/xudoku/ui/components/SudokuGrid.kt` | Grid 9×9 con estados: celda seleccionada (ring Primary), celdas con mismo número (highlight Tertiary), celdas del mismo bloque/fila/col (tinte suave), errores (rojo), notas (`NoteGrid` 3×3), animación exacta de puntos en aciertos vía `ScoreAnimationEvent`. Líneas separadoras de bloque via Canvas | Al cambiar el aspecto visual del tablero |
 | `app/src/main/java/com/inigo/xudoku/ui/components/NumberPad.kt` | Teclado numérico 5+5 (1–5 en fila 1, 6–9+borrar en fila 2) con efecto 3D táctil (`animateDpAsState`). El número activo se resalta en Tertiary. `DeleteKey` usa SecondaryContainer | Al cambiar el layout o aspecto del teclado |
 | `app/src/main/java/com/inigo/xudoku/ui/components/DifficultyCard.kt` | Tarjeta de dificultad con efecto 3D press (`offset(y = offsetY)` animado). Datos visuales en `DifficultyVisuals` (colores, label, icono). Helper `difficultyVisuals()` mapea `Difficulty` → colores correctos | Al cambiar colores o layout de las tarjetas de dificultad |
-| `app/src/main/java/com/inigo/xudoku/ui/components/XudokuBottomBar.kt` | Bottom nav con 4 tabs (Play/Stats/Badges/Profile). Tab activo: círculo `SecondaryContainer`. Badges deshabilitado (sin pantalla). Tab seleccionado recibe pill circular | Al añadir tabs o cambiar iconos |
+| `app/src/main/java/com/inigo/xudoku/ui/components/XudokuBottomBar.kt` | Bottom nav con 4 tabs (Play/Stats/Badges/Profile). Tab activo: círculo `SecondaryContainer`. Badges deshabilitado (sin pantalla). Tab seleccionado recibe pill circular. Utiliza nombres externalizados para i18n. | Al añadir tabs o cambiar iconos |
+
+### Internacionalización (i18n)
+
+| Archivo | Qué hace | Cuándo tocarlo |
+|---|---|---|
+| `app/src/main/res/values/strings.xml` | Textos base en Inglés (idioma por defecto si no hay coincidencia). Centraliza todos los strings de la aplicación. | Siempre que se añada o modifique un texto visible en UI |
+| `app/src/main/res/values-es/strings.xml` | Traducciones al Castellano | Al actualizar la base en inglés |
+| `app/src/main/res/values-eu/strings.xml` | Traducciones al Euskera | Al actualizar la base en inglés |
+
+> **Regla de Internacionalización:** Todos los textos en la interfaz deben extraerse a estos XMLs y mostrarse mediante `stringResource(R.string...)`. En la capa modelo, cuando una entidad de negocio represente un concepto nombrable (ej: `Rank`), debe almacenar un `@StringRes val nameResId: Int` para mapear el ID del texto en lugar de guardar directamente un `String` fijo, manteniendo así el soporte completo de multilenguaje en Compose.
 
 ### Tests
 

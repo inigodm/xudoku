@@ -44,6 +44,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import com.inigo.xudoku.R
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
@@ -58,11 +66,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,23 +76,28 @@ import com.inigo.xudoku.ui.theme.ErrorColor
 import com.inigo.xudoku.ui.theme.OnSurface
 import com.inigo.xudoku.ui.theme.OnSurfaceVariant
 import com.inigo.xudoku.ui.theme.Primary
-import com.inigo.xudoku.ui.theme.PrimaryContainer
 import com.inigo.xudoku.ui.theme.Secondary
-import com.inigo.xudoku.ui.theme.SecondaryContainer
 import com.inigo.xudoku.ui.theme.SurfaceContainer
 import com.inigo.xudoku.ui.theme.SurfaceContainerHigh
 import com.inigo.xudoku.ui.theme.SurfaceContainerHighest
-import com.inigo.xudoku.ui.theme.SurfaceContainerLow
 import com.inigo.xudoku.ui.theme.Tertiary
-
 import com.inigo.xudoku.ui.StatsUiState
 import com.inigo.xudoku.ui.StatsViewModel
+import com.inigo.xudoku.model.Difficulty
 import com.inigo.xudoku.ui.PointData
 import com.inigo.xudoku.ui.RecentGameUiModel
 
+enum class StatsFilter(val titleResId: Int, val difficulty: Difficulty?) {
+    GLOBAL(R.string.global, null),
+    VERY_EASY(R.string.diff_very_easy, Difficulty.VERY_EASY),
+    EASY(R.string.diff_easy, Difficulty.EASY),
+    MEDIUM(R.string.diff_medium, Difficulty.MEDIUM),
+    HARD(R.string.diff_hard, Difficulty.HARD),
+    HARDEST(R.string.diff_hardest, Difficulty.HARDEST)
+}
+
 /**
  * Pantalla de estadísticas.
- * Datos completamente estáticos hasta implementar persistencia.
  */
 @Composable
 fun StatsScreen(
@@ -97,18 +105,17 @@ fun StatsScreen(
     onNavigateToPlay: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
-    val filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo", "Imposible")
-    var selectedFilter by remember { mutableStateOf("Global") }
+    var selectedFilter by remember { mutableStateOf(StatsFilter.GLOBAL) }
 
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(selectedFilter) {
-        viewModel.loadStats(selectedFilter)
+        viewModel.loadStats(selectedFilter.difficulty)
     }
 
     StatsScreenContent(
         state = state,
-        filters = filters,
+        filters = StatsFilter.entries,
         selectedFilter = selectedFilter,
         onFilterSelected = { selectedFilter = it },
         onNavigateToPlay = onNavigateToPlay,
@@ -120,9 +127,9 @@ fun StatsScreen(
 @Composable
 fun StatsScreenContent(
     state: StatsUiState,
-    filters: List<String>,
-    selectedFilter: String,
-    onFilterSelected: (String) -> Unit,
+    filters: List<StatsFilter>,
+    selectedFilter: StatsFilter,
+    onFilterSelected: (StatsFilter) -> Unit,
     onNavigateToPlay: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
@@ -133,7 +140,7 @@ fun StatsScreenContent(
             TopAppBar(
                 title = {
                     Text(
-                        "SUDOKU FLOW",
+                        stringResource(R.string.sudoku_flow),
                         style      = MaterialTheme.typography.headlineMedium,
                         color      = Primary,
                         fontWeight = FontWeight.Bold
@@ -141,12 +148,12 @@ fun StatsScreenContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Menu, "Menú", tint = Primary)
+                        Icon(Icons.Outlined.Menu, contentDescription = stringResource(R.string.menu), tint = Primary)
                     }
                 },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Settings, "Ajustes", tint = Primary)
+                        Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.settings), tint = Primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -187,7 +194,7 @@ fun StatsScreenContent(
                         onClick  = { onFilterSelected(f) },
                         label    = {
                             Text(
-                                f,
+                                stringResource(f.titleResId),
                                 style      = MaterialTheme.typography.labelLarge,
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                             )
@@ -225,8 +232,8 @@ fun StatsScreenContent(
                     .padding(24.dp)
             ) {
                 Text(
-                    "TOTAL ACHIEVEMENTS",
-                    style = MaterialTheme.typography.labelLarge,
+                    stringResource(R.string.total_achievements),
+                    style = MaterialTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
                 Spacer(Modifier.height(4.dp))
@@ -237,7 +244,7 @@ fun StatsScreenContent(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "Games Won",
+                    stringResource(R.string.games_won),
                     style = MaterialTheme.typography.bodyMedium,
                     color = OnSurfaceVariant
                 )
@@ -246,15 +253,14 @@ fun StatsScreenContent(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    MiniStat(label = "WIN RATE", value = state.winRate, color = Tertiary)
-                    // Separador vertical
+                    MiniStat(label = stringResource(R.string.win_rate), value = state.winRate, color = Tertiary)
                     Box(
                         modifier = Modifier
                             .width(1.dp)
                             .height(40.dp)
                             .background(OnSurfaceVariant.copy(alpha = 0.2f))
                     )
-                    MiniStat(label = "STREAK", value = "${state.currentStreak}", color = Secondary)
+                    MiniStat(label = stringResource(R.string.streak), value = "${state.currentStreak}", color = Secondary)
                 }
             }
 
@@ -278,7 +284,7 @@ fun StatsScreenContent(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Evolución de Puntos",
+                        stringResource(R.string.points_evolution),
                         style      = MaterialTheme.typography.labelLarge,
                         color      = OnSurface,
                         fontWeight = FontWeight.Bold
@@ -296,7 +302,7 @@ fun StatsScreenContent(
                         StatsLineChart(dataPoints = state.pointsEvolution)
                     } else {
                         Text(
-                            text = "No hay datos suficientes",
+                            text = stringResource(R.string.not_enough_data),
                             modifier = Modifier.align(Alignment.Center),
                             color = OnSurfaceVariant
                         )
@@ -324,7 +330,7 @@ fun StatsScreenContent(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Difficulty Split",
+                        stringResource(R.string.difficulty_split),
                         style      = MaterialTheme.typography.labelLarge,
                         color      = OnSurface,
                         fontWeight = FontWeight.Bold
@@ -338,11 +344,11 @@ fun StatsScreenContent(
                 val extremeCount  = (state.difficultySplit.getOrNull(4) ?: 0f)
 
                 listOf(
-                    Triple("Fácil",     Tertiary,   veryEasyCount),
-                    Triple("Medio",     Secondary,  easyCount),
-                    Triple("Difícil",   Primary,    mediumCount),
-                    Triple("Extremo",   ErrorColor, hardCount),
-                    Triple("Imposible", OnSurface, extremeCount)
+                    Triple(stringResource(R.string.diff_very_easy), Tertiary,   veryEasyCount),
+                    Triple(stringResource(R.string.diff_easy),     Secondary,  easyCount),
+                    Triple(stringResource(R.string.diff_medium),   Primary,    mediumCount),
+                    Triple(stringResource(R.string.diff_hard),     ErrorColor, hardCount),
+                    Triple(stringResource(R.string.diff_hardest),  OnSurface,  extremeCount)
                 ).forEach { (label, color, fraction) ->
                     Row(
                         verticalAlignment    = Alignment.CenterVertically,
@@ -365,15 +371,15 @@ fun StatsScreenContent(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth(fraction as Float)
+                                    .fillMaxWidth(fraction)
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(color as Color)
+                                    .background(color)
                             )
                         }
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            "${(fraction as Float * 100).toInt()}%",
+                            "${(fraction * 100).toInt()}%",
                             style    = MaterialTheme.typography.labelSmall,
                             color    = OnSurfaceVariant,
                             modifier = Modifier.width(56.dp)
@@ -386,9 +392,9 @@ fun StatsScreenContent(
 
             // ── Stat cards individuales ────────────────────────────────────
             listOf(
-                Triple(Icons.Outlined.Timer,                 "Best Time",       state.bestTime),
-                Triple(Icons.Outlined.AccessTime,            "Average Time",    state.averageTime),
-                Triple(Icons.Outlined.LocalFireDepartment,   "Longest Streak",  "${state.longestStreak} Games")
+                Triple(Icons.Outlined.Timer,                 stringResource(R.string.best_time),       state.bestTime),
+                Triple(Icons.Outlined.AccessTime,            stringResource(R.string.average_time),    state.averageTime),
+                Triple(Icons.Outlined.LocalFireDepartment,   stringResource(R.string.longest_streak),  "${state.longestStreak}")
             ).forEach { (icon, label, value) ->
                 StatRow(
                     icon     = icon,
@@ -410,16 +416,18 @@ fun StatsScreenContent(
                 verticalAlignment     = Alignment.CenterVertically
             ) {
                 Text(
-                    "Recent Flow",
+                    stringResource(R.string.recent_flow),
                     style      = MaterialTheme.typography.labelLarge,
                     color      = OnSurface,
                     fontWeight = FontWeight.Bold
                 )
-                Text(
-                    "View All",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Primary
-                )
+                TextButton(onClick = { /* TODO */ }) {
+                    Text(
+                        stringResource(R.string.view_all),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Primary
+                    )
+                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -492,6 +500,10 @@ private fun StatRow(
 
 @Composable
 private fun RecentFlowRow(game: RecentGameUiModel) {
+    val diffLabel = stringResource(id = game.difficultyResId)
+    val titleLabel = stringResource(id = R.string.game_label_formatted, diffLabel, game.sudokuId)
+    val xpLabel = if (game.xp != null) stringResource(R.string.xp_earned_formatted, game.xp) else stringResource(R.string.dnf)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -527,7 +539,7 @@ private fun RecentFlowRow(game: RecentGameUiModel) {
                 .weight(1f)
         ) {
             Text(
-                game.label,
+                titleLabel,
                 style      = MaterialTheme.typography.bodyMedium,
                 color      = OnSurface,
                 fontWeight = FontWeight.Medium
@@ -547,7 +559,7 @@ private fun RecentFlowRow(game: RecentGameUiModel) {
                 fontWeight = FontWeight.Medium
             )
             Text(
-                game.xp,
+                xpLabel,
                 style = MaterialTheme.typography.labelSmall,
                 color = if (game.completed) Tertiary else ErrorColor
             )
@@ -578,6 +590,11 @@ private fun StatsLineChart(dataPoints: List<PointData>) {
 
     // X Labels are just indices for the recent games
     val xLabels = dataPoints.indices.map { "${it + 1}" }
+
+    // Precalculate tooltips in Composable context
+    val tooltipTexts = dataPoints.map { data ->
+        stringResource(R.string.tooltip_score_xp, data.score.toInt(), data.xp)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Ejes Y (etiquetas a la izquierda)
@@ -679,8 +696,7 @@ private fun StatsLineChart(dataPoints: List<PointData>) {
                 drawCircle(color = Background, radius = innerRadius, center = Offset(x, y))
                 
                 if (isSelected) {
-                    val score = data.score.toInt()
-                    val tooltipText = "Score: $score\n+${data.xp} XP"
+                    val tooltipText = tooltipTexts[i]
                     val textLayoutResult = textMeasurer.measure(
                         text = tooltipText,
                         style = TextStyle(color = Background, fontSize = 10.sp, fontWeight = FontWeight.Bold)
@@ -757,13 +773,13 @@ fun PreviewStatsScreen() {
                 bestTime = "04:30",
                 averageTime = "06:15",
                 recentGames = listOf(
-                    RecentGameUiModel("Medium #1", "NOV 12", "05:00", "+120 XP", true),
-                    RecentGameUiModel("Hard #2", "NOV 11", "10:00", "DNF", false)
+                    RecentGameUiModel(R.string.diff_medium, "1", "NOV 12", "05:00", 120, true),
+                    RecentGameUiModel(R.string.diff_hard, "2", "NOV 11", "10:00", null, false)
                 ),
                 difficultySplit = listOf(0.4f, 0.2f, 0.2f, 0.1f, 0.1f)
             ),
-            filters = listOf("Global", "Fácil", "Medio", "Difícil", "Extremo", "Imposible"),
-            selectedFilter = "Global",
+            filters = StatsFilter.entries,
+            selectedFilter = StatsFilter.GLOBAL,
             onFilterSelected = {},
             onNavigateToPlay    = {},
             onNavigateToProfile = {}

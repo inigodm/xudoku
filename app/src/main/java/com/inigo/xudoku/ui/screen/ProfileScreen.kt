@@ -46,6 +46,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import com.inigo.xudoku.model.progression.League
+import com.inigo.xudoku.model.progression.RanksList
+import androidx.compose.ui.res.stringResource
+import com.inigo.xudoku.R
 import androidx.compose.ui.unit.dp
 import com.inigo.xudoku.ui.components.XudokuBottomBar
 import com.inigo.xudoku.ui.components.XudokuTab
@@ -85,7 +93,7 @@ fun ProfileScreen(
     val statsState by statsViewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
-        statsViewModel.loadStats("Global")
+        statsViewModel.loadStats(null)
     }
     Scaffold(
         containerColor = Background,
@@ -93,7 +101,7 @@ fun ProfileScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "SUDOKU FLOW",
+                        stringResource(R.string.sudoku_flow),
                         style      = MaterialTheme.typography.headlineMedium,
                         color      = Primary,
                         fontWeight = FontWeight.Bold
@@ -101,12 +109,12 @@ fun ProfileScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Menu, "Menú", tint = Primary)
+                        Icon(Icons.Outlined.Menu, stringResource(R.string.menu), tint = Primary)
                     }
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Outlined.Settings, "Ajustes", tint = Primary)
+                    IconButton(onClick = { /* TODO */ }) {
+                        Icon(Icons.Outlined.Settings, stringResource(R.string.settings), tint = Primary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -152,7 +160,7 @@ fun ProfileScreen(
                                 drawAvatarGlow(Tertiary.copy(alpha = 0.4f))
                             }
                     )
-                    // Círculo del avatar
+                    // Círculo del avatar con medalla de Liga
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier         = Modifier
@@ -165,13 +173,31 @@ fun ProfileScreen(
                             )
                             .background(SurfaceContainerHigh)
                     ) {
-                        // Iniciales del usuario — se reemplazará por imagen real
-                        Text(
-                            "AG",
-                            style      = MaterialTheme.typography.headlineLarge,
-                            color      = Primary,
-                            fontWeight = FontWeight.Bold
+                        val currentLeague = progressionState.currentRank?.league ?: League.BRONZE
+                        Image(
+                            painter = painterResource(id = currentLeague.iconResId),
+                            contentDescription = currentLeague.colorName,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
+
+                        // Sub-rank indicator (I, II, III, IV)
+                        val leagueRanks = RanksList.ranks.filter { it.league == currentLeague }
+                        if (leagueRanks.size > 1) {
+                            val rankIndex = leagueRanks.indexOf(progressionState.currentRank).coerceAtLeast(0)
+                            val numeral = listOf("I", "II", "III", "IV").getOrElse(rankIndex) { "I" }
+                            Text(
+                                text = numeral,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 8.dp)
+                                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
                     }
 
                     // Badge de nivel — superpuesto en la parte inferior del círculo
@@ -187,7 +213,7 @@ fun ProfileScreen(
                             .padding(horizontal = 16.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            "LEVEL ${progressionState.currentLevel}",
+                            stringResource(R.string.level_formatted, progressionState.currentLevel),
                             style      = MaterialTheme.typography.labelSmall,
                             color      = OnSurface,
                             fontWeight = FontWeight.Bold
@@ -198,14 +224,14 @@ fun ProfileScreen(
                 Spacer(Modifier.height(24.dp))
 
                 Text(
-                    "Jugador",   // TODO: nombre de usuario real
-                    style      = MaterialTheme.typography.headlineLarge,
-                    color      = OnSurface,
-                    fontWeight = FontWeight.Bold
+                    stringResource(R.string.player_default),   // TODO: nombre de usuario real
+                    style      = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color      = OnSurface
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    progressionState.currentRank?.name?.uppercase() ?: "NOVATO",
+                    progressionState.currentRank?.let { stringResource(it.nameResId).uppercase() } ?: stringResource(R.string.rookie),
                     style = MaterialTheme.typography.labelLarge,
                     color = OnSurfaceVariant
                 )
@@ -229,8 +255,8 @@ fun ProfileScreen(
                         modifier              = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("${progressionState.currentLevelXP} XP", style = MaterialTheme.typography.labelMedium, color = OnSurfaceVariant)
-                        Text("${progressionState.xpRequiredForNextLevel} XP", style = MaterialTheme.typography.labelMedium, color = Tertiary)
+                        Text(stringResource(R.string.xp_formatted, progressionState.currentLevelXP), style = MaterialTheme.typography.labelMedium, color = OnSurfaceVariant)
+                        Text(stringResource(R.string.xp_formatted, progressionState.xpRequiredForNextLevel), style = MaterialTheme.typography.labelMedium, color = Tertiary)
                     }
                     Spacer(Modifier.height(8.dp))
                     Box(
@@ -255,19 +281,18 @@ fun ProfileScreen(
 
             // ── Stats cards ────────────────────────────────────────────────
             Row(
-                modifier              = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 ProfileStatCard(
-                    label    = "GAMES PLAYED",
+                    label    = stringResource(R.string.games_played_caps),
                     value    = "${statsState.totalGamesPlayed}",
-                    color    = Tertiary,
+                    color    = Primary,
                     modifier = Modifier.weight(1f)
                 )
+                Spacer(Modifier.width(12.dp))
                 ProfileStatCard(
-                    label    = "WIN RATE",
+                    label    = stringResource(R.string.win_rate_caps),
                     value    = statsState.winRate,
                     color    = Secondary,
                     modifier = Modifier.weight(1f)
@@ -278,19 +303,18 @@ fun ProfileScreen(
 
             // ── Wins & Streak card ─────────────────────────────────────────
             Row(
-                modifier              = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 ProfileStatCard(
-                    label    = "WINS",
+                    label    = stringResource(R.string.wins_caps),
                     value    = "${statsState.totalGamesWon}",
-                    color    = Primary,
+                    color    = Tertiary,
                     modifier = Modifier.weight(1f)
                 )
+                Spacer(Modifier.width(12.dp))
                 ProfileStatCard(
-                    label    = "DAILY STREAK",
+                    label    = stringResource(R.string.daily_streak_caps),
                     value    = "${progressionState.dailyStreak}",
                     color    = ErrorColor,
                     modifier = Modifier.weight(1f)
@@ -301,7 +325,7 @@ fun ProfileScreen(
 
             // ── Account Settings ───────────────────────────────────────────
             Text(
-                "ACCOUNT SETTINGS",
+                stringResource(R.string.account_settings),
                 style      = MaterialTheme.typography.labelLarge,
                 color      = OnSurfaceVariant,
                 fontWeight = FontWeight.Bold,
@@ -311,9 +335,9 @@ fun ProfileScreen(
             Spacer(Modifier.height(8.dp))
 
             listOf(
-                Triple(Icons.Outlined.EditNote,    "Edit Profile",    Secondary),
-                Triple(Icons.Outlined.Notifications,"Notifications",  Tertiary),
-                Triple(Icons.Outlined.Security,    "Privacy & Safety", Primary)
+                Triple(Icons.Outlined.EditNote,    stringResource(R.string.edit_profile),    Secondary),
+                Triple(Icons.Outlined.Notifications, stringResource(R.string.notifications),  Tertiary),
+                Triple(Icons.Outlined.Security,    stringResource(R.string.privacy_and_safety), Primary)
             ).forEach { (icon, label, color) ->
                 ProfileSettingsRow(icon = icon, label = label, iconTint = color)
                 Spacer(Modifier.height(6.dp))
@@ -340,7 +364,7 @@ fun ProfileScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Log Out",
+                    stringResource(R.string.log_out),
                     style      = MaterialTheme.typography.bodyLarge,
                     color      = ErrorColor,
                     fontWeight = FontWeight.Medium

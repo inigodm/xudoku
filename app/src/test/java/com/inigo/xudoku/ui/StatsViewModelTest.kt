@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.Date
@@ -84,7 +85,7 @@ class StatsViewModelTest {
     fun `loadStats populates totalGamesPlayed and translates recent flow labels and reads metadata xp`() = runTest(testDispatcher) {
         // Arrange
         val games = listOf(
-            createDummyResult(Difficulty.VERY_EASY, true, "10", 1250), // Has XP in metadata
+            createDummyResult(Difficulty.VERY_EASY, true, "10", 1250),
             createDummyResult(Difficulty.EASY, false, "11", null),
             createDummyResult(Difficulty.MEDIUM, true, "12", 2400),
             createDummyResult(Difficulty.HARD, false, "13", null),
@@ -93,39 +94,75 @@ class StatsViewModelTest {
         fakeRepository.results = games
         
         // Act
-        viewModel.loadStats("Global")
+        viewModel.loadStats(null) // Global
         
         // Assert
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         
-        // totalGamesPlayed correctly mapped
         assertEquals(5, state.totalGamesPlayed)
         assertEquals(3, state.totalGamesWon)
         
-        // Labels localized mapping correctly
         val recentGames = state.recentGames
         assertEquals(5, recentGames.size)
-        // Check translation
-        val mappedLabels = recentGames.map { it.label }
-        assert(mappedLabels.contains("Fácil #10"))
-        assert(mappedLabels.contains("Medio #11"))
         
-        // Check XP extraction
-        val veryEasyGame = recentGames.find { it.label == "Fácil #10" }
-        assertEquals("+1250 XP", veryEasyGame?.xp)
+        val veryEasyGame = recentGames.find { it.difficultyResId == com.inigo.xudoku.R.string.diff_very_easy }
+        assertEquals(1250, veryEasyGame?.xp)
+        assertEquals("10", veryEasyGame?.sudokuId)
         
-        val hardGame = recentGames.find { it.label == "Difícil #12" }
-        assertEquals("+2400 XP", hardGame?.xp)
+        val hardGame = recentGames.find { it.difficultyResId == com.inigo.xudoku.R.string.diff_medium }
+        assertEquals(2400, hardGame?.xp)
+        assertEquals("12", hardGame?.sudokuId)
         
-        // Check Points Evolution
         val points = state.pointsEvolution
         assertEquals(5, points.size)
-        // Ensure PointData maps correctly. For older games (like no XP), it should fallback to score.
-        // Assuming score is 100 as per createDummyResult
         val mediumPoint = points.find { it.xp == 2400 }
         assertTrue(mediumPoint != null)
         assertEquals(100f, mediumPoint?.score)
+    }
+
+    @Test
+    fun `loadStats_filters_by_difficulty_correctly`() = runTest(testDispatcher) {
+        // Arrange
+        val games = listOf(
+            createDummyResult(Difficulty.VERY_EASY, true, "10", 1250),
+            createDummyResult(Difficulty.HARD, true, "13", 3000),
+            createDummyResult(Difficulty.HARD, false, "15", null)
+        )
+        fakeRepository.results = games
+        
+        // Act
+        viewModel.loadStats(Difficulty.HARD)
+        
+        // Assert
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoading)
+        
+        assertEquals(2, state.totalGamesPlayed)
+        assertEquals(1, state.totalGamesWon)
+        
+        val recentGames = state.recentGames
+        assertEquals(2, recentGames.size)
+        assertTrue(recentGames.all { it.difficultyResId == com.inigo.xudoku.R.string.diff_hard })
+    }
+
+    @Test
+    fun `loadStats_with_no_data_does_not_crash_and_returns_empty_state`() = runTest(testDispatcher) {
+        // Arrange
+        fakeRepository.results = emptyList()
+        
+        // Act
+        viewModel.loadStats(Difficulty.MEDIUM)
+        
+        // Assert
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoading)
+        assertEquals(0, state.totalGamesPlayed)
+        assertEquals(0, state.totalGamesWon)
+        assertEquals("—", state.winRate)
+        assertTrue(state.recentGames.isEmpty())
+        assertTrue(state.pointsEvolution.isEmpty())
+        assertEquals("—", state.bestTime)
     }
 }
 
