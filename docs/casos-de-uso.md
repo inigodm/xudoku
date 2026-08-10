@@ -311,8 +311,20 @@
 
 ---
 
-## Resumen de cobertura de tests
+### CU-22 — Consultar Estadísticas Básicas en el Perfil
+
+| Campo        | Valor |
+|--------------|-------|
+| Actor        | Jugador |
+| Trigger      | Tap en el icono de perfil en la barra inferior (Bottom Bar) |
+| Precondición | El jugador ha completado o no partidas (estadísticas globales) |
+| Método VM    | `StatsViewModel.loadStats("Global")` |
+| Postcondición | El estado UI de `StatsViewModel` se carga con total de victorias, win rate, partidas jugadas, etc. |
+| Efecto UI    | `ProfileScreen` muestra el número de partidas jugadas, win rate, victorias y racha diaria. |
+| Tested       | ✅ |
+
+---
 
 | Total CUs | Tested ✅ | Pendientes ❌ |
-|-----------|-----------|---------------|
-| 21        | 21        | 0             |
+|-----------|----------|--------------|
+| 22        | 22       | 0            |

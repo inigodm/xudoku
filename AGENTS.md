@@ -17,5 +17,6 @@ App Android nativa (Kotlin + Jetpack Compose) para generar y jugar Sudokus con s
 - No añadir dependencias Android en `model/`.
 - Si una petición de UI requiere modificar `model/`, pedir confirmación antes.
 - Usar `val` salvo necesidad justificada de `var`.
+- **OBLIGATORIO TDD PARA NUEVA LÓGICA:** Si añades o modificas lógica de negocio (incluyendo ViewModel, Model o mapeos de datos para UI), **DEBES APLICAR TDD ESTRICTO**. Empieza siempre escribiendo el Test (RED), implementa lo mínimo (GREEN) y refactoriza. **TOTALMENTE PROHIBIDO** saltarse este flujo bajo la excusa de "es un cambio menor". Consulta el skill `tdd-nueva-funcionalidad` en caso de duda.
 - Ejecutar tests después de cambios relevantes.
 

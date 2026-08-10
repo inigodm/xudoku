@@ -44,6 +44,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import kotlin.math.roundToInt
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -551,6 +559,9 @@ private fun RecentFlowRow(game: RecentGameUiModel) {
 private fun StatsLineChart(dataPoints: List<Float>) {
     if (dataPoints.isEmpty()) return
 
+    val textMeasurer = rememberTextMeasurer()
+    var selectedPointIndex by remember { mutableStateOf<Int?>(null) }
+
     val minY = (dataPoints.minOrNull() ?: 0f).coerceAtLeast(0f)
     val maxY = (dataPoints.maxOrNull() ?: 100f).coerceAtLeast(minY + 10f)
     
@@ -589,6 +600,16 @@ private fun StatsLineChart(dataPoints: List<Float>) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(start = 28.dp, bottom = 18.dp, top = 4.dp, end = 4.dp)
+                .pointerInput(dataPoints) {
+                    detectTapGestures { offset ->
+                        val n = dataPoints.size
+                        val stepX = if (n > 1) size.width / (n - 1).toFloat() else size.width / 2f
+                        val index = (offset.x / stepX).roundToInt()
+                        if (index in dataPoints.indices) {
+                            selectedPointIndex = index
+                        }
+                    }
+                }
         ) {
             val w = size.width
             val h = size.height
@@ -644,12 +665,47 @@ private fun StatsLineChart(dataPoints: List<Float>) {
                 )
             )
 
-            // Puntos en la línea
+            // Puntos en la línea y Tooltip
             dataPoints.forEachIndexed { i, value ->
                 val x = i * stepX
                 val y = h - ((value - minY) / (maxY - minY)) * h
-                drawCircle(color = Tertiary, radius = 3.5.dp.toPx(), center = Offset(x, y))
-                drawCircle(color = Background, radius = 2.dp.toPx(), center = Offset(x, y))
+                
+                val isSelected = selectedPointIndex == i
+                val outerRadius = if (isSelected) 5.dp.toPx() else 3.5.dp.toPx()
+                val innerRadius = if (isSelected) 3.dp.toPx() else 2.dp.toPx()
+                
+                drawCircle(color = Tertiary, radius = outerRadius, center = Offset(x, y))
+                drawCircle(color = Background, radius = innerRadius, center = Offset(x, y))
+                
+                if (isSelected) {
+                    val score = value.toInt()
+                    val tooltipText = "Score: $score\n+$score XP"
+                    val textLayoutResult = textMeasurer.measure(
+                        text = tooltipText,
+                        style = TextStyle(color = Background, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    )
+                    
+                    val padding = 8.dp.toPx()
+                    val tooltipWidth = textLayoutResult.size.width + padding * 2
+                    val tooltipHeight = textLayoutResult.size.height + padding * 2
+                    
+                    val tooltipX = (x - tooltipWidth / 2).coerceIn(0f, w - tooltipWidth)
+                    val tooltipY = (y - tooltipHeight - 12.dp.toPx()).coerceAtLeast(0f)
+                    
+                    drawRoundRect(
+                        color = OnSurface,
+                        topLeft = Offset(tooltipX, tooltipY),
+                        size = Size(tooltipWidth, tooltipHeight),
+                        cornerRadius = CornerRadius(6.dp.toPx())
+                    )
+                    
+                    drawText(
+                        textMeasurer = textMeasurer,
+                        text = tooltipText,
+                        style = TextStyle(color = Background, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                        topLeft = Offset(tooltipX + padding, tooltipY + padding)
+                    )
+                }
             }
         }
 

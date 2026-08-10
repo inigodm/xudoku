@@ -64,8 +64,10 @@ import com.inigo.xudoku.ui.theme.Tertiary
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import org.koin.androidx.compose.koinViewModel
 import com.inigo.xudoku.ui.ProgressionViewModel
+import com.inigo.xudoku.ui.StatsViewModel
 
 /**
  * Pantalla de perfil de usuario.
@@ -76,9 +78,15 @@ import com.inigo.xudoku.ui.ProgressionViewModel
 fun ProfileScreen(
     onNavigateToPlay: () -> Unit,
     onNavigateToStats: () -> Unit,
-    progressionViewModel: ProgressionViewModel = koinViewModel()
+    progressionViewModel: ProgressionViewModel = koinViewModel(),
+    statsViewModel: StatsViewModel = koinViewModel()
 ) {
     val progressionState by progressionViewModel.state.collectAsState()
+    val statsState by statsViewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        statsViewModel.loadStats("Global")
+    }
     Scaffold(
         containerColor = Background,
         topBar = {
@@ -254,13 +262,13 @@ fun ProfileScreen(
             ) {
                 ProfileStatCard(
                     label    = "GAMES PLAYED",
-                    value    = "0",
+                    value    = "${statsState.totalGamesPlayed}",
                     color    = Tertiary,
                     modifier = Modifier.weight(1f)
                 )
                 ProfileStatCard(
                     label    = "WIN RATE",
-                    value    = "—",
+                    value    = statsState.winRate,
                     color    = Secondary,
                     modifier = Modifier.weight(1f)
                 )
@@ -268,43 +276,25 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ── Streak card ────────────────────────────────────────────────
+            // ── Wins & Streak card ─────────────────────────────────────────
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier          = Modifier
+                modifier              = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(SurfaceContainerHigh)
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        "DAILY STREAK",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = OnSurfaceVariant
-                    )
-                    Text(
-                        "${progressionState.dailyStreak} Days",
-                        style      = MaterialTheme.typography.headlineMedium,
-                        color      = OnSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier         = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(SurfaceContainer)
-                ) {
-                    Icon(
-                        Icons.Outlined.LocalFireDepartment,
-                        null,
-                        tint     = ErrorColor,
-                        modifier = Modifier.size(26.dp)
-                    )
-                }
+                ProfileStatCard(
+                    label    = "WINS",
+                    value    = "${statsState.totalGamesWon}",
+                    color    = Primary,
+                    modifier = Modifier.weight(1f)
+                )
+                ProfileStatCard(
+                    label    = "DAILY STREAK",
+                    value    = "${progressionState.dailyStreak}",
+                    color    = ErrorColor,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(Modifier.height(24.dp))

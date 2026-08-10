@@ -26,6 +26,7 @@ data class RecentGameUiModel(
 
 data class StatsUiState(
     val isLoading: Boolean = true,
+    val totalGamesPlayed: Int = 0,
     val totalGamesWon: Int = 0,
     val winRate: String = "—",
     val currentStreak: Int = 0,
@@ -75,6 +76,7 @@ class StatsViewModel(
             return StatsUiState(isLoading = false, difficultySplit = calculateDifficultySplit(allResults))
         }
 
+        val gamesPlayed = results.size
         val completedGames = results.filter { it.completado || it.victoria }
         val gamesWon = completedGames.size
         
@@ -119,8 +121,15 @@ class StatsViewModel(
 
         // Recent Flow
         val recentGames = sortedDesc.take(10).map { game ->
+            val diffLabel = when (game.dificultad) {
+                Difficulty.VERY_EASY -> "Fácil"
+                Difficulty.EASY -> "Medio"
+                Difficulty.MEDIUM -> "Difícil"
+                Difficulty.HARD -> "Extremo"
+                Difficulty.HARDEST -> "Imposible"
+            }
             RecentGameUiModel(
-                label = "${game.dificultad.name.lowercase().replaceFirstChar { it.uppercase() }} #${game.identificadorSudoku ?: "0"}",
+                label = "$diffLabel #${game.identificadorSudoku ?: "0"}",
                 subtitle = dateFormat.format(game.fechaHoraFin).uppercase(),
                 time = formatTime(game.tiempoEmpleado),
                 xp = if (game.victoria) "+${game.puntuacionFinal} XP" else "DNF",
@@ -132,6 +141,7 @@ class StatsViewModel(
 
         return StatsUiState(
             isLoading = false,
+            totalGamesPlayed = gamesPlayed,
             totalGamesWon = gamesWon,
             winRate = winRate,
             currentStreak = currentStreak,
