@@ -59,8 +59,9 @@
     <string name="difficulty_split">Reparto de Dificultad</string>
     <string name="view_all">Ver Todo</string>
     <string name="no_completed_games">Aún no has completado partidas.</string>
-    <string name="menu">Menú</string>
-    <string name="settings">Ajustes</string>
+    <!-- Level/Rank Up -->
+    <string name="rank_up">¡NUEVO RANGO!</string>
+    <string name="rank_up_desc">Has alcanzado un nuevo rango.</string>
     
     <!-- Profile Screen -->
     <string name="player_default">Jugador</string>

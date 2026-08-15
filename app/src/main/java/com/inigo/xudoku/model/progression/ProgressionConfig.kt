@@ -26,7 +26,4 @@ object ProgressionConfig {
     
     // Prestigio
     const val PRESTIGE_XP_BONUS_PER_STAR = 0.05
-    
-    // Tiempo anti-abuso (milisegundos)
-    const val MIN_PLAYTIME_FOR_XP_MS = 60_000L
 }

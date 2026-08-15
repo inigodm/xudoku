@@ -52,6 +52,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
 import androidx.compose.ui.unit.dp
 import com.inigo.xudoku.R
 import com.inigo.xudoku.model.Difficulty
@@ -96,12 +98,46 @@ fun VictoryScreen(
     score: Int,
     isNewHighScore: Boolean,
     hasLeveledUp: Boolean = false,
+    hasRankedUp: Boolean = false,
+    earnedXP: Int = 0,
     onNextLevel: () -> Unit,
     onMainMenu: () -> Unit,
     progressionViewModel: ProgressionViewModel = koinViewModel()
 ) {
     val progressionState by progressionViewModel.state.collectAsState()
+    
+    VictoryScreenContent(
+        elapsedSeconds = elapsedSeconds,
+        mistakes = mistakes,
+        difficulty = difficulty,
+        score = score,
+        isNewHighScore = isNewHighScore,
+        hasLeveledUp = hasLeveledUp,
+        hasRankedUp = hasRankedUp,
+        earnedXP = earnedXP,
+        onNextLevel = onNextLevel,
+        onMainMenu = onMainMenu,
+        progressionState = progressionState
+    )
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun VictoryScreenContent(
+    elapsedSeconds: Int,
+    mistakes: Int,
+    difficulty: Difficulty,
+    score: Int,
+    isNewHighScore: Boolean,
+    hasLeveledUp: Boolean = false,
+    hasRankedUp: Boolean = false,
+    earnedXP: Int = 0,
+    onNextLevel: () -> Unit,
+    onMainMenu: () -> Unit,
+    progressionState: com.inigo.xudoku.ui.ProgressionUIState
+) {
     var showLevelUpDialog by remember { mutableStateOf(hasLeveledUp) }
+    var showRankUpDialog by remember { mutableStateOf(hasRankedUp) }
 
     if (showLevelUpDialog) {
         AlertDialog(
@@ -114,6 +150,65 @@ fun VictoryScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     Text(stringResource(R.string.great), color = Background)
+                }
+            },
+            containerColor = SurfaceContainerHigh
+        )
+    }
+
+    if (showRankUpDialog && !showLevelUpDialog) {
+        AlertDialog(
+            onDismissRequest = { showRankUpDialog = false },
+            title = { Text(stringResource(R.string.rank_up), color = Secondary, fontWeight = FontWeight.Black) },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.rank_up_desc), color = OnSurface, modifier = Modifier.padding(bottom = 16.dp))
+                    
+                    progressionState.currentRank?.let { rank ->
+                        val currentLeague = rank.league
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(120.dp)) {
+                            Image(
+                                painter = painterResource(id = currentLeague.iconResId),
+                                contentDescription = currentLeague.colorName,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            val leagueRanks = com.inigo.xudoku.model.progression.RanksList.ranks.filter { it.league == currentLeague }
+                            if (leagueRanks.size > 1) {
+                                val rankIndex = leagueRanks.indexOf(rank).coerceAtLeast(0)
+                                val numeral = listOf("I", "II", "III", "IV").getOrElse(rankIndex) { "I" }
+                                Text(
+                                    text = numeral,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Black,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .padding(bottom = 8.dp)
+                                        .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                            // Epic confetti directly over the medal!
+                            ConfettiLayer()
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(id = rank.nameResId).uppercase(),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showRankUpDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Secondary)
+                ) {
+                    Text(stringResource(R.string.awesome), color = Background)
                 }
             },
             containerColor = SurfaceContainerHigh
@@ -242,6 +337,13 @@ fun VictoryScreen(
                             style      = MaterialTheme.typography.displayLarge,
                             color      = OnSurface,
                             fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "+ %,d XP".format(earnedXP),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Secondary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
@@ -479,15 +581,28 @@ private fun Difficulty.toFriendlyString(): String = when (this) {
 @androidx.compose.runtime.Composable
 fun PreviewVictoryScreen() {
     com.inigo.xudoku.ui.theme.XudokuTheme {
-        VictoryScreen(
+        VictoryScreenContent(
             elapsedSeconds = 525,       // 08:45
             mistakes       = 0,
             difficulty     = Difficulty.MEDIUM,
             score          = 24_580,
             isNewHighScore = true,
             hasLeveledUp   = true,
+            hasRankedUp    = true,
+            earnedXP       = 14500,
             onNextLevel    = {},
-            onMainMenu     = {}
+            onMainMenu     = {},
+            progressionState = com.inigo.xudoku.ui.ProgressionUIState(
+                totalXP = 15000,
+                currentLevel = 10,
+                currentLevelXP = 500,
+                xpRequiredForNextLevel = 1000,
+                currentRank = com.inigo.xudoku.model.progression.RanksList.ranks[9], // Gold II
+                dailyStreak = 1,
+                winStreak = 3,
+                prestigeStars = 0,
+                lastPlayDate = 0L
+            )
         )
     }
 }

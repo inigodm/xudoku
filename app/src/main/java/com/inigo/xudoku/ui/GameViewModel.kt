@@ -105,6 +105,12 @@ class GameViewModel(
     private val _hasLeveledUp = MutableStateFlow(false)
     val hasLeveledUp: StateFlow<Boolean> = _hasLeveledUp.asStateFlow()
 
+    private val _hasRankedUp = MutableStateFlow(false)
+    val hasRankedUp: StateFlow<Boolean> = _hasRankedUp.asStateFlow()
+
+    private val _earnedXP = MutableStateFlow(0)
+    val earnedXP: StateFlow<Int> = _earnedXP.asStateFlow()
+
     private val _completedNumbers = MutableStateFlow<Set<Int>>(emptySet())
     /** Números (1-9) que ya están colocados 9 veces en el tablero. */
     val completedNumbers: StateFlow<Set<Int>> = _completedNumbers.asStateFlow()
@@ -365,12 +371,11 @@ class GameViewModel(
             }
         }
         if (complete) {
-            _isCompleted.value = true
             timerJob?.cancel()
             val finalScoreVal = getFinalScore()
             val difficultyEnum = _difficulty.value ?: Difficulty.EASY
             
-            viewModelScope.launch {
+            viewModelScope.launch(ioDispatcher) {
                 if (historyRepo != null) {
                     val previousGames = historyRepo.getResultsByDifficulty(difficultyEnum)
                     val maxPreviousScore = previousGames.maxOfOrNull { it.puntuacionFinal } ?: 0
@@ -399,18 +404,24 @@ class GameViewModel(
                         prestigeStars = currentState.prestigeStars
                     )
                     
-                    if (xpEarned > 0) {
-                        val currentLevelBefore = progressionManager.getLevelFromTotalXP(currentState.totalXP)
-                        val currentLevelAfter = progressionManager.getLevelFromTotalXP(currentState.totalXP + xpEarned)
-                        _hasLeveledUp.value = currentLevelAfter > currentLevelBefore
-                        
-                        progressionRepo.updateXP(xpEarned)
-                        progressionRepo.updateStreaks(
-                            newDailyStreak = currentState.dailyStreak, // Simplified: should check date
-                            newWinStreak = currentState.winStreak + 1,
-                            playDate = System.currentTimeMillis()
-                        )
-                    }
+                    _earnedXP.value = xpEarned
+                    val currentLevelBefore = progressionManager.getLevelFromTotalXP(currentState.totalXP)
+                    val currentRankBefore = progressionManager.getRankForLevel(currentLevelBefore)
+                    
+                    progressionRepo.updateXP(xpEarned)
+                    
+                    val newState = progressionRepo.getProgressionState()
+                    val currentLevelAfter = progressionManager.getLevelFromTotalXP(newState.totalXP)
+                    val currentRankAfter = progressionManager.getRankForLevel(currentLevelAfter)
+                    
+                    _hasLeveledUp.value = currentLevelAfter > currentLevelBefore
+                    _hasRankedUp.value = currentRankAfter != currentRankBefore
+                    
+                    progressionRepo.updateStreaks(
+                        newDailyStreak = currentState.dailyStreak, // Simplified: should check date
+                        newWinStreak = currentState.winStreak + 1,
+                        playDate = System.currentTimeMillis()
+                    )
                 }
                 
                 saveGameResult(xpEarned)

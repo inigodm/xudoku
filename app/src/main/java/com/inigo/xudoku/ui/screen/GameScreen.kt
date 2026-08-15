@@ -100,7 +100,7 @@ fun Int.toTimeString(): String =
 fun GameScreen(
     difficulty: Difficulty,
     viewModel: GameViewModel,
-    onGameCompleted: (seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int, isNewHighScore: Boolean, hasLeveledUp: Boolean) -> Unit,
+    onGameCompleted: (seconds: Int, mistakes: Int, difficulty: Difficulty, score: Int, isNewHighScore: Boolean, hasLeveledUp: Boolean, hasRankedUp: Boolean, earnedXP: Int) -> Unit,
     onGameOver: (seconds: Int, mistakes: Int) -> Unit = { _, _ -> },
     onNavigateBack: () -> Unit,
     progressionViewModel: ProgressionViewModel = koinViewModel()
@@ -138,6 +138,8 @@ fun GameScreen(
     val completedNumbers by viewModel.completedNumbers.collectAsState()
     val isNewHighScore by viewModel.isNewHighScore.collectAsState()
     val hasLeveledUp by viewModel.hasLeveledUp.collectAsState()
+    val hasRankedUp by viewModel.hasRankedUp.collectAsState()
+    val earnedXP by viewModel.earnedXP.collectAsState()
 
     var lastScoreEvent by remember { mutableStateOf<ScoreAnimationEvent?>(null) }
     LaunchedEffect(viewModel) {
@@ -151,7 +153,16 @@ fun GameScreen(
         if (isCompleted) {
             val score = viewModel.getFinalScore()
             val finalElapsed = viewModel.elapsedSeconds.value
-            onGameCompleted(finalElapsed, mistakes, difficulty, score, isNewHighScore, hasLeveledUp)
+            onGameCompleted(
+                finalElapsed, 
+                mistakes, 
+                difficulty, 
+                score, 
+                viewModel.isNewHighScore.value, 
+                viewModel.hasLeveledUp.value, 
+                viewModel.hasRankedUp.value, 
+                viewModel.earnedXP.value
+            )
         }
     }
 
@@ -410,7 +421,7 @@ fun PreviewGameScreen() {
         GameScreen(
             difficulty      = Difficulty.MEDIUM,
             viewModel       = vm,
-            onGameCompleted = { _, _, _, _, _, _ -> },
+            onGameCompleted = { _, _, _, _, _, _, _, _ -> },
             onNavigateBack  = {}
         )
     }

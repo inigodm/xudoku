@@ -18,8 +18,6 @@ class ProgressionManager {
         winStreak: Int,
         prestigeStars: Int
     ): Int {
-        if (isExploitDetected(playTimeMs)) return 0
-        
         val baseXP = floor(score.toDouble().pow(ProgressionConfig.XP_BASE_EXPONENT)).toInt()
         var multiplier = 1.0
         
@@ -77,10 +75,5 @@ class ProgressionManager {
             }
         }
         return currentLevel
-    }
-
-    private fun isExploitDetected(playTimeMs: Long): Boolean {
-        // Anti-farmeo: una partida que dura muy poco es inválida
-        return playTimeMs < ProgressionConfig.MIN_PLAYTIME_FOR_XP_MS
     }
 }

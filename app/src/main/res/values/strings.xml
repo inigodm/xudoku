@@ -60,6 +60,10 @@
     <string name="menu">Menu</string>
     <string name="settings">Settings</string>
     
+    <!-- Level/Rank Up -->
+    <string name="rank_up">RANK UP!</string>
+    <string name="rank_up_desc">You reached a new rank.</string>
+    
     <!-- Profile Screen -->
     <string name="player_default">Player</string>
     <string name="rookie">ROOKIE</string>

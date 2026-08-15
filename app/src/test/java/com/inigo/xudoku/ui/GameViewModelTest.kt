@@ -577,4 +577,150 @@ class GameViewModelTest {
         
         vmWithProgression.viewModelScope.cancel()
     }
+
+    @Test
+    fun `CU-18 y CU-19 al completar el puzzle evalua si hasRankedUp cambia a true cuando se cruza la barrera de rango`() = runTest(testDispatcher) {
+        val manager = ProgressionManager()
+        // Inicializamos con suficiente XP para estar a punto de subir al nivel 5 (que cambia de rango a Aprendiz)
+        val xpForLevel5 = manager.getRequiredTotalXPForLevel(5).toLong()
+        
+        val repo = object : ProgressionRepository {
+            override val progressionState = MutableStateFlow(ProgressionState(totalXP = xpForLevel5 - 500L))
+            override suspend fun getProgressionState() = progressionState.value
+            override suspend fun updateXP(xpToAdd: Int) {
+                progressionState.value = progressionState.value.copy(totalXP = progressionState.value.totalXP + xpToAdd)
+            }
+            override suspend fun updateStreaks(newDailyStreak: Int, newWinStreak: Int, playDate: Long) {}
+            override suspend fun resetWinStreak() {}
+            override suspend fun ascendPrestige() {}
+        }
+        
+        val vmWithProgression = GameViewModel(
+            ioDispatcher = testDispatcher, 
+            progressionRepo = repo, 
+            progressionManager = manager
+        )
+        
+        vmWithProgression.startGame(Difficulty.VERY_EASY)
+        assertFalse(vmWithProgression.hasRankedUp.value)
+
+        val elapsedField = GameViewModel::class.java.getDeclaredField("_elapsedSeconds")
+        elapsedField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val elapsedStateFlow = elapsedField.get(vmWithProgression) as MutableStateFlow<Int>
+        elapsedStateFlow.value = 65
+
+        val gameField = GameViewModel::class.java.getDeclaredField("game")
+        gameField.isAccessible = true
+        val game = gameField.get(vmWithProgression) as com.inigo.xudoku.model.SudokuGame
+        
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vmWithProgression.cells.value[r][c].isGiven && vmWithProgression.cells.value[r][c].value == SudokuBoard.EMPTY) {
+                    vmWithProgression.selectCell(r, c)
+                    vmWithProgression.enterNumber(game.solution.get(r, c))
+                }
+            }
+        }
+
+        assertTrue(vmWithProgression.isCompleted.value)
+        assertTrue("hasRankedUp debería ser true ya que se cruza la barrera de rango", vmWithProgression.hasRankedUp.value)
+
+        vmWithProgression.viewModelScope.cancel()
+    }
+
+    @Test
+    fun `CU-18 evalua que earnedXP emite los puntos de experiencia ganados tras completar el puzzle`() = runTest(testDispatcher) {
+        val manager = ProgressionManager()
+        val repo = object : ProgressionRepository {
+            override val progressionState = MutableStateFlow(ProgressionState(totalXP = 0))
+            override suspend fun getProgressionState() = progressionState.value
+            override suspend fun updateXP(xpToAdd: Int) {}
+            override suspend fun updateStreaks(newDailyStreak: Int, newWinStreak: Int, playDate: Long) {}
+            override suspend fun resetWinStreak() {}
+            override suspend fun ascendPrestige() {}
+        }
+        
+        val vmWithProgression = GameViewModel(
+            ioDispatcher = testDispatcher, 
+            progressionRepo = repo, 
+            progressionManager = manager
+        )
+        
+        vmWithProgression.startGame(Difficulty.VERY_EASY)
+        assertEquals(0, vmWithProgression.earnedXP.value)
+
+        val elapsedField = GameViewModel::class.java.getDeclaredField("_elapsedSeconds")
+        elapsedField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val elapsedStateFlow = elapsedField.get(vmWithProgression) as MutableStateFlow<Int>
+        elapsedStateFlow.value = 65
+
+        val gameField = GameViewModel::class.java.getDeclaredField("game")
+        gameField.isAccessible = true
+        val game = gameField.get(vmWithProgression) as com.inigo.xudoku.model.SudokuGame
+        
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vmWithProgression.cells.value[r][c].isGiven && vmWithProgression.cells.value[r][c].value == SudokuBoard.EMPTY) {
+                    vmWithProgression.selectCell(r, c)
+                    vmWithProgression.enterNumber(game.solution.get(r, c))
+                }
+            }
+        }
+
+        assertTrue(vmWithProgression.isCompleted.value)
+        assertTrue("earnedXP debe ser mayor a 0 al terminar la partida", vmWithProgression.earnedXP.value > 0)
+
+    }
+
+    @Test
+    fun `CU-19 race condition check - earnedXP should be populated before isCompleted is true`() = runTest(testDispatcher) {
+        val manager = ProgressionManager()
+        val progressionRepo = object : ProgressionRepository {
+            override val progressionState = MutableStateFlow(com.inigo.xudoku.data.repository.ProgressionState(totalXP = 0L))
+            override suspend fun getProgressionState() = progressionState.value
+            override suspend fun updateXP(xpToAdd: Int) {}
+            override suspend fun updateStreaks(newDailyStreak: Int, newWinStreak: Int, playDate: Long) {}
+            override suspend fun resetWinStreak() {}
+            override suspend fun ascendPrestige() {}
+        }
+        
+        val vmWithProgression = GameViewModel(
+            ioDispatcher = testDispatcher,
+            historyRepo = null,
+            progressionRepo = progressionRepo,
+            progressionManager = manager
+        )
+
+        vmWithProgression.startGame(Difficulty.VERY_EASY)
+
+        // Simular un tiempo razonable para evitar 0 puntos
+        @Suppress("UNCHECKED_CAST")
+        val elapsedField = GameViewModel::class.java.getDeclaredField("_elapsedSeconds")
+        elapsedField.isAccessible = true
+        val elapsedStateFlow = elapsedField.get(vmWithProgression) as MutableStateFlow<Int>
+        elapsedStateFlow.value = 65
+
+        // Rellenar todas las celdas vacías
+        val gameField = GameViewModel::class.java.getDeclaredField("game")
+        gameField.isAccessible = true
+        val game = gameField.get(vmWithProgression) as com.inigo.xudoku.model.SudokuGame
+        
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vmWithProgression.cells.value[r][c].isGiven && vmWithProgression.cells.value[r][c].value == SudokuBoard.EMPTY) {
+                    vmWithProgression.selectCell(r, c)
+                    vmWithProgression.enterNumber(game.solution.get(r, c))
+                }
+            }
+        }
+        
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(vmWithProgression.isCompleted.value)
+        assertTrue("earnedXP debe ser mayor que 0 al completar", vmWithProgression.earnedXP.value > 0)
+        
+        vmWithProgression.viewModelScope.cancel()
+    }
 }

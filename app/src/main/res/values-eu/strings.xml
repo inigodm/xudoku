@@ -56,8 +56,9 @@
     <string name="difficulty_split">Zailtasun Banaketa</string>
     <string name="view_all">Ikusi Guztiak</string>
     <string name="no_completed_games">Oraindik ez duzu partidarik amaitu.</string>
-    <string name="menu">Menua</string>
-    <string name="settings">Ezarpenak</string>
+    <!-- Level/Rank Up -->
+    <string name="rank_up">HEIN BERRIA!</string>
+    <string name="rank_up_desc">Hein berri bat lortu duzu.</string>
     
     <!-- Profile Screen -->
     <string name="player_default">Jokalaria</string>
