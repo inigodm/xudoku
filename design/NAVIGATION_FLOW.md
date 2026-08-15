@@ -74,9 +74,7 @@ Presente en todas las pantallas **excepto Splash**.
 | Tab | Icono | Destino |
 |---|---|---|
 | **Play** | `grid_view` | Selección de Dificultad |
-| **Stats** | `leaderboard` | Estadísticas |
-| **Badges** | `emoji_events` | *(placeholder — pantalla no diseñada aún)* |
-| **Profile** | `person` | Perfil de Usuario |
+| **Profile** | `person` | Perfil de Usuario + Estadísticas |
 
 ---
 
