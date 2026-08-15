@@ -47,7 +47,8 @@ data class StatsUiState(
 )
 
 class StatsViewModel(
-    private val historyRepo: GameHistoryRepository
+    private val historyRepo: GameHistoryRepository,
+    private val ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatsUiState())
@@ -59,7 +60,7 @@ class StatsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             
-            val allResults = withContext(Dispatchers.IO) {
+            val allResults = withContext(ioDispatcher) {
                 historyRepo.getAllResults()
             }
             
@@ -77,8 +78,8 @@ class StatsViewModel(
 
     private fun extractXp(game: SudokuGameResult): Int {
         return try {
-            val json = JSONObject(game.metadata)
-            if (json.has("xpEarned")) json.getInt("xpEarned") else game.puntuacionFinal
+            val match = Regex("\"xpEarned\"\\s*:\\s*(\\d+)").find(game.metadata)
+            match?.groupValues?.get(1)?.toIntOrNull() ?: game.puntuacionFinal
         } catch (e: Exception) {
             game.puntuacionFinal
         }

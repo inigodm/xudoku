@@ -162,29 +162,25 @@ fun XudokuNavGraph() {
             )
         }
 
-        // ── Estadísticas ─────────────────────────────────────────────────────
+        // ── Estadísticas (Redirige a Perfil) ─────────────────────────
         composable(Dest.STATS) {
-            val statsViewModel: com.inigo.xudoku.ui.StatsViewModel = org.koin.androidx.compose.koinViewModel()
-            StatsScreen(
-                viewModel = statsViewModel,
-                onNavigateToPlay    = {
+            ProfileScreen(
+                onNavigateToPlay = {
                     navController.navigate(Dest.DIFFICULTY) {
                         popUpTo(Dest.DIFFICULTY) { inclusive = true }
                     }
-                },
-                onNavigateToProfile = { navController.navigate(Dest.PROFILE) }
+                }
             )
         }
 
         // ── Perfil ───────────────────────────────────────────────────────────
         composable(Dest.PROFILE) {
             ProfileScreen(
-                onNavigateToPlay  = {
+                onNavigateToPlay = {
                     navController.navigate(Dest.DIFFICULTY) {
                         popUpTo(Dest.DIFFICULTY) { inclusive = true }
                     }
-                },
-                onNavigateToStats = { navController.navigate(Dest.STATS) }
+                }
             )
         }
     }

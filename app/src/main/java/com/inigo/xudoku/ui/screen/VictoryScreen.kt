@@ -242,13 +242,11 @@ fun VictoryScreenContent(
         },
         bottomBar = {
             XudokuBottomBar(
-                currentTab    = XudokuTab.BADGES, // trofeo activo en victoria
+                currentTab    = XudokuTab.PLAY,
                 onTabSelected = { tab ->
                     when (tab) {
                         XudokuTab.PLAY    -> onMainMenu()
-                        XudokuTab.STATS   -> { /* TODO */ }
                         XudokuTab.PROFILE -> { /* TODO */ }
-                        else              -> Unit
                     }
                 }
             )

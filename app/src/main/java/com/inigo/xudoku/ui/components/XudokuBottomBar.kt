@@ -32,14 +32,11 @@ import com.inigo.xudoku.ui.theme.SurfaceContainerLow
 /** Tabs de la barra de navegación inferior. */
 enum class XudokuTab(@StringRes val labelResId: Int) {
     PLAY(R.string.tab_play),
-    STATS(R.string.tab_stats),
-    BADGES(R.string.tab_badges),
     PROFILE(R.string.tab_profile)
 }
 
 /**
- * Barra de navegación inferior global.
- * Badges está deshabilitado (no hay pantalla diseñada aún).
+ * Barra de navegación inferior global (Jugar / Perfil).
  *
  * @param currentTab     Tab actualmente activo.
  * @param onTabSelected  Callback al pulsar un tab.
@@ -56,24 +53,18 @@ fun XudokuBottomBar(
     ) {
         XudokuTab.entries.forEach { tab ->
             val selected = tab == currentTab
-            val disabled = tab == XudokuTab.BADGES
             val label = stringResource(id = tab.labelResId)
 
             NavigationBarItem(
                 selected = selected,
-                onClick  = { if (!disabled) onTabSelected(tab) },
-                enabled  = !disabled,
+                onClick  = { onTabSelected(tab) },
+                enabled  = true,
                 label    = {
-                    Text(
-                        text  = label,
-                        modifier = if (disabled) Modifier.alpha(0.4f) else Modifier
-                    )
+                    Text(text = label)
                 },
                 icon = {
                     val icon = when (tab) {
                         XudokuTab.PLAY    -> Icons.Outlined.GridView
-                        XudokuTab.STATS   -> Icons.Outlined.Leaderboard
-                        XudokuTab.BADGES  -> Icons.Outlined.EmojiEvents
                         XudokuTab.PROFILE -> Icons.Outlined.Person
                     }
                     if (selected) {
@@ -94,8 +85,7 @@ fun XudokuBottomBar(
                         Icon(
                             imageVector        = icon,
                             contentDescription = label,
-                            tint               = if (disabled) OnSurfaceVariant.copy(alpha = 0.4f)
-                                                 else OnSurfaceVariant,
+                            tint               = OnSurfaceVariant
                         )
                     }
                 },

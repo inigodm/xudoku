@@ -148,52 +148,53 @@ fun difficultyVisuals(difficulty: Difficulty, icons: DifficultyIcons): Difficult
         Difficulty.VERY_EASY -> DifficultyVisuals(
             labelResId    = R.string.diff_very_easy,
             subtitleResId = R.string.diff_subtitle_very_easy,
-            faceColor   = TertiaryContainer,
-            shadowColor = TertiaryContainer.copy(alpha = 0.45f),
-            textColor   = OnTertiaryContainer,
-            iconColor   = OnTertiaryContainer,
-            icon        = icons.easy
+            faceColor   = Color(0xFF005244),
+            shadowColor = Color(0xFF00382E),
+            textColor   = Color(0xFF94F4DF),
+            iconColor   = Color(0xFF94F4DF),
+            icon        = icons.veryEasy
         )
         Difficulty.EASY -> DifficultyVisuals(
             labelResId    = R.string.diff_easy,
             subtitleResId = R.string.diff_subtitle_easy,
-            faceColor   = SecondaryContainer,
-            shadowColor = SecondaryContainer.copy(alpha = 0.45f),
-            textColor   = OnSecondaryContainer,
-            iconColor   = OnSecondaryContainer,
-            icon        = icons.medium
+            faceColor   = Color(0xFF004578),
+            shadowColor = Color(0xFF002F54),
+            textColor   = Color(0xFFBBE6FF),
+            iconColor   = Color(0xFFBBE6FF),
+            icon        = icons.easy
         )
         Difficulty.MEDIUM -> DifficultyVisuals(
             labelResId    = R.string.diff_medium,
             subtitleResId = R.string.diff_subtitle_medium,
-            faceColor   = PrimaryContainer,
-            shadowColor = PrimaryContainer.copy(alpha = 0.45f),
-            textColor   = OnPrimaryContainer,
-            iconColor   = OnPrimaryContainer,
-            icon        = icons.hard
+            faceColor   = Color(0xFF7C4A00),
+            shadowColor = Color(0xFF543100),
+            textColor   = Color(0xFFFFDDB8),
+            iconColor   = Color(0xFFFFDDB8),
+            icon        = icons.medium
         )
         Difficulty.HARD -> DifficultyVisuals(
             labelResId    = R.string.diff_hard,
             subtitleResId = R.string.diff_subtitle_hard,
-            faceColor   = ErrorContainer,
-            shadowColor = ErrorContainer.copy(alpha = 0.45f),
-            textColor   = OnErrorContainer,
-            iconColor   = OnErrorContainer,
-            icon        = icons.extreme
+            faceColor   = Color(0xFF9E1B1B),
+            shadowColor = Color(0xFF6E0D0D),
+            textColor   = Color(0xFFFFDAD6),
+            iconColor   = Color(0xFFFFDAD6),
+            icon        = icons.hard
         )
-        Difficulty.HARDEST -> DifficultyVisuals( // oculto en la UI por ahora
+        Difficulty.HARDEST -> DifficultyVisuals(
             labelResId    = R.string.diff_hardest,
             subtitleResId = R.string.diff_subtitle_hardest,
-            faceColor   = ErrorContainer,
-            shadowColor = ErrorContainer.copy(alpha = 0.45f),
-            textColor   = OnErrorContainer,
-            iconColor   = OnErrorContainer,
+            faceColor   = Color(0xFF5A002C),
+            shadowColor = Color(0xFF3B001B),
+            textColor   = Color(0xFFFFB0D0),
+            iconColor   = Color(0xFFFFB0D0),
             icon        = icons.extreme
         )
     }
 
 /** Contenedor de iconos pasado desde la pantalla para evitar dependencias de Material en este fichero. */
 data class DifficultyIcons(
+    val veryEasy: ImageVector,
     val easy: ImageVector,
     val medium: ImageVector,
     val hard: ImageVector,

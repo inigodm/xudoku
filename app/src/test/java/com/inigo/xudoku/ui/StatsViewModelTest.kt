@@ -32,7 +32,7 @@ class StatsViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeGameHistoryRepository()
-        viewModel = StatsViewModel(fakeRepository)
+        viewModel = StatsViewModel(fakeRepository, testDispatcher)
     }
     
     @After
@@ -50,7 +50,7 @@ class StatsViewModelTest {
         return SudokuGameResult(
             id = UUID.randomUUID().toString(),
             fechaHoraInicio = Date(),
-            fechaHoraFin = Date(),
+            fechaHoraFin = Date(1000L * (idSudoku.toLongOrNull() ?: 1L)),
             tiempoEmpleado = 120,
             tiempoPausado = 0,
             dificultad = difficulty,

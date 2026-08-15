@@ -44,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.ui.res.stringResource
 import com.inigo.xudoku.R
 import androidx.compose.ui.graphics.Path
@@ -101,25 +102,12 @@ enum class StatsFilter(val titleResId: Int, val difficulty: Difficulty?) {
  */
 @Composable
 fun StatsScreen(
-    viewModel: StatsViewModel,
+    viewModel: StatsViewModel = koinViewModel(),
     onNavigateToPlay: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit = {}
 ) {
-    var selectedFilter by remember { mutableStateOf(StatsFilter.GLOBAL) }
-
-    val state by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(selectedFilter) {
-        viewModel.loadStats(selectedFilter.difficulty)
-    }
-
-    StatsScreenContent(
-        state = state,
-        filters = StatsFilter.entries,
-        selectedFilter = selectedFilter,
-        onFilterSelected = { selectedFilter = it },
-        onNavigateToPlay = onNavigateToPlay,
-        onNavigateToProfile = onNavigateToProfile
+    ProfileScreen(
+        onNavigateToPlay = onNavigateToPlay
     )
 }
 
@@ -161,12 +149,11 @@ fun StatsScreenContent(
         },
         bottomBar = {
             XudokuBottomBar(
-                currentTab    = XudokuTab.STATS,
+                currentTab    = XudokuTab.PROFILE,
                 onTabSelected = { tab ->
                     when (tab) {
                         XudokuTab.PLAY    -> onNavigateToPlay()
                         XudokuTab.PROFILE -> onNavigateToProfile()
-                        else              -> Unit
                     }
                 }
             )
