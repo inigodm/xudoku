@@ -76,4 +76,18 @@ class ProgressionManager {
         }
         return currentLevel
     }
+
+    /**
+     * Devuelve la cantidad de XP total acumulada requerida para desbloquear una dificultad.
+     */
+    fun getRequiredXPForDifficulty(difficulty: com.inigo.xudoku.model.Difficulty): Long {
+        return ProgressionConfig.DIFFICULTY_UNLOCK_XP[difficulty] ?: 0L
+    }
+
+    /**
+     * Comprueba si una dificultad está desbloqueada dada la cantidad de XP total acumulada.
+     */
+    fun isDifficultyUnlocked(difficulty: com.inigo.xudoku.model.Difficulty, totalXP: Long): Boolean {
+        return totalXP >= getRequiredXPForDifficulty(difficulty)
+    }
 }

@@ -62,6 +62,9 @@ import com.inigo.xudoku.ui.theme.PrimaryContainer
 import com.inigo.xudoku.ui.theme.SurfaceContainer
 import com.inigo.xudoku.ui.theme.Tertiary
 
+import org.koin.compose.koinInject
+import com.inigo.xudoku.model.progression.ProgressionManager
+
 private val difficultyIcons = DifficultyIcons(
     easy    = Icons.Outlined.SentimentSatisfied,
     medium  = Icons.Outlined.SentimentNeutral,
@@ -78,7 +81,6 @@ private val visibleDifficulties = listOf(
     Difficulty.HARDEST
 )
 
-
 /**
  * Pantalla de selección de dificultad.
  *
@@ -92,7 +94,8 @@ fun DifficultyScreen(
     onDifficultySelected: (Difficulty) -> Unit,
     onNavigateToStats: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    progressionViewModel: ProgressionViewModel = koinViewModel()
+    progressionViewModel: ProgressionViewModel = koinViewModel(),
+    progressionManager: ProgressionManager = koinInject()
 ) {
     val progressionState by progressionViewModel.state.collectAsState()
     
@@ -186,14 +189,7 @@ fun DifficultyScreen(
 
             // Tarjetas de dificultad
             visibleDifficulties.forEach { difficulty ->
-                val requiredLevel = when(difficulty) {
-                    Difficulty.VERY_EASY -> 1
-                    Difficulty.EASY -> 1
-                    Difficulty.MEDIUM -> 2
-                    Difficulty.HARD -> 5
-                    Difficulty.HARDEST -> 15
-                }
-                val isLocked = progressionState.currentLevel < requiredLevel
+                val isLocked = !progressionManager.isDifficultyUnlocked(difficulty, progressionState.totalXP)
                 
                 DifficultyCard(
                     difficulty = difficulty,
@@ -278,7 +274,8 @@ fun PreviewDifficultyScreen() {
         DifficultyScreen(
             onDifficultySelected = {},
             onNavigateToStats    = {},
-            onNavigateToProfile  = {}
+            onNavigateToProfile  = {},
+            progressionManager   = ProgressionManager()
         )
     }
 }

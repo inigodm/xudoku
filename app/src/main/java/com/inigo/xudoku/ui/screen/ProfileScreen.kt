@@ -324,7 +324,7 @@ fun ProfileScreen(
             Spacer(Modifier.height(24.dp))
 
             // ── Account Settings ───────────────────────────────────────────
-            Text(
+            /*Text(
                 stringResource(R.string.account_settings),
                 style      = MaterialTheme.typography.labelLarge,
                 color      = OnSurfaceVariant,
@@ -372,6 +372,8 @@ fun ProfileScreen(
             }
 
             Spacer(Modifier.height(24.dp))
+            */
+
         }
     }
 }
