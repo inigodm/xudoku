@@ -133,6 +133,11 @@ fun XudokuNavGraph() {
                     navController.navigate(Dest.DIFFICULTY) {
                         popUpTo(Dest.DIFFICULTY) { inclusive = true }
                     }
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Dest.PROFILE) {
+                        popUpTo(Dest.DIFFICULTY)
+                    }
                 }
             )
         }
@@ -157,6 +162,11 @@ fun XudokuNavGraph() {
                 onMainMenu     = {
                     navController.navigate(Dest.DIFFICULTY) {
                         popUpTo(Dest.DIFFICULTY) { inclusive = true }
+                    }
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Dest.PROFILE) {
+                        popUpTo(Dest.DIFFICULTY)
                     }
                 }
             )

@@ -73,7 +73,8 @@ fun GameOverScreen(
     elapsedSeconds: Int = 0,
     mistakes: Int = 3,
     onRetry: () -> Unit = {},
-    onMainMenu: () -> Unit = {}
+    onMainMenu: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = Background,
@@ -104,7 +105,10 @@ fun GameOverScreen(
             XudokuBottomBar(
                 currentTab    = XudokuTab.PLAY,
                 onTabSelected = { tab ->
-                    if (tab == XudokuTab.PLAY) onMainMenu()
+                    when (tab) {
+                        XudokuTab.PLAY    -> onMainMenu()
+                        XudokuTab.PROFILE -> onNavigateToProfile()
+                    }
                 }
             )
         }

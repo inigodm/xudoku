@@ -102,6 +102,7 @@ fun VictoryScreen(
     earnedXP: Int = 0,
     onNextLevel: () -> Unit,
     onMainMenu: () -> Unit,
+    onNavigateToProfile: () -> Unit = {},
     progressionViewModel: ProgressionViewModel = koinViewModel()
 ) {
     val progressionState by progressionViewModel.state.collectAsState()
@@ -117,6 +118,7 @@ fun VictoryScreen(
         earnedXP = earnedXP,
         onNextLevel = onNextLevel,
         onMainMenu = onMainMenu,
+        onNavigateToProfile = onNavigateToProfile,
         progressionState = progressionState
     )
 }
@@ -134,6 +136,7 @@ fun VictoryScreenContent(
     earnedXP: Int = 0,
     onNextLevel: () -> Unit,
     onMainMenu: () -> Unit,
+    onNavigateToProfile: () -> Unit = {},
     progressionState: com.inigo.xudoku.ui.ProgressionUIState
 ) {
     var showLevelUpDialog by remember { mutableStateOf(hasLeveledUp) }
@@ -246,7 +249,7 @@ fun VictoryScreenContent(
                 onTabSelected = { tab ->
                     when (tab) {
                         XudokuTab.PLAY    -> onMainMenu()
-                        XudokuTab.PROFILE -> { /* TODO */ }
+                        XudokuTab.PROFILE -> onNavigateToProfile()
                     }
                 }
             )
