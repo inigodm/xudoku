@@ -44,7 +44,8 @@ class StatsViewModelTest {
         difficulty: Difficulty = Difficulty.EASY,
         isWin: Boolean = true,
         idSudoku: String = "1",
-        xpEarned: Int? = null
+        xpEarned: Int? = null,
+        puntuacionFinal: Int = 100
     ): SudokuGameResult {
         val meta = if (xpEarned != null) "{\"xpEarned\": $xpEarned}" else "{}"
         return SudokuGameResult(
@@ -58,8 +59,8 @@ class StatsViewModelTest {
             identificadorSudoku = idSudoku,
             seed = null,
             tamanoTablero = 9,
-            puntuacionPartida = 100,
-            puntuacionFinal = 100,
+            puntuacionPartida = puntuacionFinal,
+            puntuacionFinal = puntuacionFinal,
             multiplicadorDificultad = 1f,
             multiplicadorTiempo = 1f,
             ayudasMostrarNumero = 0,
@@ -163,6 +164,30 @@ class StatsViewModelTest {
         assertTrue(state.recentGames.isEmpty())
         assertTrue(state.pointsEvolution.isEmpty())
         assertEquals("—", state.bestTime)
+        assertEquals(0, state.averageScore)
+        assertEquals(0, state.maxScore)
+        assertEquals(0, state.averageXp)
+        assertEquals(0, state.maxXp)
+    }
+
+    @Test
+    fun `loadStats calculates average and max score and xp per game and difficulty`() = runTest(testDispatcher) {
+        // Arrange
+        val games = listOf(
+            createDummyResult(Difficulty.HARD, true, "1", xpEarned = 1000, puntuacionFinal = 500),
+            createDummyResult(Difficulty.HARD, true, "2", xpEarned = 2000, puntuacionFinal = 1500)
+        )
+        fakeRepository.results = games
+        
+        // Act
+        viewModel.loadStats(Difficulty.HARD)
+        
+        // Assert
+        val state = viewModel.uiState.value
+        assertEquals(1000, state.averageScore)
+        assertEquals(1500, state.maxScore)
+        assertEquals(1500, state.averageXp)
+        assertEquals(2000, state.maxXp)
     }
 }
 

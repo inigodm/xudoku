@@ -48,6 +48,10 @@
     <string name="longest_streak">Mejor Racha</string>
     <string name="best_time">Mejor Tiempo</string>
     <string name="average_time">Tiempo Medio</string>
+    <string name="average_score">Puntuación Media</string>
+    <string name="max_score">Puntuación Máxima</string>
+    <string name="average_xp">XP Media</string>
+    <string name="max_xp">XP Máxima</string>
     <string name="points_evolution">Evolución de Puntos</string>
     <string name="recent_flow">Historial Reciente</string>
     <string name="global">Global</string>

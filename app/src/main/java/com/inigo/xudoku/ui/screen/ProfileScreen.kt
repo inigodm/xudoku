@@ -521,7 +521,11 @@ fun ProfileScreen(
             listOf(
                 Triple(Icons.Outlined.Timer,                 stringResource(R.string.best_time),       statsState.bestTime),
                 Triple(Icons.Outlined.AccessTime,            stringResource(R.string.average_time),    statsState.averageTime),
-                Triple(Icons.Outlined.LocalFireDepartment,   stringResource(R.string.longest_streak),  "${statsState.longestStreak}")
+                Triple(Icons.Outlined.LocalFireDepartment,   stringResource(R.string.longest_streak),  "${statsState.longestStreak}"),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.average_score),   "${statsState.averageScore}"),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.max_score),       "${statsState.maxScore}"),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.average_xp),      stringResource(R.string.xp_formatted, statsState.averageXp)),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.max_xp),          stringResource(R.string.xp_formatted, statsState.maxXp))
             ).forEach { (icon, label, value) ->
                 ProfileStatItemRow(
                     icon     = icon,

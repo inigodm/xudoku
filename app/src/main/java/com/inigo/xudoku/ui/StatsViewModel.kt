@@ -18,6 +18,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+import kotlin.math.roundToInt
+
 data class RecentGameUiModel(
     @StringRes val difficultyResId: Int,
     val sudokuId: String,
@@ -42,6 +44,10 @@ data class StatsUiState(
     val pointsEvolution: List<PointData> = emptyList(),
     val bestTime: String = "—",
     val averageTime: String = "—",
+    val averageScore: Int = 0,
+    val maxScore: Int = 0,
+    val averageXp: Int = 0,
+    val maxXp: Int = 0,
     val recentGames: List<RecentGameUiModel> = emptyList(),
     val difficultySplit: List<Float> = listOf(0f, 0f, 0f, 0f, 0f) // VeryEasy, Easy, Medium, Hard, Extreme
 )
@@ -117,6 +123,17 @@ class StatsViewModel(
         } else null
         val averageTime = avgTimeSeconds?.let { formatTime(it) } ?: "—"
 
+        // Score & XP calculations
+        val averageScore = if (completedGames.isNotEmpty()) {
+            completedGames.map { it.puntuacionFinal }.average().roundToInt()
+        } else 0
+        val maxScore = completedGames.maxOfOrNull { it.puntuacionFinal } ?: 0
+
+        val averageXp = if (completedGames.isNotEmpty()) {
+            completedGames.map { extractXp(it) }.average().roundToInt()
+        } else 0
+        val maxXp = completedGames.maxOfOrNull { extractXp(it) } ?: 0
+
         // Streak calculation (consecutive wins)
         // Results from DB are usually ordered DESC (newest first). Let's sort DESC to be sure.
         val sortedDesc = results.sortedByDescending { it.fechaHoraFin }
@@ -169,6 +186,10 @@ class StatsViewModel(
             pointsEvolution = last15,
             bestTime = bestTime,
             averageTime = averageTime,
+            averageScore = averageScore,
+            maxScore = maxScore,
+            averageXp = averageXp,
+            maxXp = maxXp,
             recentGames = recentGames,
             difficultySplit = difficultySplit
         )

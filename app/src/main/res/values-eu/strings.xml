@@ -45,6 +45,10 @@
     <string name="longest_streak">Bolada Luzeena</string>
     <string name="best_time">Denbora Onena</string>
     <string name="average_time">Batez Besteko Denbora</string>
+    <string name="average_score">Batez Besteko Puntuazioa</string>
+    <string name="max_score">Gehienezko Puntuazioa</string>
+    <string name="average_xp">Batez Besteko XP</string>
+    <string name="max_xp">Gehienezko XP</string>
     <string name="points_evolution">Puntuen Bilakaera</string>
     <string name="recent_flow">Azken Partidak</string>
     <string name="global">Globala</string>

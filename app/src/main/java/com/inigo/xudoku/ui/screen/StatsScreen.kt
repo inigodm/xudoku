@@ -381,7 +381,11 @@ fun StatsScreenContent(
             listOf(
                 Triple(Icons.Outlined.Timer,                 stringResource(R.string.best_time),       state.bestTime),
                 Triple(Icons.Outlined.AccessTime,            stringResource(R.string.average_time),    state.averageTime),
-                Triple(Icons.Outlined.LocalFireDepartment,   stringResource(R.string.longest_streak),  "${state.longestStreak}")
+                Triple(Icons.Outlined.LocalFireDepartment,   stringResource(R.string.longest_streak),  "${state.longestStreak}"),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.average_score),   "${state.averageScore}"),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.max_score),       "${state.maxScore}"),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.average_xp),      stringResource(R.string.xp_formatted, state.averageXp)),
+                Triple(Icons.Outlined.WorkspacePremium,      stringResource(R.string.max_xp),          stringResource(R.string.xp_formatted, state.maxXp))
             ).forEach { (icon, label, value) ->
                 StatRow(
                     icon     = icon,
