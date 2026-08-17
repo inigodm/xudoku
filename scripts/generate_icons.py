@@ -1,8 +1,11 @@
 from PIL import Image
 import os
 
-source_img = "design/stitch-export/stitch_sudoku_logic_master/sudoku_master_logo/screen.png"
-res_dir = "app/src/main/res"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+
+source_img = os.path.join(script_dir, "screen.png")
+res_dir = os.path.join(project_root, "app", "src", "main", "res")
 
 sizes = {
     "mdpi": 48,

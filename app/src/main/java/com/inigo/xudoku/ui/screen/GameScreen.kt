@@ -140,6 +140,7 @@ fun GameScreen(
     val hasLeveledUp by viewModel.hasLeveledUp.collectAsState()
     val hasRankedUp by viewModel.hasRankedUp.collectAsState()
     val earnedXP by viewModel.earnedXP.collectAsState()
+    val hintsRemaining by viewModel.hintsRemaining.collectAsState()
 
     var lastScoreEvent by remember { mutableStateOf<ScoreAnimationEvent?>(null) }
     LaunchedEffect(viewModel) {
@@ -340,11 +341,25 @@ fun GameScreen(
                         modifier  = Modifier
                     )
                 }
-                ActionButton(
-                    icon    = Icons.Outlined.Lightbulb,
-                    label   = stringResource(R.string.hint),
-                    onClick = { viewModel.requestHint() }
-                )
+                BadgedBox(
+                    badge = {
+                        Badge(
+                            containerColor = if (hintsRemaining > 0) Tertiary else SurfaceContainerHighest
+                        ) {
+                            Text(
+                                text = "$hintsRemaining",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
+                ) {
+                    ActionButton(
+                        icon    = Icons.Outlined.Lightbulb,
+                        label   = stringResource(R.string.hint),
+                        onClick = { viewModel.requestHint() },
+                        enabled = hintsRemaining > 0
+                    )
+                }
             }
 
             Spacer(Modifier.height(12.dp))
@@ -369,6 +384,7 @@ private fun ActionButton(
     label: String,
     onClick: () -> Unit,
     isActive: Boolean = false,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -377,6 +393,7 @@ private fun ActionButton(
     ) {
         IconButton(
             onClick  = onClick,
+            enabled  = enabled,
             modifier = Modifier
                 .size(52.dp)
                 .clip(RoundedCornerShape(12.dp))
@@ -388,12 +405,16 @@ private fun ActionButton(
             Icon(
                 imageVector        = icon,
                 contentDescription = label,
-                tint               = if (isActive) OnSurface else OnSurfaceVariant,
+                tint               = if (enabled) (if (isActive) OnSurface else OnSurfaceVariant) else OnSurfaceVariant.copy(alpha = 0.38f),
                 modifier           = Modifier.size(24.dp)
             )
         }
         Spacer(Modifier.height(4.dp))
-        Text(label, style = MaterialTheme.typography.labelSmall, color = if (isActive) Primary else OnSurfaceVariant)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (enabled) (if (isActive) Primary else OnSurfaceVariant) else OnSurfaceVariant.copy(alpha = 0.38f)
+        )
     }
 }
 

@@ -185,7 +185,7 @@ fun DifficultyScreenContent(
                     modifier = Modifier
                         .size(75.dp)
                         .drawBehind {
-                            drawGlowCircle(color = Primary.copy(alpha = 0.25f), radius = size.minDimension * 0.85f)
+                            drawGlowCircle(color = Primary.copy(alpha = 0.25f), radius = size.minDimension * 0.55f)
                         }
                 )
                 Image(

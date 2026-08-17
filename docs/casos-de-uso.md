@@ -45,7 +45,7 @@
 | Trigger      | Tap en tecla numérica del `NumberPad` con `isNotesMode=false` |
 | Precondición | `selectedCell != null`, celda no es `isGiven` |
 | Método VM    | `GameViewModel.enterNumber(number: Int)` |
-| Postcondición | `cells[row][col].value = number`; si incorrecto: `isError=true`, `mistakes += 1`; notas de esa celda eliminadas; si se alcanzan 9 instancias correctas del número, se elimina de todas las notas; movimiento guardado en historial |
+| Postcondición | Si la celda ya contiene `number` sin error (`!isError`), no realiza ninguna acción (no re-valida ni duplica puntuación). Si cambia de número: `cells[row][col].value = number`; si incorrecto: `isError=true`, `mistakes += 1`; notas de esa celda eliminadas; si se alcanzan 9 instancias correctas del número, se elimina de todas las notas; movimiento guardado en historial |
 | Efecto UI    | Número visible en celda; celda en rojo si error; contador de errores actualizado |
 | Tested       | ✅ |
 
@@ -113,10 +113,10 @@
 |--------------|-------|
 | Actor        | Jugador |
 | Trigger      | Tap en botón "Pista" de la toolbar |
-| Precondición | Partida en curso; existe al menos una celda vacía no dada |
+| Precondición | Partida en curso; `hintsRemaining > 0`; existe al menos una celda vacía no dada |
 | Método VM    | `GameViewModel.requestHint()` |
-| Postcondición | Si hay celda seleccionada vacía: se revela su valor correcto allí. Si no: se busca la primera celda vacía no dada en orden fila-columna y se revela. Notas de esa celda eliminadas; si se alcanzan 9 instancias, se elimina de todas las notas. `selectedCell` apunta a la celda revelada. `checkCompletion()` ejecutado. |
-| Efecto UI    | Celda revelada muestra el número correcto (sin marcarse como error) |
+| Postcondición | Si `hintsRemaining > 0`: se decrementa `hintsRemaining`. Si hay celda seleccionada vacía: se revela su valor correcto allí. Si no: se busca la primera celda vacía no dada en orden fila-columna y se revela. Notas de esa celda eliminadas; si se alcanzan 9 instancias, se elimina de todas las notas. `selectedCell` apunta a la celda revelada. `checkCompletion()` ejecutado. Si `hintsRemaining == 0`: no se ejecuta ningún cambio. |
+| Efecto UI    | Celda revelada muestra el número correcto. El badge en el botón de pista muestra `hintsRemaining` (3 en fácil/muy fácil, 2 en media, 1 en difícil, 0 en imposible). Si es 0, el botón de pista queda deshabilitado. |
 | Tested       | ✅ |
 
 ---

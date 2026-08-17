@@ -203,6 +203,43 @@ class GameViewModelTest {
         vm.viewModelScope.cancel()
     }
 
+    @Test
+    fun `CU-03 enterNumber no vuelve a sumar puntos si la celda ya tiene el numero correcto`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+
+        val gameField = GameViewModel::class.java.getDeclaredField("game")
+        gameField.isAccessible = true
+        val game = gameField.get(vm) as com.inigo.xudoku.model.SudokuGame
+
+        // Buscar una celda vacía no dada
+        var targetRow = -1
+        var targetCol = -1
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                if (!vm.cells.value[r][c].isGiven) {
+                    targetRow = r
+                    targetCol = c
+                    break
+                }
+            }
+            if (targetRow != -1) break
+        }
+
+        val correctNumber = game.solution[targetRow, targetCol]
+        vm.selectCell(targetRow, targetCol)
+
+        // Primera vez -> se suma puntuación
+        vm.enterNumber(correctNumber)
+        val scoreFirstTime = vm.currentScore.value
+        assertTrue("La primera inserción correcta debe otorgar puntos", scoreFirstTime > 0)
+
+        // Segunda vez -> pulsar el mismo número correcto en la misma celda
+        vm.enterNumber(correctNumber)
+        assertEquals("La puntuación no debe incrementarse al pulsar el mismo número correcto repetidas veces", scoreFirstTime, vm.currentScore.value)
+
+        vm.viewModelScope.cancel()
+    }
+
     // ── CU-04: Introducir nota en lápiz (modo notas) ─────────────────────────
 
     @Test
@@ -402,18 +439,84 @@ class GameViewModelTest {
         vm.viewModelScope.cancel()
     }
 
+    @Test
+    fun `CU-08 difficulty maxHints returns correct limit for each difficulty`() {
+        assertEquals(3, Difficulty.VERY_EASY.maxHints)
+        assertEquals(3, Difficulty.EASY.maxHints)
+        assertEquals(2, Difficulty.MEDIUM.maxHints)
+        assertEquals(1, Difficulty.HARD.maxHints)
+        assertEquals(0, Difficulty.HARDEST.maxHints)
+    }
+
+    @Test
+    fun `CU-08 startGame initializes hintsRemaining based on difficulty`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.VERY_EASY)
+        assertEquals(3, vm.hintsRemaining.value)
+
+        vm.startGame(Difficulty.MEDIUM)
+        assertEquals(2, vm.hintsRemaining.value)
+
+        vm.startGame(Difficulty.HARD)
+        assertEquals(1, vm.hintsRemaining.value)
+
+        vm.startGame(Difficulty.HARDEST)
+        assertEquals(0, vm.hintsRemaining.value)
+
+        vm.viewModelScope.cancel()
+    }
+
+    @Test
+    fun `CU-08 requestHint decrements hintsRemaining and blocks when zero remaining`() = runTest(testDispatcher) {
+        vm.startGame(Difficulty.HARD) // max 1 hint
+        assertEquals(1, vm.hintsRemaining.value)
+
+        // First hint request -> should succeed and decrement hintsRemaining to 0
+        vm.requestHint()
+        assertEquals(0, vm.hintsRemaining.value)
+
+        // Find another empty cell to verify second hint attempt is blocked
+        var secondEmptyRow = -1
+        var secondEmptyCol = -1
+        for (r in 0 until SudokuBoard.SIZE) {
+            for (c in 0 until SudokuBoard.SIZE) {
+                val cell = vm.cells.value[r][c]
+                if (!cell.isGiven && cell.value == SudokuBoard.EMPTY) {
+                    secondEmptyRow = r
+                    secondEmptyCol = c
+                    break
+                }
+            }
+            if (secondEmptyRow != -1) break
+        }
+
+        if (secondEmptyRow != -1) {
+            vm.selectCell(secondEmptyRow, secondEmptyCol)
+            vm.requestHint()
+
+            // Cell remains empty because remaining hints is 0
+            assertEquals(SudokuBoard.EMPTY, vm.cells.value[secondEmptyRow][secondEmptyCol].value)
+            assertEquals(0, vm.hintsRemaining.value)
+        }
+
+        vm.viewModelScope.cancel()
+    }
+
     // ── CU-09: Completar puzzle (detección automática) ────────────────────────
 
     @Test
     fun `CU-09 al rellenar todas las celdas correctamente se activa isCompleted`() = runTest(testDispatcher) {
         vm.startGame(Difficulty.VERY_EASY)
 
-        // Rellenar todas las celdas vacías pidiendo pistas (que colocan la solución correcta)
+        val gameField = GameViewModel::class.java.getDeclaredField("game")
+        gameField.isAccessible = true
+        val game = gameField.get(vm) as com.inigo.xudoku.model.SudokuGame
+
+        // Rellenar todas las celdas vacías introduciendo la solución correcta
         for (r in 0 until SudokuBoard.SIZE) {
             for (c in 0 until SudokuBoard.SIZE) {
                 if (!vm.cells.value[r][c].isGiven && vm.cells.value[r][c].value == SudokuBoard.EMPTY) {
                     vm.selectCell(r, c)
-                    vm.requestHint()
+                    vm.enterNumber(game.solution[r, c])
                 }
             }
         }

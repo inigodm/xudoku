@@ -6,19 +6,19 @@ Activar cuando se cambien niveles de dificultad, `visibleCells` o su exposición
 
 ## Archivos relevantes
 
-- `model/Difficulty.kt` → enum de niveles y valores de dificultad.
+- `model/Difficulty.kt` → enum de niveles, valores de celdas visibles (`visibleCells`) y límite de pistas (`maxHints`).
 - `model/SudokuGenerator.kt` → consume `visibleCells` como objetivo de generación.
 - `SudokuGeneratorTest.kt` → tests relacionados.
 
 
 ## Valores actuales
 
-```
-    VERY_EASY(40),   // ~40 celdas visibles de 81
-    EASY(30),        // ~30 celdas visibles
-    MEDIUM(25),      // ~25 celdas visibles
-    HARD(20),        // ~20 celdas visibles
-    HARDEST(17)      // 17 celdas visibles — mínimo teórico con solución única
+```kotlin
+    VERY_EASY(40, 3), // ~40 celdas visibles, 3 pistas máx
+    EASY(30, 3),      // ~30 celdas visibles, 3 pistas máx
+    MEDIUM(25, 2),    // ~25 celdas visibles, 2 pistas máx
+    HARD(20, 1),      // ~20 celdas visibles, 1 pista máx
+    HARDEST(17, 0)    // 17 celdas visibles, 0 pistas máx
 ```
 
 ## Invariantes que no se pueden romper

@@ -189,6 +189,62 @@ class StatsViewModelTest {
         assertEquals(1500, state.averageXp)
         assertEquals(2000, state.maxXp)
     }
+
+    @Test
+    fun `loadStats correctly classifies failed or non-won games as completed false in recent flow and excludes them from metrics`() = runTest(testDispatcher) {
+        // Arrange
+        val games = listOf(
+            createDummyResult(Difficulty.HARDEST, isWin = true, idSudoku = "1", xpEarned = 5000, puntuacionFinal = 3000),
+            createDummyResult(Difficulty.HARDEST, isWin = false, idSudoku = "2", xpEarned = null, puntuacionFinal = 0)
+        )
+        fakeRepository.results = games
+
+        // Act
+        viewModel.loadStats(Difficulty.HARDEST)
+
+        // Assert
+        val state = viewModel.uiState.value
+        assertEquals(2, state.totalGamesPlayed)
+        assertEquals(1, state.totalGamesWon)
+        assertEquals("50%", state.winRate)
+        assertEquals(3000, state.maxScore)
+        assertEquals(3000, state.averageScore)
+        assertEquals(5000, state.maxXp)
+        assertEquals(5000, state.averageXp)
+
+        val recent = state.recentGames
+        assertEquals(2, recent.size)
+
+        val wonGame = recent.find { it.sudokuId == "1" }
+        val lostGame = recent.find { it.sudokuId == "2" }
+
+        assertTrue(wonGame?.completed == true)
+        assertEquals(5000, wonGame?.xp)
+
+        assertFalse(lostGame?.completed == true)
+        org.junit.Assert.assertNull(lostGame?.xp)
+    }
+
+    @Test
+    fun `loadStats calculates maxStreak and currentStreak correctly`() = runTest(testDispatcher) {
+        // Arrange (ordered by date: 1, 2, 3, 4, 5)
+        val games = listOf(
+            createDummyResult(Difficulty.EASY, isWin = true, idSudoku = "1"),
+            createDummyResult(Difficulty.EASY, isWin = true, idSudoku = "2"),
+            createDummyResult(Difficulty.EASY, isWin = false, idSudoku = "3"),
+            createDummyResult(Difficulty.EASY, isWin = true, idSudoku = "4"),
+            createDummyResult(Difficulty.EASY, isWin = true, idSudoku = "5")
+        )
+        fakeRepository.results = games
+
+        // Act
+        viewModel.loadStats(Difficulty.EASY)
+
+        // Assert
+        val state = viewModel.uiState.value
+        assertEquals(2, state.longestStreak)
+        assertEquals(2, state.currentStreak)
+    }
 }
 
 class FakeGameHistoryRepository : GameHistoryRepository {

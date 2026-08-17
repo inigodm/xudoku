@@ -119,6 +119,10 @@ class GameViewModel(
     /** Dificultad de la partida en curso. */
     val difficulty: StateFlow<Difficulty?> = _difficulty.asStateFlow()
 
+    private val _hintsRemaining = MutableStateFlow(0)
+    /** Número de pistas restantes para la partida en curso. */
+    val hintsRemaining: StateFlow<Int> = _hintsRemaining.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     /** true mientras se genera el puzzle en background. */
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -154,6 +158,7 @@ class GameViewModel(
         _isNewHighScore.value = false
         _isGameOver.value    = false
         _difficulty.value    = difficulty
+        _hintsRemaining.value = difficulty.maxHints
         _isLoading.value     = true
         
         scoreManager.reset()
@@ -186,6 +191,7 @@ class GameViewModel(
         val (row, col) = _selectedCell.value ?: return
         val cell = _cells.value[row][col]
         if (cell.isGiven || _isGameOver.value) return
+        if (!_isNotesMode.value && cell.value == number && !cell.isError) return
 
         val key = Pair(row, col)
 
@@ -264,9 +270,10 @@ class GameViewModel(
 
     /**
      * Revela el valor correcto en la celda seleccionada (o la primera vacía si
-     * no hay celda seleccionada).
+     * no hay celda seleccionada). Respetando el límite de pistas según la dificultad.
      */
     fun requestHint() {
+        if (_hintsRemaining.value <= 0) return
         val target = _selectedCell.value?.takeIf { (r, c) ->
             val cell = _cells.value[r][c]
             !cell.isGiven && cell.value == SudokuBoard.EMPTY
@@ -291,6 +298,7 @@ class GameViewModel(
         if (_cells.value[row][col].isGiven) return
         val correct = game.solution[row, col]
         scoreManager.recordHint()
+        _hintsRemaining.update { maxOf(0, it - 1) }
         saveMove(row, col, _cells.value[row][col])
         updateCell(row, col) { CellState(value = correct, isGiven = false, isError = false) }
         _notes.update { it - Pair(row, col) }
